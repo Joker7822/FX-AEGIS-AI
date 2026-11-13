@@ -13,6 +13,7 @@ on:
       - 'requirements-repro.txt'
       - 'repro_lab.py'
       - 'self_evolve.py'
+      - 'execution_lab.py'
       - 'research/**'
   schedule:
     # UTC 02:13 = JST 11:13; weekdays. Scheduled jobs may be delayed.
@@ -48,6 +49,11 @@ jobs:
           python main.py --csv data/demo_synthetic_usdjpy.csv --strategy trend --out results/demo_trend
       - name: Run research and simulation tests
         run: python -m unittest discover -s tests -v
+      - name: Confirm strictly synthetic Bid/Ask execution semantics (no live feed)
+        run: |
+          python execution_lab.py fixture --out data/bidask_fixture
+          python execution_lab.py validate --quotes data/bidask_fixture/bidask_h1_synthetic.csv --provenance data/bidask_fixture/provenance.json --allow-synthetic --out results/execution_demo
+          python execution_lab.py simulate --quotes data/bidask_fixture/bidask_h1_synthetic.csv --provenance data/bidask_fixture/provenance.json --allow-synthetic --slippage-pips-per-side 0.2 --commission-jpy-per-roundtrip 0 --out results/execution_demo
       - name: Download official FRED DEXJPUS and validate provenance
         run: python github_pipeline.py refresh
       - name: Replay proof and parameter stability scan on verified historical data

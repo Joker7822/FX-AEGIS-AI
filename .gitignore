@@ -7,3 +7,9 @@ __pycache__/
 .pytest_cache/
 results/
 *.zip
+
+# Private/possibly licensed broker quotes and reports. NEVER commit them.
+data/
+datasets/broker/
+private_quotes/
+private_reports/

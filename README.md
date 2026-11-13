@@ -1,3 +1,18 @@
+# FX AEGIS AI v1.9 — Bid/Ask data validation and conservative execution research
+
+**v1.9 (2026-11-14 JST):** Adds `execution_lab.py`, a separate, research-only H1 Bid/Ask execution model. The previous FRED daily reference simulator remains illustrative and is NOT an executable FX backtest.
+
+- Validates H1 UTC bar-open timestamps, bid/ask OHLC, gaps, spreads, broker-attested provenance JSON and SHA-256.
+- Fills a long entry at next-bar **Ask** and exit at following-bar **Bid**, reverse for shorts; applies explicit slippage and commission.
+- Vetoes rollovers with unknown financing (conservative UTC-hours proxy); an optional *broker-supplied* daily rollover ledger applies signed swap amounts.
+- Caps position notional and uses a closed-P&L drawdown/daily loss gate. No intrabar stops, liquidity, margin or real execution.
+- Never uploads user-provided broker quotes to GitHub; private datasets are ignored. GitHub Actions runs synthetic-only regression tests.
+- Does not authenticate broker origin, establish positive expected returns, or place orders.
+
+See [EXECUTION_DATA_GUIDE_JA.md](EXECUTION_DATA_GUIDE_JA.md).
+
+---
+
 # FX AEGIS AI v1.8 — multi-agent research and self-evolution
 
 ## v1.8 — autonomous strategy discovery (research-only)
