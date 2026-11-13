@@ -13,6 +13,7 @@ on:
       - 'requirements-repro.txt'
       - 'repro_lab.py'
       - 'self_evolve.py'
+      - 'overfit_guard.py'
       - 'execution_lab.py'
       - 'research/**'
   schedule:
@@ -68,7 +69,7 @@ jobs:
           python repro_lab.py verify --proof research/repro_latest.json
           python repro_lab.py scan --out research/scan_latest.json --seed 42 --spread-pips 1.4
           python repro_lab.py publish --proof research/repro_latest.json --scan research/scan_latest.json --out docs/data/reproducibility.json
-      - name: Evolve research-only agents against pre-2021 folds; lock new challengers for forward paper evidence
+      - name: Run evolutionary selection with block-bootstrap multiple-testing guard (fail closed)
         env:
           PYTHONHASHSEED: '42'
           OMP_NUM_THREADS: '1'

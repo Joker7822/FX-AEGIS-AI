@@ -1,3 +1,25 @@
+# FX AEGIS AI v2.0 — statistical overfitting guard (research only)
+
+**Released: 2026-11-14 JST. No live orders; no validated positive expected returns.**
+
+## v2.0: conservative multi-trial screening
+
+- New `overfit_guard.py`: all unique self-evolution candidate rules are compared with a **fixed** EMA15/100 long-only reference using the same pre-2021 daily reference observations, **2x assumed friction**, and a **common-block moving bootstrap max-T** screen (512 replications, 20 observations per block). A candidate can only become a *paper research challenger* after passing BOTH the existing fold gates AND the new `adjusted_p <= 0.05` screen. Statistical inference is **exploratory**; block-bootstrap assumptions may fail for nonstationary exchange rates. This is **not** White's full Reality Check or a calibrated formal PBO estimate.
+- The full tested family is audited, not just the top-10 survivors. If previous weekly search trials are not all available for correction, candidate promotion **fails closed** and reports `HISTORIC_TRIAL_FAMILY_INCOMPLETE`.
+- Eight contiguous pre-2021 blocks provide a descriptive **CSCV-inspired rank-instability fraction** (70 splits) and a separate, chronologically selected walk-forward **fixed-library diagnostic**. These are not fresh out-of-sample evidence and do not drive candidate selection.
+- Locking new candidates includes the audit fingerprint. Older challengers lacking v2.0 proof cannot silently pass the paper promotion gate.
+- `docs/data/evolution.json` projects gate status and ranks to the single-screen GitHub Pages dashboard. No private broker data is published.
+
+```bash
+pip install -r requirements-repro.txt
+python -m unittest discover -s tests -v
+python self_evolve.py --population 16 --generations 5 --seed 42 --seed-mode weekly
+```
+
+For design, limitations, and audit interpretation see [OVERFIT_GUARD_GUIDE_JA.md](OVERFIT_GUARD_GUIDE_JA.md).
+
+---
+
 # FX AEGIS AI v1.9 — Bid/Ask data validation and conservative execution research
 
 **v1.9 (2026-11-14 JST):** Adds `execution_lab.py`, a separate, research-only H1 Bid/Ask execution model. The previous FRED daily reference simulator remains illustrative and is NOT an executable FX backtest.

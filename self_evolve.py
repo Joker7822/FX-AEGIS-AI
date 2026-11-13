@@ -227,6 +227,9 @@ def evolve(ind: Indicators, *, seed: int = 42, population: int = 16,
     ordered = sorted(history.values(), key=lambda x: (not x["eligible"], -x["score"], json.dumps(x["gene"],sort_keys=True)))
     return {"eligible_count": sum(z["eligible"] for z in ordered),
             "evaluated": len(history), "best": ordered[0], "top": ordered[:10],
+            # Keep every unique trial for family-wise post-selection screening.
+            # Never run significance tests on only the top-10 survivors.
+            "all_candidate_results": ordered,
             "generations": generations_summary}
 
 
@@ -291,8 +294,22 @@ def run(dataset: Path, metadata: Path, report_file: Path, challenger_file: Path,
     archive = update_archive(archive_file, seed_mode=seed_mode, week_id=week_id,
                              seed=effective_seed, results=result,
                              source_sha=source["data_sha256"]) if archive_file else None
+    # Research evidence must include the FULL tested family and historical
+    # search count. A short list of winners is statistically invalid.
+    from overfit_guard import audit_candidates
+    from self_evolve import gene_key
+    audited = audit_candidates(
+        ind, [Genome(**x["gene"]) for x in result["all_candidate_results"]],
+        base_cost=base_cost, seed=effective_seed,
+        total_search_trials=(archive["candidate_evaluations_total"] if archive else result["evaluated"]),
+        reps=(128 if fixture else 512),
+    )
+    audited_set = set(audited["passed_genes"])
+    screened = [x for x in result["all_candidate_results"]
+                if x["eligible"] and gene_key(Genome(**x["gene"])) in audited_set]
+    audit_digest = sha256(canonical(audited))
     challenger = None
-    shadow = {"state": "NO_RESEARCH_ELIGIBLE_CANDIDATE", "approved_for_live_trading": False}
+    shadow = {"state": "NO_STATISTICALLY_SCREENED_CANDIDATE", "approved_for_live_trading": False}
     if challenger_file.exists():
         challenger = json.loads(challenger_file.read_text(encoding="utf-8"))
         if challenger.get("schema") != SCHEMA or challenger.get("mode") != "paper-only":
@@ -301,19 +318,30 @@ def run(dataset: Path, metadata: Path, report_file: Path, challenger_file: Path,
             raise ValueError("Source class changed since challenger was locked")
         if challenger.get("snapshot_prefix_sha256") != prefix_hash(points, challenger["discovery_end"]):
             raise ValueError("Historical dataset was revised after candidate lock; manual review required")
-        # Never overwrite the challenger or reselect based on forward outcomes.
-        shadow = shadow_status(ind, Genome(**challenger["gene"]), challenger["discovery_end"], base_cost=base_cost)
-        if shadow["state"] == "PAPER_ELIGIBLE" and not paper_file.exists():
-            atomic_json(paper_file, {"schema": SCHEMA, "mode": "paper-only",
-                                     "gene": challenger["gene"],
-                                     "discovery_end": challenger["discovery_end"],
-                                     "forward_evidence": shadow,
-                                     "no_live_orders": True})
-    elif result["best"]["eligible"]:
+        # Never retroactively bless a pre-v2.0 challenger lacking statistical
+        # audit proof; only correctly locked v2.0 challengers can paper-promote.
+        if (challenger.get("audit_schema") != audited["schema"] or
+                challenger.get("audit_gate_pass") is not True or
+                not isinstance(challenger.get("audit_digest"), str)):
+            shadow = {"state": "LEGACY_CHALLENGER_REQUIRES_INDEPENDENT_AUDIT",
+                      "approved_for_live_trading": False}
+        else:
+            shadow = shadow_status(ind, Genome(**challenger["gene"]), challenger["discovery_end"], base_cost=base_cost)
+            if shadow["state"] == "PAPER_ELIGIBLE" and not paper_file.exists():
+                atomic_json(paper_file, {"schema": SCHEMA, "mode": "paper-only",
+                                         "gene": challenger["gene"],
+                                         "discovery_end": challenger["discovery_end"],
+                                         "forward_evidence": shadow,
+                                         "audit_digest": challenger["audit_digest"],
+                                         "no_live_orders": True})
+    elif screened:
+        chosen = screened[0]
         challenger = {"schema": SCHEMA, "mode": "paper-only", "fixture": fixture,
-                      "gene": result["best"]["gene"], "discovery_end": points[-1]["date"],
+                      "gene": chosen["gene"], "discovery_end": points[-1]["date"],
                       "snapshot_prefix_sha256": prefix_hash(points, points[-1]["date"]),
-                      "source_kind": source["kind"], "no_live_orders": True}
+                      "source_kind": source["kind"],
+                      "audit_schema": audited["schema"], "audit_digest": audit_digest,
+                      "audit_gate_pass": True, "no_live_orders": True}
         atomic_json(challenger_file, challenger)
         shadow = {"state": "NEW_CHALLENGER_LOCKED", "new_observations": 0,
                   "required": SHADOW_MIN_BARS, "approved_for_live_trading": False}
@@ -327,6 +355,9 @@ def run(dataset: Path, metadata: Path, report_file: Path, challenger_file: Path,
                "population": population, "generations_count": generations,
                "base_assumed_cost_pips": base_cost, "eligible_count": result["eligible_count"],
                "evaluated": result["evaluated"], "best": result["best"], "top": result["top"],
+               "statistically_screened_count": len(screened),
+               "overfit_audit": audited,
+               "overfit_audit_sha256": audit_digest,
                "generation_history": result["generations"], "shadow": shadow,
                "paper_champion_present": paper_file.exists(),
                "approved_for_live_trading": False, "trading_connection": "DISABLED"}
@@ -338,6 +369,10 @@ def run(dataset: Path, metadata: Path, report_file: Path, challenger_file: Path,
                             "data_to": points[-1]["date"], "candidate_count": result["evaluated"],
                             "exploration_history_runs": len(archive["weekly_runs"]) if archive else 0,
                             "eligible_count": result["eligible_count"],
+                            "statistically_screened_count": len(screened),
+                            "overfit_audit_status": audited["status"],
+                            "rank_instability_fraction": audited.get("rank_instability",{}).get("fraction"),
+                            "walk_forward_fixed_library_return_pct": audited.get("walk_forward_fixed_library",{}).get("compounded_reference_return_pct"),
                             "best": result["best"]["gene"],
                             "shadow_state": shadow["state"],
                             "paper_champion_present": paper_file.exists(),
@@ -371,6 +406,8 @@ def main() -> None:
                       "eligible_count": outcome["eligible_count"],
                       "best": outcome["best"]["gene"],
                       "best_score": outcome["best"]["score"],
+                      "statistically_screened_count": outcome["statistically_screened_count"],
+                      "overfit_audit_status": outcome["overfit_audit"]["status"],
                       "seed_policy": outcome["seed_policy"],
                       "exploration_history": outcome["exploration_history"],
                       "shadow": outcome["shadow"],

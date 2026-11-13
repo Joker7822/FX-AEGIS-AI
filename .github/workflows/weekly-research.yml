@@ -34,7 +34,7 @@ jobs:
           python repro_lab.py capture --out artifacts/repro_proof.json
           python repro_lab.py verify --proof artifacts/repro_proof.json
           python repro_lab.py scan --out artifacts/repro_scan.json
-      - name: Weekly deterministic gene evolution without any trade execution
+      - name: Weekly deterministic evolution + multiple-testing guard (research only)
         env:
           PYTHONHASHSEED: '42'
           OMP_NUM_THREADS: '1'
