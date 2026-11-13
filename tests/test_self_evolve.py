@@ -83,6 +83,11 @@ class SelfEvolutionTests(unittest.TestCase):
             self.assertEqual(data['source_kind'],'SYNTHETIC_FIXTURE_NOT_FOR_TRADING')
             self.assertEqual(r['search_window_end_exclusive'],'2021-01-01')
             self.assertEqual(r['sha256'],json.loads((root/'report.json').read_text())['sha256'])
+            from h1_evolution_guard import load_catalog
+            genes, catalog = load_catalog(root/'h1_candidate_universe.json')
+            self.assertEqual(len(genes), r['evaluated'])
+            self.assertEqual(catalog['selection_source_kind'], 'SYNTHETIC_TEST_FIXTURE')
+            self.assertFalse(catalog['approved_for_live_trading'])
 
     def test_missing_source_provenance_refused(self):
         with tempfile.TemporaryDirectory() as d:

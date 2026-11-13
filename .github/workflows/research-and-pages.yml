@@ -16,6 +16,7 @@ on:
       - 'overfit_guard.py'
       - '.gitignore'
       - 'execution_lab.py'
+      - 'h1_evolution_guard.py'
       - 'research/**'
   schedule:
     # UTC 02:13 = JST 11:13; weekdays. Scheduled jobs may be delayed.
@@ -56,6 +57,22 @@ jobs:
           python execution_lab.py fixture --out data/bidask_fixture
           python execution_lab.py validate --quotes data/bidask_fixture/bidask_h1_synthetic.csv --provenance data/bidask_fixture/provenance.json --allow-synthetic --out results/execution_demo
           python execution_lab.py simulate --quotes data/bidask_fixture/bidask_h1_synthetic.csv --provenance data/bidask_fixture/provenance.json --allow-synthetic --slippage-pips-per-side 0.2 --commission-jpy-per-roundtrip 0 --out results/execution_demo
+      - name: Audit complete H1 candidate universe on SYNTHETIC test quotes only
+        env:
+          PYTHONHASHSEED: '42'
+          OMP_NUM_THREADS: '1'
+          OPENBLAS_NUM_THREADS: '1'
+          MKL_NUM_THREADS: '1'
+        run: |
+          python h1_evolution_guard.py fixture-catalog --out data/bidask_fixture/universe_fixture.json
+          python h1_evolution_guard.py audit \
+            --quotes data/bidask_fixture/bidask_h1_synthetic.csv \
+            --provenance data/bidask_fixture/provenance.json \
+            --universe data/bidask_fixture/universe_fixture.json \
+            --allow-synthetic --slippage-pips-per-side 0.2 \
+            --commission-jpy-per-roundtrip 0 \
+            --bootstrap-reps 64 --out results/h1_evolution_fixture.json
+          python -c "import json; a=json.load(open('results/h1_evolution_fixture.json')); assert a['status']=='SYNTHETIC_TEST_ONLY' and not a['eligible_for_paper_promotion'] and not a['approved_for_live_trading']"
       - name: Download official FRED DEXJPUS and validate provenance
         run: python github_pipeline.py refresh
       - name: Replay proof and parameter stability scan on verified historical data

@@ -345,6 +345,18 @@ def run(dataset: Path, metadata: Path, report_file: Path, challenger_file: Path,
         atomic_json(challenger_file, challenger)
         shadow = {"state": "NEW_CHALLENGER_LOCKED", "new_observations": 0,
                   "required": SHADOW_MIN_BARS, "approved_for_live_trading": False}
+    # Publish the complete trial family so an independent H1 execution audit
+    # cannot quietly evaluate only the surviving/top-10 reference candidates.
+    # Do NOT imply these FRED-selected genes were trained on executable quotes.
+    from h1_evolution_guard import catalog_payload
+    catalog_file = report_file.parent / 'h1_candidate_universe.json'
+    full_catalog = catalog_payload(
+        [Genome(**x['gene']) for x in result['all_candidate_results']],
+        source_kind=('SYNTHETIC_TEST_FIXTURE' if fixture else source['kind']),
+        historical_trials_total=(archive['candidate_evaluations_total'] if archive else result['evaluated']),
+        selected_before='2021-01-01',
+    )
+    atomic_json(catalog_file, full_catalog)
     summary = {"schema": SCHEMA, "source": source, "observation_count": len(points),
                "end_observation": points[-1]["date"], "search_window_end_exclusive": "2021-01-01",
                "warning": "Selection uses pre-2021 reference data only. 2021+ was previously inspected and is not fresh validation.",
