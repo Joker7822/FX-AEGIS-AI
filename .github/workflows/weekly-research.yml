@@ -34,6 +34,18 @@ jobs:
           python repro_lab.py capture --out artifacts/repro_proof.json
           python repro_lab.py verify --proof artifacts/repro_proof.json
           python repro_lab.py scan --out artifacts/repro_scan.json
+      - name: Weekly deterministic gene evolution without any trade execution
+        env:
+          PYTHONHASHSEED: '42'
+          OMP_NUM_THREADS: '1'
+          OPENBLAS_NUM_THREADS: '1'
+          MKL_NUM_THREADS: '1'
+        run: |
+          python self_evolve.py --population 16 --generations 5 --seed 42 \
+            --report artifacts/evolution_report.json \
+            --challenger artifacts/evolution_challenger.json \
+            --paper artifacts/paper_champion.json \
+            --site artifacts/evolution_public.json
       - name: Model regression smoke test using explicitly SYNTHETIC H1
         run: |
           python generate_demo.py
@@ -46,5 +58,7 @@ jobs:
             artifacts/weekly_reference_scenario.json
             artifacts/repro_proof.json
             artifacts/repro_scan.json
+            artifacts/evolution_report.json
+            artifacts/evolution_public.json
             results/demo_trend/summary.json
           retention-days: 30

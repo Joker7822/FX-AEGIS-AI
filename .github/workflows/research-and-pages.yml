@@ -12,6 +12,7 @@ on:
       - 'requirements.txt'
       - 'requirements-repro.txt'
       - 'repro_lab.py'
+      - 'self_evolve.py'
       - 'research/**'
   schedule:
     # UTC 02:13 = JST 11:13; weekdays. Scheduled jobs may be delayed.
@@ -61,13 +62,21 @@ jobs:
           python repro_lab.py verify --proof research/repro_latest.json
           python repro_lab.py scan --out research/scan_latest.json --seed 42 --spread-pips 1.4
           python repro_lab.py publish --proof research/repro_latest.json --scan research/scan_latest.json --out docs/data/reproducibility.json
+      - name: Evolve research-only agents against pre-2021 folds; lock new challengers for forward paper evidence
+        env:
+          PYTHONHASHSEED: '42'
+          OMP_NUM_THREADS: '1'
+          OPENBLAS_NUM_THREADS: '1'
+          MKL_NUM_THREADS: '1'
+        run: |
+          python self_evolve.py --population 16 --generations 5 --seed 42 --spread-pips 1.4
       - name: Produce static read-only website and scenario payload
         run: python github_pipeline.py build
       - name: Persist reference history and publication JSON in Git history
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add datasets/fred/dexjpus_daily.csv datasets/fred/metadata.json docs/data/research.json docs/data/reproducibility.json research/repro_latest.json research/scan_latest.json
+          git add -A datasets/fred/dexjpus_daily.csv datasets/fred/metadata.json docs/data/research.json docs/data/reproducibility.json docs/data/evolution.json research/
           if ! git diff --cached --quiet; then
             git commit -m 'data: refresh verified FRED USDJPY reference snapshot [skip ci]'
             git push origin HEAD:main

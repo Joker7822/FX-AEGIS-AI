@@ -1,5 +1,17 @@
 # FX Multi-Agent AI v1.2 — one-screen dashboard + v1.1 research engine
 
+## v1.8 — autonomous strategy discovery (research-only)
+
+The new deterministic `self_evolve.py` generates strategy/volatility-filter variants, mutates and crossovers genes, and only selects candidates on pre-2021 research folds. A challenger is locked to its discovery date and requires **126 genuinely new daily observations** before possible **paper-only** promotion. The 2021–2026 interval has already been inspected and is **not** a fresh holdout. None of this is an executable FX backtest or evidence of future positive returns.
+
+```bash
+python -m unittest discover -s tests -v
+python self_evolve.py --population 16 --generations 5 --seed 42
+```
+
+See [SELF_EVOLUTION_GUIDE_JA.md](SELF_EVOLUTION_GUIDE_JA.md). The public GitHub Pages dashboard reports candidate counts and research state; real orders stay disabled.
+
+
 **Updated: 2026-11-13 JST. Research-only.** No order placement, broker credentials, or live trading. This code **does not demonstrate positive expected returns**.
 
 ## What is implemented
