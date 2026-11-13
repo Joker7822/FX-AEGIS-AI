@@ -192,3 +192,14 @@ The evolutionary agent is **veto-only**, so it cannot create a new trade when th
 See [`HISTORY20_GUIDE_JA.md`](HISTORY20_GUIDE_JA.md). The new `history20.py` downloads/imports **official FRED DEXJPUS daily reference observations** for 2006-11-13 through 2026-11-13, reports annual reference-rate regimes, imports and audits independently obtained **broker H1 OHLC**, and summarizes yearly realized simulated P&L from existing backtests. FRED reference rates are **not broker-executable OHLC** and are **not AI trading labels/features**. No historical real FX data is bundled. Download connectivity could not be verified here.
 
 The research backtester now accepts `--retrain-every-bars` and `--max-training-bars` to keep 20-year H1 walk-forward retraining computationally bounded. Full-broker-H1 quality auditing is separate and mandatory to claim full 20-year coverage; sample import is not proof of data authenticity. The one-screen dashboard adds a `20年` price-chart toggle if a real FRED daily file is supplied, plus a compact history/coverage status in the existing safety panel. No order placement.
+
+## v1.6: GitHub Historical Storage / Scheduled Automation / Simulation / GitHub Pages
+
+- GitHub Actions workflow: `.github/workflows/research-and-pages.yml`.
+- Public FRED DEXJPUS snapshot: `datasets/fred/dexjpus_daily.csv` (populated only on first successful workflow).
+- Provenance and SHA-256: `datasets/fred/metadata.json`.
+- Public dashboard: `docs/`, generated payload `docs/data/research.json`.
+- Scenario engine: `github_pipeline.py` + JavaScript UI, explicitly non-executable reference-close simulation.
+- Pages initial setup and URL verification: `GITHUB_AUTOMATION_GUIDE_JA.md`.
+
+No live orders, no account connections, no claim of profitable trading.

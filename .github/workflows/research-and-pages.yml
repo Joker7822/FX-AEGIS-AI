@@ -1,0 +1,74 @@
+name: FX AEGIS AI · Historical Refresh, Test & Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/research-and-pages.yml'
+      - 'github_pipeline.py'
+      - 'history20.py'
+      - 'docs/**'
+      - 'tests/**'
+      - 'requirements.txt'
+  schedule:
+    # UTC 02:13 = JST 11:13; weekdays. Scheduled jobs may be delayed.
+    - cron: '13 2 * * 1-5'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: fx-aegis-research-pages
+  cancel-in-progress: false
+
+jobs:
+  refresh-test-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      - name: Install pinned research dependencies
+        run: pip install -r requirements.txt
+      - name: Generate reproducible synthetic fixture (test-only)
+        run: |
+          python generate_demo.py
+          python main.py --csv data/demo_synthetic_usdjpy.csv --strategy trend --out results/demo_trend
+      - name: Run research and simulation tests
+        run: python -m unittest discover -s tests -v
+      - name: Download official FRED DEXJPUS and validate provenance
+        run: python github_pipeline.py refresh
+      - name: Produce static read-only website and scenario payload
+        run: python github_pipeline.py build
+      - name: Persist reference history and publication JSON in Git history
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add datasets/fred/dexjpus_daily.csv datasets/fred/metadata.json docs/data/research.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'data: refresh verified FRED USDJPY reference snapshot [skip ci]'
+            git push origin HEAD:main
+          fi
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+
+  deploy-pages:
+    needs: refresh-test-build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

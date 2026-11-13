@@ -1,0 +1,38 @@
+name: FX AEGIS AI · Weekly Simulation & Model Smoke Test
+
+on:
+  schedule:
+    # UTC 02:47 Saturday; latest saved FRED observations are from prior weekdays.
+    - cron: '47 2 * * 6'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  weekly-reference-simulation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      - run: pip install -r requirements.txt
+      - name: Simulate retained official daily reference dataset (non-executable scenario)
+        run: |
+          mkdir -p artifacts
+          python github_pipeline.py simulate --dataset datasets/fred/dexjpus_daily.csv --out artifacts/weekly_reference_scenario.json
+      - name: Model regression smoke test using explicitly SYNTHETIC H1
+        run: |
+          python generate_demo.py
+          python main.py --csv data/demo_synthetic_usdjpy.csv --strategy trend --out results/demo_trend
+          python -m unittest discover -s tests -v
+      - uses: actions/upload-artifact@v4
+        with:
+          name: weekly-fx-research-outputs
+          path: |
+            artifacts/weekly_reference_scenario.json
+            results/demo_trend/summary.json
+          retention-days: 30
