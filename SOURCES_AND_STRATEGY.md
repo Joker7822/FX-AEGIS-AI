@@ -48,3 +48,12 @@ The win probability must be **independently observed and robust** for **that exa
 ### Proposed next research phase (NOT implemented here)
 
 Test two distinct strategies on **real** historical bid/ask USDJPY series, with realistic intrabar order execution: (A) H4/D1 multi-week trend following using 50/200-period EMA or 20/55-day breakout, ATR-based sizing and stop/exit; (B) H1 AI direction with regime and news veto, current candidate. Treat the 2012 academic evidence as motivation for **A**, not **B**. Apply cost stress, purged chronological walk-forward selection, unseen final test, regime-by-regime score, and weeks of paper forward testing before any demo broker connector.
+
+
+## v1.4 モデル自動探索の手法（2026年11月13日現在）
+
+進化エージェントは遺伝的探索による既知アルゴリズムの組合せ探索です。学習対象を選ぶ開発区間と、最終20%の独立確認区間を分けています。モデル選択のバイアスは残るため、最終区間を再利用せず別期間のフォワード検証が必要です。
+
+- https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.TimeSeriesSplit.html
+- https://scikit-learn.org/stable/common_pitfalls.html
+- https://scikit-learn.org/stable/auto_examples/model_selection/plot_nested_cross_validation_iris.html

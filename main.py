@@ -245,15 +245,19 @@ class AuditAgent:
 
 
 def walk_forward_predictions(data: pd.DataFrame, start: int, stop: int,
-                             cfg: Config, custom_agent_paths: tuple[str | Path, ...] = ()) -> pd.DataFrame:
+                             cfg: Config, custom_agent_paths: tuple[str | Path, ...] = (),
+                             evolved_agent_paths: tuple[str | Path, ...] = ()) -> pd.DataFrame:
     """Expanding history with a one-row purge between train & inference.
 
     At test index t, train indices satisfy k <= t-2; label for k exits at
     open(k+2), already known by completed bar t. No future label is fitted.
     """
+    from evolution_engine import load_blueprint, DiscoveredVetoAgent
     specs = [load_spec(p) for p in custom_agent_paths]
-    if len({spec.name for spec in specs}) != len(specs):
-        raise ValueError("Custom agent names must be unique")
+    evolved_specs = [load_blueprint(p) for p in evolved_agent_paths]
+    names = [spec.name for spec in (*specs, *evolved_specs)]
+    if len(set(names)) != len(names):
+        raise ValueError("Custom and evolved agent names must be unique")
     parts = []
     for block_start in range(start, stop, cfg.retrain_every_bars):
         block_end = min(stop, block_start + cfg.retrain_every_bars)
@@ -266,7 +270,7 @@ def walk_forward_predictions(data: pd.DataFrame, start: int, stop: int,
         pred = council.decide(segment)
         # Each custom model fits on exactly the same strictly historical slice.
         # Extra models may veto a candidate but NEVER create a new trade.
-        if specs:
+        if specs or evolved_specs:
             original_side = pred["side"].to_numpy().copy()
             current_side = original_side.copy()
             for spec in specs:
@@ -275,6 +279,12 @@ def walk_forward_predictions(data: pd.DataFrame, start: int, stop: int,
                 proba = custom.predict(segment)
                 pred[f"custom_{spec.name}_p_up"] = proba
                 current_side = custom.veto(current_side, proba)
+            for spec in evolved_specs:
+                discovered = DiscoveredVetoAgent(spec)
+                discovered.fit(history)
+                proba = discovered.predict(segment)
+                pred[f"custom_{spec.name}_p_up"] = proba
+                current_side = discovered.veto(current_side, proba)
             pred["custom_veto"] = (original_side != 0) & (current_side == 0)
             pred["side"] = current_side.astype(int)
         pred["fit_until_utc"] = str(history["exit_time"].iloc[-1])
@@ -383,7 +393,8 @@ def backtest(data: pd.DataFrame, predictions: pd.DataFrame,
 def run(csv: str | Path, out: str | Path, cfg: Config,
         strategy: str = 'baseline', event_csv: str | Path | None = None,
         gates: TradeGates = TradeGates(),
-        custom_agent_paths: tuple[str | Path, ...] = ()) -> dict:
+        custom_agent_paths: tuple[str | Path, ...] = (),
+        evolved_agent_paths: tuple[str | Path, ...] = ()) -> dict:
     if strategy not in ('baseline', 'trend'):
         raise ValueError('strategy must be baseline or trend')
     d = add_market_regime(make_features(load_ohlc(csv)))
@@ -394,9 +405,12 @@ def run(csv: str | Path, out: str | Path, cfg: Config,
     if val_start < 300 or test_start - val_start < 10 or n - test_start < 10:
         raise ValueError("Dataset too short for proposed chronological split")
     custom_agent_paths = tuple(custom_agent_paths)
+    from evolution_engine import load_blueprint
+    evolved_agent_paths = tuple(evolved_agent_paths)
     specs = [load_spec(path) for path in custom_agent_paths]
-    validation_pred = walk_forward_predictions(d, val_start, test_start, cfg, custom_agent_paths)
-    test_pred = walk_forward_predictions(d, test_start, n, cfg, custom_agent_paths)
+    evolved_specs = [load_blueprint(path) for path in evolved_agent_paths]
+    validation_pred = walk_forward_predictions(d, val_start, test_start, cfg, custom_agent_paths, evolved_agent_paths)
+    test_pred = walk_forward_predictions(d, test_start, n, cfg, custom_agent_paths, evolved_agent_paths)
     if strategy == 'trend':
         validation_pred = apply_gates(d, validation_pred, cfg, events, gates)
         test_pred = apply_gates(d, test_pred, cfg, events, gates)
@@ -429,6 +443,7 @@ def run(csv: str | Path, out: str | Path, cfg: Config,
         "test_20pct": holdout,
         "strategy": strategy,
         "custom_agents": [asdict(spec) for spec in specs],
+        "evolved_agents": [spec.to_json() for spec in evolved_specs],
         "trade_gates": asdict(gates) if strategy == 'trend' else None,
         "event_file": str(event_csv) if event_csv else None,
         "events_loaded": 0 if events is None else len(events),
@@ -466,6 +481,8 @@ def main() -> None:
     parser.add_argument('--max-spread-pips', type=float, default=1.5)
     parser.add_argument("--custom-agent", action="append", default=[],
                         help="Path to a validated JSON agent; may be supplied repeatedly. Veto only.")
+    parser.add_argument("--evolved-agent", action="append", default=[],
+                        help="Path to a v2 evolutionary blueprint; paper veto only. Repeatable.")
     parser.add_argument("--strategy", choices=['baseline', 'trend'], default='trend',
                         help='trend: cost/regime/event gates; baseline: original 6-agent votes')
     parser.add_argument('--events-csv', default=None,
@@ -482,7 +499,8 @@ def main() -> None:
     gates = TradeGates(min_adx=args.min_adx, max_spread_pips=args.max_spread_pips)
     result = run(args.csv, args.out, cfg,
                  strategy=args.strategy, event_csv=args.events_csv, gates=gates,
-                 custom_agent_paths=tuple(args.custom_agent))
+                 custom_agent_paths=tuple(args.custom_agent),
+                 evolved_agent_paths=tuple(args.evolved_agent))
     print(json.dumps(result, ensure_ascii=False, indent=2))
 
 

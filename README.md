@@ -1,4 +1,4 @@
-# FX AEGIS AI v1.3 — one-screen dashboard + custom agent factory
+# FX Multi-Agent AI v1.2 — one-screen dashboard + v1.1 research engine
 
 **Updated: 2026-11-13 JST. Research-only.** No order placement, broker credentials, or live trading. This code **does not demonstrate positive expected returns**.
 
@@ -27,18 +27,6 @@ python -m venv .venv
 pip install -r requirements.txt
 python -m unittest discover -s tests -v
 ```
-
-## Custom AI agent generation (v1.3, backtest only)
-
-```bash
-python custom_agents.py create --name AegisMomentum --template momentum --model logistic --threshold 0.60
-python custom_agents.py validate agents/AegisMomentum.json
-python custom_agents.py list
-python main.py --csv data/demo_synthetic_usdjpy.csv --strategy trend --custom-agent agents/AegisMomentum.json --out results/demo_custom
-python dashboard.py --results results/demo_custom --market data/demo_synthetic_usdjpy.csv
-```
-
-Custom direction models use `momentum`, `reversal`, or `session` predefined historical features and `logistic`, `random_forest`, or `gradient_boosting` classifiers. You can specify multiple `--custom-agent` paths. Each model is trained only on the prior walk-forward training window and may **veto** existing BUY/SELL decisions, never create new orders. Configs are validated JSON without arbitrary executable Python or future target columns. The decision audit contains `custom_votes_json`, `custom_veto`, and the summary lists custom agent definitions. **This generator configures ML agents, not LLM-based autonomous agents, and does not prove profitability.**
 
 ## Baseline against trend-gated candidate
 
@@ -145,3 +133,54 @@ python dashboard.py --results results/my_test --market data/verified_usdjpy_h1.c
 ```
 
 **Do not expose this local server to the public internet**: the HTTP service is intended for `127.0.0.1` only. This UI is a display layer; it does not implement news collection, live quotes, extra models, or order execution beyond the existing research pipeline. Sample screenshots can be found in `dashboard_preview_1920x1080.png` and `dashboard_preview_1366x768.png` if included in the release package.
+
+---
+
+## v1.4 (2026-11-13): bounded autonomous model discovery & improvement
+
+The new `evolution_engine.py` is an **offline, sandboxed evolutionary search agent**. It synthesizes original *combinations* of approved indicators, mathematical feature formulas, two estimator families, ensemble weights and veto thresholds. This is an automated architecture/feature search, **not a scientifically novel learning algorithm or an unbounded code-writing LLM**. It is unable to place broker orders.
+
+### Run discovery (read-only shadow trial)
+
+```bash
+python evolution_engine.py discover \
+  --csv data/demo_synthetic_usdjpy.csv \
+  --out results/demo_evolution \
+  --population 6 --generations 2
+```
+
+Creates `candidate_evolved.json` (a safe, inspectable blueprint), `candidate_ranking.json` (research audit) and `evolution_report.json` (all fold results, separate final holdout, rejection reasons). No strategy is adopted automatically by default. The demo CSV is **synthetic** and cannot demonstrate profit potential.
+
+### Automatic PAPER-only promotion
+
+```bash
+python evolution_engine.py monitor \
+  --csv data/verified_usdjpy_h1.csv \
+  --out results/production_research \
+  --population 6 --generations 2 \
+  --auto-promote-paper
+```
+
+- First 80%: three chronological development folds, purged by two rows before each fold. The *same* baseline Council+market filters are used for comparisons. The last 20% is a **separate report only**, never used for optimizer scoring, candidate choice, or paper promotion.
+- Required to promote: positive sum of fold profits after normal and doubled costs, at least 2 of 3 profitable folds, at least 2 of 3 improved folds vs baseline, minimum 20 trades, and max closed-equity drawdown <= 5%.
+- If `incumbent_paper.json` already exists, a new challenger must also exceed incumbent validation **and** doubled-cost results before replacing it. Rejected challengers do not modify the incumbent.
+- `monitor` changes files **only in the specified output directory**. It remembers last CSV hash and latest candle; unchanged data are skipped; in-place historical revisions are rejected rather than being silently treated as new observations. Run it from Windows Task Scheduler or cron for ongoing automatic checks.
+- Paper adoption does not mean activation on a brokerage account. Do not configure automatic broker execution from these blueprints.
+- Feature formulas use a strict allowlist and cannot contain executable Python, external plugins, future target columns, or unrestricted network calls.
+- The research threshold for distribution-shift alerts is a descriptive heuristic, not a validated trading rule.
+
+### Evaluate an evolved blueprint in the established backtest engine
+
+```bash
+python main.py --csv data/demo_synthetic_usdjpy.csv --strategy trend \
+  --evolved-agent results/demo_evolution/candidate_evolved.json \
+  --out results/demo_evolved_compare
+
+python dashboard.py --results results/demo_evolved_compare \
+  --market data/demo_synthetic_usdjpy.csv \
+  --evolution-report results/demo_evolution/evolution_report.json
+```
+
+The evolutionary agent is **veto-only**, so it cannot create a new trade when the existing Council or safety gates say `WAIT`. The dashboard shows the candidate, validation status and research mode. To use a promoted paper incumbent in another **offline** backtest, give `--evolved-agent results/production_research/incumbent_paper.json`.
+
+**Important limitations:** The backtest uses mid-price approximation with configurable/recorded spread, assumed slippage, ignores broker order-book, intrabar excursions, leverage/margin, financing and taxes. Repeated manual use of final holdout results to alter design can overfit that holdout. Even passing all gates does not establish profitable future returns. There is no real-time market feed, live-order executor, job scheduler, or broker credential manager in this release.

@@ -23,7 +23,10 @@ function render(){const p=state.payload;if(!p)return;const s=p.stats, a=p.last_s
  $('trendBar').style.width=`${Math.min(100,Math.max(0,(a.trend||0)*100))}%`;$('revertBar').style.width=`${Math.min(100,Math.max(0,(a.reversion||0)*100))}%`;
  const riskRatio=a.vol_cap?Math.min(1.5,(a.volatility??0)/a.vol_cap):0;
  $('volStatus').textContent=a.vol_veto?'高変動・拒否':'許容範囲';$('volBar').style.width=`${Math.min(100,riskRatio*100)}%`;
- const agents=sum.custom_agents||[];$('agentCount').textContent=`3 MODEL + ${agents.length} CUSTOM`;$('agentCount').title=agents.map(x=>x.name).join(', ')||'独自AIなし';
+ const agents=sum.custom_agents||[],evolved=sum.evolved_agents||[];$('agentCount').textContent=`3 MODEL + ${agents.length} CUSTOM + ${evolved.length} EVOLVED`;$('agentCount').title=[...agents,...evolved].map(x=>x.name).join(', ')||'独自AIなし';
+ const evo=p.evolution||{};
+ $('evoStatus').textContent=!evo.available?'未評価':evo.paper_promoted?'検証通過・PAPER採用':evo.promotion_eligible?'検証通過・未採用':'候補拒否 / SHADOW';
+ $('evoStatus').title=evo.available?`${evo.candidate_name||'-'} / ${evo.candidate_count||0}候補 / 検証損益 ${evo.validation_net_yen}円 / 2倍コスト ${evo.double_cost_net_yen}円`:'進化エンジン未実行';
  $('aiGateStatus').textContent=a.custom_veto?'独自AIが拒否':a.event_veto?'指標イベント拒否':a.side===0?'見送り':'シグナル通過';$('aiGateStatus').title=Object.entries(a.custom_votes||{}).map(([name,v])=>`${name}: ${(v*100).toFixed(1)}%`).join(' / ');
  $('haltStatus').textContent=s.permanent_drawdown_halt?'作動済み':'DD停止なし';$('haltStatus').className=s.permanent_drawdown_halt?'negative':'neutral';
  $('ddLimit').textContent=pct((sum.config.max_drawdown_stop??0)*100,0);$('eventCount').textContent=`${sum.events_loaded??0} 件（読み込み済）`;const r=p.online_research||{};$('researchStatus').textContent=r.available?`${r.official_hit_count} 件（保存済）`:'未取得';$('researchStatus').title=r.last_headline||'検索結果スナップショットなし';

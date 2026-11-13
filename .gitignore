@@ -4,7 +4,6 @@ __pycache__/
 .env
 .env.*
 !.env.example
-results/
-data/
-*.zip
 .pytest_cache/
+results/
+*.zip

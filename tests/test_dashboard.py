@@ -29,3 +29,24 @@ class DashboardTests(unittest.TestCase):
             self.assertEqual(result['online_research']['last_headline'],'FOMC calendar')
 
 if __name__ == '__main__': unittest.main()
+
+
+class EvolutionDashboardTests(unittest.TestCase):
+    def test_evolution_report_is_read_only_and_optional(self):
+        from dashboard import build_payload
+        import json
+        from pathlib import Path
+        from tempfile import TemporaryDirectory
+        with TemporaryDirectory() as td:
+            t=Path(td)
+            (t/'summary.json').write_text(json.dumps({'test_20pct':{'start_utc':'2023-01-01T00:00:00Z','end_utc':'2023-01-01T02:00:00Z'}}))
+            (t/'report.json').write_text(json.dumps({
+                'selected_blueprint':{'name':'EvolvedAgent'},'candidate_count':8,
+                'promotion_eligible':False,'paper_promoted':False,
+                'validation':{'net_yen':10,'stress_2x_net_yen':-20}
+            }))
+            p=build_payload(t,t/'missing.csv','test',evolution_report=t/'report.json')
+            self.assertTrue(p['evolution']['available'])
+            self.assertEqual(p['evolution']['candidate_name'],'EvolvedAgent')
+            self.assertFalse(p['evolution']['paper_promoted'])
+            self.assertEqual(p['evolution']['double_cost_net_yen'],-20)

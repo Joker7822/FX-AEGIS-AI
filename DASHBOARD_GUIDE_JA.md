@@ -31,3 +31,8 @@
 - 本プログラムは実口座注文機能を持ちません。MT5等での自動注文はできません。
 
 公式検索を実行済みの場合は、`data/official_web_search.json` の保存済み件数を画面下段に表示します（自動検索はしません）。`python research_agent.py search` で更新後、ダッシュボードが15秒以内に再読込します。必要に応じて `python dashboard.py --research 別ファイル.json` を使います。APIキー設定が必要です。
+
+
+## v1.4：自律進化AIの状況表示
+
+進化エンジンの`evolution_report.json`をダッシュボードの`--evolution-report`へ渡すと、候補名・検証損益・2倍コストの状況を画面のAI合議パネルから確認できます。検証結果は過去データの統計であり、リアルタイムの利益予測ではありません。

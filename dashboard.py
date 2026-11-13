@@ -45,7 +45,8 @@ def epoch(v):
         return None
 
 
-def build_payload(results: Path, market: Path, segment: str, research: Path | None = None) -> dict:
+def build_payload(results: Path, market: Path, segment: str, research: Path | None = None,
+                  evolution_report: Path | None = None) -> dict:
     summary = read_json(results / "summary.json")
     part = "validation" if segment == "validation" else "test"
     stats = summary.get(f"{part}_20pct", {})
@@ -73,6 +74,12 @@ def build_payload(results: Path, market: Path, segment: str, research: Path | No
             research_data = read_json(research)
         except (OSError, ValueError, TypeError):
             research_data = {}
+    evolution = {}
+    if evolution_report is not None and evolution_report.is_file():
+        try:
+            evolution = read_json(evolution_report)
+        except (OSError, ValueError, TypeError):
+            evolution = {}
     hits = research_data.get("trusted_official_hits", [])
     if not isinstance(hits, list):
         hits = []
@@ -112,12 +119,22 @@ def build_payload(results: Path, market: Path, segment: str, research: Path | No
         "summary": {
             "strategy":summary.get("strategy"),
             "custom_agents":summary.get("custom_agents", []),
+            "evolved_agents":summary.get("evolved_agents", []),
             "events_loaded":summary.get("events_loaded",0),
             "event_file":summary.get("event_file"),
             "research_screen":summary.get("research_screen",{}),
             "gates":summary.get("trade_gates",{}),
             "config":summary.get("config",{}),
             "notes":summary.get("notes",[]),
+        },
+        "evolution": {
+            "available": bool(evolution),
+            "candidate_name": (evolution.get("selected_blueprint") or {}).get("name"),
+            "candidate_count": evolution.get("candidate_count"),
+            "promotion_eligible": evolution.get("promotion_eligible") is True,
+            "paper_promoted": evolution.get("paper_promoted") is True,
+            "validation_net_yen": (evolution.get("validation") or {}).get("net_yen"),
+            "double_cost_net_yen": (evolution.get("validation") or {}).get("stress_2x_net_yen"),
         },
         "online_research": {
             "retrieved_at_utc": research_data.get("retrieved_at_utc"),
@@ -130,7 +147,8 @@ def build_payload(results: Path, market: Path, segment: str, research: Path | No
     }
 
 
-def make_handler(results:Path, market:Path, data_label:str, research:Path|None=None):
+def make_handler(results:Path, market:Path, data_label:str, research:Path|None=None,
+                 evolution_report:Path|None=None):
     class Handler(BaseHTTPRequestHandler):
         def do_GET(self):
             url=urlparse(self.path)
@@ -139,7 +157,7 @@ def make_handler(results:Path, market:Path, data_label:str, research:Path|None=N
                 if part not in ("test", "validation"):
                     return self.respond(400, b'{"error":"Invalid segment"}', "application/json")
                 try:
-                    payload=build_payload(results,market,part,research)
+                    payload=build_payload(results,market,part,research,evolution_report)
                     payload["data_label"]=data_label
                     self.respond(200,json.dumps(payload,ensure_ascii=False,allow_nan=False).encode("utf-8"),"application/json; charset=utf-8")
                 except (OSError,ValueError,KeyError,TypeError) as exc:
@@ -177,15 +195,16 @@ def main():
     ap.add_argument("--market",type=Path,default=PROJECT/"data"/"demo_synthetic_usdjpy.csv")
     ap.add_argument("--research",type=Path,default=PROJECT/"data"/"official_web_search.json",help="Optional output of research_agent.py search")
     ap.add_argument("--data-label",default=None,help="Provenance of the loaded input, displayed prominently")
+    ap.add_argument("--evolution-report",type=Path,default=PROJECT/"results"/"demo_evolution"/"evolution_report.json")
     ap.add_argument("--port",type=int,default=8501)
     ap.add_argument("--host",default="127.0.0.1",help="Defaults to localhost for safety")
     args=ap.parse_args()
     if not (args.results/"summary.json").is_file():
         ap.error(f"summary.json not found under {args.results}; run main.py first")
-    build_payload(args.results,args.market,"test",args.research)
+    build_payload(args.results,args.market,"test",args.research,args.evolution_report)
     demo = (PROJECT/"data"/"demo_synthetic_usdjpy.csv").resolve()
     data_label = args.data_label or ("人工生成データ / DEMO" if args.market.resolve() == demo else "入力データ / 出典未検証")
-    server=ThreadingHTTPServer((args.host,args.port),make_handler(args.results,args.market,data_label,args.research))
+    server=ThreadingHTTPServer((args.host,args.port),make_handler(args.results,args.market,data_label,args.research,args.evolution_report))
     print(f"FX Dashboard: http://{args.host}:{args.port} (read-only; no real orders)")
     print("Set browser full-screen (F11) to fit on one display. Ctrl+C to stop.")
     try:
