@@ -1,0 +1,1803 @@
+{
+  "approved_for_live_trading": false,
+  "candidate_count": 48,
+  "candidates_ranked_without_holdout": [
+    {
+      "config": {
+        "allocation": 0.25,
+        "allow_short": false,
+        "capital": 1000000,
+        "fast": 15,
+        "slow": 100,
+        "spread_pips": 1.4
+      },
+      "passed_research_gates": false,
+      "score": -4.957348,
+      "train": {
+        "end": "2015-12-31",
+        "max_dd_pct": 5.20126,
+        "observations": 2194,
+        "position_changes": 30,
+        "return_pct": 4.784083,
+        "start": "2007-04-10"
+      },
+      "validation": {
+        "end": "2020-12-31",
+        "max_dd_pct": 4.968197,
+        "observations": 1248,
+        "position_changes": 22,
+        "return_pct": -2.473249,
+        "start": "2016-01-04"
+      },
+      "validation_double_cost": {
+        "end": "2020-12-31",
+        "max_dd_pct": 5.025526,
+        "observations": 1248,
+        "position_changes": 22,
+        "return_pct": -2.541879,
+        "start": "2016-01-04"
+      }
+    },
+    {
+      "config": {
+        "allocation": 0.25,
+        "allow_short": false,
+        "capital": 1000000,
+        "fast": 10,
+        "slow": 100,
+        "spread_pips": 1.4
+      },
+      "passed_research_gates": false,
+      "score": -5.386555,
+      "train": {
+        "end": "2015-12-31",
+        "max_dd_pct": 5.212751,
+        "observations": 2194,
+        "position_changes": 32,
+        "return_pct": 4.652808,
+        "start": "2007-04-10"
+      },
+      "validation": {
+        "end": "2020-12-31",
+        "max_dd_pct": 5.209934,
+        "observations": 1248,
+        "position_changes": 26,
+        "return_pct": -2.781588,
+        "start": "2016-01-04"
+      },
+      "validation_double_cost": {
+        "end": "2020-12-31",
+        "max_dd_pct": 5.278953,
+        "observations": 1248,
+        "position_changes": 26,
+        "return_pct": -2.862143,
+        "start": "2016-01-04"
+      }
+    },
+    {
+      "config": {
+        "allocation": 0.25,
+        "allow_short": false,
+        "capital": 1000000,
+        "fast": 20,
+        "slow": 100,
+        "spread_pips": 1.4
+      },
+      "passed_research_gates": false,
+      "score": -5.439729,
+      "train": {
+        "end": "2015-12-31",
+        "max_dd_pct": 5.498769,
+        "observations": 2194,
+        "position_changes": 30,
+        "return_pct": 4.444934,
+        "start": "2007-04-10"
+      },
+      "validation": {
+        "end": "2020-12-31",
+        "max_dd_pct": 5.309567,
+        "observations": 1248,
+        "position_changes": 18,
+        "return_pct": -2.784945,
+        "start": "2016-01-04"
+      },
+      "validation_double_cost": {
+        "end": "2020-12-31",
+        "max_dd_pct": 5.360556,
+        "observations": 1248,
+        "position_changes": 18,
+        "return_pct": -2.840472,
+        "start": "2016-01-04"
+      }
+    },
+    {
+      "config": {
+        "allocation": 0.25,
+        "allow_short": false,
+        "capital": 1000000,
+        "fast": 10,
+        "slow": 150,
+        "spread_pips": 1.4
+      },
+      "passed_research_gates": false,
+      "score": -5.521869,
+      "train": {
+        "end": "2015-12-31",
+        "max_dd_pct": 5.938759,
+        "observations": 2144,
+        "position_changes": 30,
+        "return_pct": 4.262242,
+        "start": "2007-06-20"
+      },
+      "validation": {
+        "end": "2020-12-31",
+        "max_dd_pct": 5.009847,
+        "observations": 1248,
+        "position_changes": 20,
+        "return_pct": -3.016946,
+        "start": "2016-01-04"
+      },
+      "validation_double_cost": {
+        "end": "2020-12-31",
+        "max_dd_pct": 5.067151,
+        "observations": 1248,
+        "position_changes": 20,
+        "return_pct": -3.078564,
+        "start": "2016-01-04"
+      }
+    },
+    {
+      "config": {
+        "allocation": 0.25,
+        "allow_short": true,
+        "capital": 1000000,
+        "fast": 15,
+        "slow": 100,
+        "spread_pips": 1.4
+      },
+      "passed_research_gates": false,
+      "score": -5.562096,
+      "train": {
+        "end": "2015-12-31",
+        "max_dd_pct": 5.926769,
+        "observations": 2194,
+        "position_changes": 31,
+        "return_pct": 8.124586,
+        "start": "2007-04-10"
+      },
+      "validation": {
+        "end": "2020-12-31",
+        "max_dd_pct": 7.782593,
+        "observations": 1248,
+        "position_changes": 23,
+        "return_pct": -1.6708,
+        "start": "2016-01-04"
+      },
+      "validation_double_cost": {
+        "end": "2020-12-31",
+        "max_dd_pct": 7.893797,
+        "observations": 1248,
+        "position_changes": 23,
+        "return_pct": -1.811967,
+        "start": "2016-01-04"
+      }
+    },
+    {
+      "config": {
+        "allocation": 0.25,
+        "allow_short": true,
+        "capital": 1000000,
+        "fast": 10,
+        "slow": 100,
+        "spread_pips": 1.4
+      },
+      "passed_research_gates": false,
+      "score": -6.417859,
+      "train": {
+        "end": "2015-12-31",
+        "max_dd_pct": 6.910443,
+        "observations": 2194,
+        "position_changes": 33,
+        "return_pct": 7.853548,
+        "start": "2007-04-10"
+      },
+      "validation": {
+        "end": "2020-12-31",
+        "max_dd_pct": 8.251679,
+        "observations": 1248,
+        "position_changes": 27,
+        "return_pct": -2.29202,
+        "start": "2016-01-04"
+      },
+      "validation_double_cost": {
+        "end": "2020-12-31",
+        "max_dd_pct": 8.385268,
+        "observations": 1248,
+        "position_changes": 27,
+        "return_pct": -2.456736,
+        "start": "2016-01-04"
+      }
+    },
+    {
+      "config": {
+        "allocation": 0.25,
+        "allow_short": false,
+        "capital": 1000000,
+        "fast": 15,
+        "slow": 150,
+        "spread_pips": 1.4
+      },
+      "passed_research_gates": false,
+      "score": -6.619255,
+      "train": {
+        "end": "2015-12-31",
+        "max_dd_pct": 4.995012,
+        "observations": 2144,
+        "position_changes": 23,
+        "return_pct": 5.395778,
+        "start": "2007-06-20"
+      },
+      "validation": {
+        "end": "2020-12-31",
+        "max_dd_pct": 5.699409,
+        "observations": 1248,
+        "position_changes": 20,
+        "return_pct": -3.769551,
+        "start": "2016-01-04"
+      },
+      "validation_double_cost": {
+        "end": "2020-12-31",
+        "max_dd_pct": 5.756377,
+        "observations": 1248,
+        "position_changes": 20,
+        "return_pct": -3.830764,
+        "start": "2016-01-04"
+      }
+    },
+    {
+      "config": {
+        "allocation": 0.25,
+        "allow_short": true,
+        "capital": 1000000,
+        "fast": 20,
+        "slow": 100,
+        "spread_pips": 1.4
+      },
+      "passed_research_gates": false,
+      "score": -6.724369,
+      "train": {
+        "end": "2015-12-31",
+        "max_dd_pct": 6.898858,
+        "observations": 2194,
+        "position_changes": 31,
+        "return_pct": 7.427911,
+        "start": "2007-04-10"
+      },
+      "validation": {
+        "end": "2020-12-31",
+        "max_dd_pct": 8.842162,
+        "observations": 1248,
+        "position_changes": 19,
+        "return_pct": -2.303288,
+        "start": "2016-01-04"
+      },
+      "validation_double_cost": {
+        "end": "2020-12-31",
+        "max_dd_pct": 8.940262,
+        "observations": 1248,
+        "position_changes": 19,
+        "return_pct": -2.417644,
+        "start": "2016-01-04"
+      }
+    },
+    {
+      "config": {
+        "allocation": 0.25,
+        "allow_short": true,
+        "capital": 1000000,
+        "fast": 10,
+        "slow": 150,
+        "spread_pips": 1.4
+      },
+      "passed_research_gates": false,
+      "score": -6.742725,
+      "train": {
+        "end": "2015-12-31",
+        "max_dd_pct": 6.684615,
+        "observations": 2144,
+        "position_changes": 30,
+        "return_pct": 7.963677,
+        "start": "2007-06-20"
+      },
+      "validation": {
+        "end": "2020-12-31",
+        "max_dd_pct": 7.948395,
+        "observations": 1248,
+        "position_changes": 21,
+        "return_pct": -2.768528,
+        "start": "2016-01-04"
+      },
+      "validation_double_cost": {
+        "end": "2020-12-31",
+        "max_dd_pct": 8.065314,
+        "observations": 1248,
+        "position_changes": 21,
+        "return_pct": -2.894847,
+        "start": "2016-01-04"
+      }
+    },
+    {
+      "config": {
+        "allocation": 0.35,
+        "allow_short": false,
+        "capital": 1000000,
+        "fast": 15,
+        "slow": 100,
+        "spread_pips": 1.4
+      },
+      "passed_research_gates": false,
+      "score": -6.918405,
+      "train": {
+        "end": "2015-12-31",
+        "max_dd_pct": 7.225833,
+        "observations": 2194,
+        "position_changes": 30,
+        "return_pct": 6.6831,
+        "start": "2007-04-10"
+      },
+      "validation": {
+        "end": "2020-12-31",
+        "max_dd_pct": 6.902776,
+        "observations": 1248,
+        "position_changes": 22,
+        "return_pct": -3.467017,
+        "start": "2016-01-04"
+      },
+      "validation_double_cost": {
+        "end": "2020-12-31",
+        "max_dd_pct": 6.981402,
+        "observations": 1248,
+        "position_changes": 22,
+        "return_pct": -3.562111,
+        "start": "2016-01-04"
+      }
+    },
+    {
+      "config": {
+        "allocation": 0.35,
+        "allow_short": false,
+        "capital": 1000000,
+        "fast": 10,
+        "slow": 100,
+        "spread_pips": 1.4
+      },
+      "passed_research_gates": false,
+      "score": -7.510912,
+      "train": {
+        "end": "2015-12-31",
+        "max_dd_pct": 7.242172,
+        "observations": 2194,
+        "position_changes": 32,
+        "return_pct": 6.496101,
+        "start": "2007-04-10"
+      },
+      "validation": {
+        "end": "2020-12-31",
+        "max_dd_pct": 7.234006,
+        "observations": 1248,
+        "position_changes": 26,
+        "return_pct": -3.893909,
+        "start": "2016-01-04"
+      },
+      "validation_double_cost": {
+        "end": "2020-12-31",
+        "max_dd_pct": 7.328556,
+        "observations": 1248,
+        "position_changes": 26,
+        "return_pct": -4.005377,
+        "start": "2016-01-04"
+      }
+    },
+    {
+      "config": {
+        "allocation": 0.35,
+        "allow_short": false,
+        "capital": 1000000,
+        "fast": 20,
+        "slow": 100,
+        "spread_pips": 1.4
+      },
+      "passed_research_gates": false,
+      "score": -7.582318,
+      "train": {
+        "end": "2015-12-31",
+        "max_dd_pct": 7.636699,
+        "observations": 2194,
+        "position_changes": 30,
+        "return_pct": 6.199412,
+        "start": "2007-04-10"
+      },
+      "validation": {
+        "end": "2020-12-31",
+        "max_dd_pct": 7.370051,
+        "observations": 1248,
+        "position_changes": 18,
+        "return_pct": -3.897293,
+        "start": "2016-01-04"
+      },
+      "validation_double_cost": {
+        "end": "2020-12-31",
+        "max_dd_pct": 7.439883,
+        "observations": 1248,
+        "position_changes": 18,
+        "return_pct": -3.974134,
+        "start": "2016-01-04"
+      }
+    },
+    {
+      "config": {
+        "allocation": 0.25,
+        "allow_short": false,
+        "capital": 1000000,
+        "fast": 10,
+        "slow": 200,
+        "spread_pips": 1.4
+      },
+      "passed_research_gates": false,
+      "score": -7.588434,
+      "train": {
+        "end": "2015-12-31",
+        "max_dd_pct": 3.632473,
+        "observations": 2094,
+        "position_changes": 15,
+        "return_pct": 7.748265,
+        "start": "2007-08-30"
+      },
+      "validation": {
+        "end": "2020-12-31",
+        "max_dd_pct": 6.090929,
+        "observations": 1248,
+        "position_changes": 30,
+        "return_pct": -4.54297,
+        "start": "2016-01-04"
+      },
+      "validation_double_cost": {
+        "end": "2020-12-31",
+        "max_dd_pct": 6.171704,
+        "observations": 1248,
+        "position_changes": 30,
+        "return_pct": -4.633703,
+        "start": "2016-01-04"
+      }
+    },
+    {
+      "config": {
+        "allocation": 0.35,
+        "allow_short": false,
+        "capital": 1000000,
+        "fast": 10,
+        "slow": 150,
+        "spread_pips": 1.4
+      },
+      "passed_research_gates": false,
+      "score": -7.698346,
+      "train": {
+        "end": "2015-12-31",
+        "max_dd_pct": 8.234709,
+        "observations": 2144,
+        "position_changes": 30,
+        "return_pct": 5.943086,
+        "start": "2007-06-20"
+      },
+      "validation": {
+        "end": "2020-12-31",
+        "max_dd_pct": 6.959942,
+        "observations": 1248,
+        "position_changes": 20,
+        "return_pct": -4.218375,
+        "start": "2016-01-04"
+      },
+      "validation_double_cost": {
+        "end": "2020-12-31",
+        "max_dd_pct": 7.038517,
+        "observations": 1248,
+        "position_changes": 20,
+        "return_pct": -4.303566,
+        "start": "2016-01-04"
+      }
+    },
+    {
+      "config": {
+        "allocation": 0.25,
+        "allow_short": false,
+        "capital": 1000000,
+        "fast": 20,
+        "slow": 150,
+        "spread_pips": 1.4
+      },
+      "passed_research_gates": false,
+      "score": -7.708698,
+      "train": {
+        "end": "2015-12-31",
+        "max_dd_pct": 5.153759,
+        "observations": 2144,
+        "position_changes": 19,
+        "return_pct": 5.194502,
+        "start": "2007-06-20"
+      },
+      "validation": {
+        "end": "2020-12-31",
+        "max_dd_pct": 6.216378,
+        "observations": 1248,
+        "position_changes": 20,
+        "return_pct": -4.600509,
+        "start": "2016-01-04"
+      },
+      "validation_double_cost": {
+        "end": "2020-12-31",
+        "max_dd_pct": 6.267042,
+        "observations": 1248,
+        "position_changes": 20,
+        "return_pct": -4.660661,
+        "start": "2016-01-04"
+      }
+    },
+    {
+      "config": {
+        "allocation": 0.25,
+        "allow_short": false,
+        "capital": 1000000,
+        "fast": 50,
+        "slow": 200,
+        "spread_pips": 1.4
+      },
+      "passed_research_gates": false,
+      "score": -7.762884,
+      "train": {
+        "end": "2015-12-31",
+        "max_dd_pct": 2.407231,
+        "observations": 2094,
+        "position_changes": 7,
+        "return_pct": 8.56865,
+        "start": "2007-08-30"
+      },
+      "validation": {
+        "end": "2020-12-31",
+        "max_dd_pct": 5.315007,
+        "observations": 1248,
+        "position_changes": 12,
+        "return_pct": -5.10538,
+        "start": "2016-01-04"
+      },
+      "validation_double_cost": {
+        "end": "2020-12-31",
+        "max_dd_pct": 5.342273,
+        "observations": 1248,
+        "position_changes": 12,
+        "return_pct": -5.141246,
+        "start": "2016-01-04"
+      }
+    },
+    {
+      "config": {
+        "allocation": 0.35,
+        "allow_short": true,
+        "capital": 1000000,
+        "fast": 15,
+        "slow": 100,
+        "spread_pips": 1.4
+      },
+      "passed_research_gates": false,
+      "score": -7.772044,
+      "train": {
+        "end": "2015-12-31",
+        "max_dd_pct": 8.237337,
+        "observations": 2194,
+        "position_changes": 31,
+        "return_pct": 11.358551,
+        "start": "2007-04-10"
+      },
+      "validation": {
+        "end": "2020-12-31",
+        "max_dd_pct": 10.754367,
+        "observations": 1248,
+        "position_changes": 23,
+        "return_pct": -2.39486,
+        "start": "2016-01-04"
+      },
+      "validation_double_cost": {
+        "end": "2020-12-31",
+        "max_dd_pct": 10.905005,
+        "observations": 1248,
+        "position_changes": 23,
+        "return_pct": -2.590975,
+        "start": "2016-01-04"
+      }
+    },
+    {
+      "config": {
+        "allocation": 0.25,
+        "allow_short": false,
+        "capital": 1000000,
+        "fast": 50,
+        "slow": 100,
+        "spread_pips": 1.4
+      },
+      "passed_research_gates": false,
+      "score": -7.917631,
+      "train": {
+        "end": "2015-12-31",
+        "max_dd_pct": 5.356973,
+        "observations": 2194,
+        "position_changes": 15,
+        "return_pct": 5.118963,
+        "start": "2007-04-10"
+      },
+      "validation": {
+        "end": "2020-12-31",
+        "max_dd_pct": 6.142977,
+        "observations": 1248,
+        "position_changes": 16,
+        "return_pct": -4.846142,
+        "start": "2016-01-04"
+      },
+      "validation_double_cost": {
+        "end": "2020-12-31",
+        "max_dd_pct": 6.181861,
+        "observations": 1248,
+        "position_changes": 16,
+        "return_pct": -4.894124,
+        "start": "2016-01-04"
+      }
+    },
+    {
+      "config": {
+        "allocation": 0.25,
+        "allow_short": false,
+        "capital": 1000000,
+        "fast": 50,
+        "slow": 150,
+        "spread_pips": 1.4
+      },
+      "passed_research_gates": false,
+      "score": -7.991919,
+      "train": {
+        "end": "2015-12-31",
+        "max_dd_pct": 5.578133,
+        "observations": 2144,
+        "position_changes": 11,
+        "return_pct": 5.16919,
+        "start": "2007-06-20"
+      },
+      "validation": {
+        "end": "2020-12-31",
+        "max_dd_pct": 5.498103,
+        "observations": 1248,
+        "position_changes": 12,
+        "return_pct": -5.242868,
+        "start": "2016-01-04"
+      },
+      "validation_double_cost": {
+        "end": "2020-12-31",
+        "max_dd_pct": 5.525386,
+        "observations": 1248,
+        "position_changes": 12,
+        "return_pct": -5.278709,
+        "start": "2016-01-04"
+      }
+    },
+    {
+      "config": {
+        "allocation": 0.25,
+        "allow_short": false,
+        "capital": 1000000,
+        "fast": 20,
+        "slow": 200,
+        "spread_pips": 1.4
+      },
+      "passed_research_gates": false,
+      "score": -8.258287,
+      "train": {
+        "end": "2015-12-31",
+        "max_dd_pct": 3.686072,
+        "observations": 2094,
+        "position_changes": 9,
+        "return_pct": 7.221628,
+        "start": "2007-08-30"
+      },
+      "validation": {
+        "end": "2020-12-31",
+        "max_dd_pct": 6.181579,
+        "observations": 1248,
+        "position_changes": 22,
+        "return_pct": -5.167498,
+        "start": "2016-01-04"
+      },
+      "validation_double_cost": {
+        "end": "2020-12-31",
+        "max_dd_pct": 6.238278,
+        "observations": 1248,
+        "position_changes": 22,
+        "return_pct": -5.233369,
+        "start": "2016-01-04"
+      }
+    },
+    {
+      "config": {
+        "allocation": 0.25,
+        "allow_short": false,
+        "capital": 1000000,
+        "fast": 15,
+        "slow": 200,
+        "spread_pips": 1.4
+      },
+      "passed_research_gates": false,
+      "score": -8.394139,
+      "train": {
+        "end": "2015-12-31",
+        "max_dd_pct": 3.853611,
+        "observations": 2094,
+        "position_changes": 9,
+        "return_pct": 7.206271,
+        "start": "2007-08-30"
+      },
+      "validation": {
+        "end": "2020-12-31",
+        "max_dd_pct": 6.357741,
+        "observations": 1248,
+        "position_changes": 28,
+        "return_pct": -5.215269,
+        "start": "2016-01-04"
+      },
+      "validation_double_cost": {
+        "end": "2020-12-31",
+        "max_dd_pct": 6.432245,
+        "observations": 1248,
+        "position_changes": 28,
+        "return_pct": -5.299223,
+        "start": "2016-01-04"
+      }
+    },
+    {
+      "config": {
+        "allocation": 0.35,
+        "allow_short": true,
+        "capital": 1000000,
+        "fast": 10,
+        "slow": 100,
+        "spread_pips": 1.4
+      },
+      "passed_research_gates": false,
+      "score": -8.951738,
+      "train": {
+        "end": "2015-12-31",
+        "max_dd_pct": 9.577864,
+        "observations": 2194,
+        "position_changes": 33,
+        "return_pct": 10.967922,
+        "start": "2007-04-10"
+      },
+      "validation": {
+        "end": "2020-12-31",
+        "max_dd_pct": 11.389289,
+        "observations": 1248,
+        "position_changes": 27,
+        "return_pct": -3.257093,
+        "start": "2016-01-04"
+      },
+      "validation_double_cost": {
+        "end": "2020-12-31",
+        "max_dd_pct": 11.569883,
+        "observations": 1248,
+        "position_changes": 27,
+        "return_pct": -3.485357,
+        "start": "2016-01-04"
+      }
+    },
+    {
+      "config": {
+        "allocation": 0.25,
+        "allow_short": true,
+        "capital": 1000000,
+        "fast": 15,
+        "slow": 150,
+        "spread_pips": 1.4
+      },
+      "passed_research_gates": false,
+      "score": -9.153759,
+      "train": {
+        "end": "2015-12-31",
+        "max_dd_pct": 6.138113,
+        "observations": 2144,
+        "position_changes": 23,
+        "return_pct": 10.319902,
+        "start": "2007-06-20"
+      },
+      "validation": {
+        "end": "2020-12-31",
+        "max_dd_pct": 9.763837,
+        "observations": 1248,
+        "position_changes": 21,
+        "return_pct": -4.27184,
+        "start": "2016-01-04"
+      },
+      "validation_double_cost": {
+        "end": "2020-12-31",
+        "max_dd_pct": 9.878585,
+        "observations": 1248,
+        "position_changes": 21,
+        "return_pct": -4.396348,
+        "start": "2016-01-04"
+      }
+    },
+    {
+      "config": {
+        "allocation": 0.35,
+        "allow_short": false,
+        "capital": 1000000,
+        "fast": 15,
+        "slow": 150,
+        "spread_pips": 1.4
+      },
+      "passed_research_gates": false,
+      "score": -9.209384,
+      "train": {
+        "end": "2015-12-31",
+        "max_dd_pct": 6.941834,
+        "observations": 2144,
+        "position_changes": 23,
+        "return_pct": 7.560252,
+        "start": "2007-06-20"
+      },
+      "validation": {
+        "end": "2020-12-31",
+        "max_dd_pct": 7.904118,
+        "observations": 1248,
+        "position_changes": 20,
+        "return_pct": -5.257325,
+        "start": "2016-01-04"
+      },
+      "validation_double_cost": {
+        "end": "2020-12-31",
+        "max_dd_pct": 7.982005,
+        "observations": 1248,
+        "position_changes": 20,
+        "return_pct": -5.341694,
+        "start": "2016-01-04"
+      }
+    },
+    {
+      "config": {
+        "allocation": 0.35,
+        "allow_short": true,
+        "capital": 1000000,
+        "fast": 20,
+        "slow": 100,
+        "spread_pips": 1.4
+      },
+      "passed_research_gates": false,
+      "score": -9.36573,
+      "train": {
+        "end": "2015-12-31",
+        "max_dd_pct": 9.56211,
+        "observations": 2194,
+        "position_changes": 31,
+        "return_pct": 10.355326,
+        "start": "2007-04-10"
+      },
+      "validation": {
+        "end": "2020-12-31",
+        "max_dd_pct": 12.186106,
+        "observations": 1248,
+        "position_changes": 19,
+        "return_pct": -3.272677,
+        "start": "2016-01-04"
+      },
+      "validation_double_cost": {
+        "end": "2020-12-31",
+        "max_dd_pct": 12.318372,
+        "observations": 1248,
+        "position_changes": 19,
+        "return_pct": -3.431124,
+        "start": "2016-01-04"
+      }
+    },
+    {
+      "config": {
+        "allocation": 0.35,
+        "allow_short": true,
+        "capital": 1000000,
+        "fast": 10,
+        "slow": 150,
+        "spread_pips": 1.4
+      },
+      "passed_research_gates": false,
+      "score": -9.409766,
+      "train": {
+        "end": "2015-12-31",
+        "max_dd_pct": 9.301363,
+        "observations": 2144,
+        "position_changes": 30,
+        "return_pct": 11.127478,
+        "start": "2007-06-20"
+      },
+      "validation": {
+        "end": "2020-12-31",
+        "max_dd_pct": 10.98561,
+        "observations": 1248,
+        "position_changes": 21,
+        "return_pct": -3.916961,
+        "start": "2016-01-04"
+      },
+      "validation_double_cost": {
+        "end": "2020-12-31",
+        "max_dd_pct": 11.143857,
+        "observations": 1248,
+        "position_changes": 21,
+        "return_pct": -4.091672,
+        "start": "2016-01-04"
+      }
+    },
+    {
+      "config": {
+        "allocation": 0.35,
+        "allow_short": false,
+        "capital": 1000000,
+        "fast": 10,
+        "slow": 200,
+        "spread_pips": 1.4
+      },
+      "passed_research_gates": false,
+      "score": -10.541195,
+      "train": {
+        "end": "2015-12-31",
+        "max_dd_pct": 5.058227,
+        "observations": 2094,
+        "position_changes": 15,
+        "return_pct": 10.945467,
+        "start": "2007-08-30"
+      },
+      "validation": {
+        "end": "2020-12-31",
+        "max_dd_pct": 8.438956,
+        "observations": 1248,
+        "position_changes": 30,
+        "return_pct": -6.321717,
+        "start": "2016-01-04"
+      },
+      "validation_double_cost": {
+        "end": "2020-12-31",
+        "max_dd_pct": 8.549197,
+        "observations": 1248,
+        "position_changes": 30,
+        "return_pct": -6.446354,
+        "start": "2016-01-04"
+      }
+    },
+    {
+      "config": {
+        "allocation": 0.35,
+        "allow_short": false,
+        "capital": 1000000,
+        "fast": 20,
+        "slow": 150,
+        "spread_pips": 1.4
+      },
+      "passed_research_gates": false,
+      "score": -10.705893,
+      "train": {
+        "end": "2015-12-31",
+        "max_dd_pct": 7.15506,
+        "observations": 2144,
+        "position_changes": 19,
+        "return_pct": 7.277625,
+        "start": "2007-06-20"
+      },
+      "validation": {
+        "end": "2020-12-31",
+        "max_dd_pct": 8.610196,
+        "observations": 1248,
+        "position_changes": 20,
+        "return_pct": -6.400795,
+        "start": "2016-01-04"
+      },
+      "validation_double_cost": {
+        "end": "2020-12-31",
+        "max_dd_pct": 8.679312,
+        "observations": 1248,
+        "position_changes": 20,
+        "return_pct": -6.483414,
+        "start": "2016-01-04"
+      }
+    },
+    {
+      "config": {
+        "allocation": 0.35,
+        "allow_short": false,
+        "capital": 1000000,
+        "fast": 50,
+        "slow": 200,
+        "spread_pips": 1.4
+      },
+      "passed_research_gates": false,
+      "score": -10.784206,
+      "train": {
+        "end": "2015-12-31",
+        "max_dd_pct": 3.359773,
+        "observations": 2094,
+        "position_changes": 7,
+        "return_pct": 12.13427,
+        "start": "2007-08-30"
+      },
+      "validation": {
+        "end": "2020-12-31",
+        "max_dd_pct": 7.379502,
+        "observations": 1248,
+        "position_changes": 12,
+        "return_pct": -7.094455,
+        "start": "2016-01-04"
+      },
+      "validation_double_cost": {
+        "end": "2020-12-31",
+        "max_dd_pct": 7.416838,
+        "observations": 1248,
+        "position_changes": 12,
+        "return_pct": -7.143611,
+        "start": "2016-01-04"
+      }
+    },
+    {
+      "config": {
+        "allocation": 0.25,
+        "allow_short": true,
+        "capital": 1000000,
+        "fast": 10,
+        "slow": 200,
+        "spread_pips": 1.4
+      },
+      "passed_research_gates": false,
+      "score": -10.95872,
+      "train": {
+        "end": "2015-12-31",
+        "max_dd_pct": 5.503387,
+        "observations": 2094,
+        "position_changes": 16,
+        "return_pct": 13.413206,
+        "start": "2007-08-30"
+      },
+      "validation": {
+        "end": "2020-12-31",
+        "max_dd_pct": 10.320043,
+        "observations": 1248,
+        "position_changes": 30,
+        "return_pct": -5.798698,
+        "start": "2016-01-04"
+      },
+      "validation_double_cost": {
+        "end": "2020-12-31",
+        "max_dd_pct": 10.479929,
+        "observations": 1248,
+        "position_changes": 30,
+        "return_pct": -5.974917,
+        "start": "2016-01-04"
+      }
+    },
+    {
+      "config": {
+        "allocation": 0.35,
+        "allow_short": false,
+        "capital": 1000000,
+        "fast": 50,
+        "slow": 100,
+        "spread_pips": 1.4
+      },
+      "passed_research_gates": false,
+      "score": -10.993167,
+      "train": {
+        "end": "2015-12-31",
+        "max_dd_pct": 7.442484,
+        "observations": 2194,
+        "position_changes": 15,
+        "return_pct": 7.15944,
+        "start": "2007-04-10"
+      },
+      "validation": {
+        "end": "2020-12-31",
+        "max_dd_pct": 8.510223,
+        "observations": 1248,
+        "position_changes": 16,
+        "return_pct": -6.738055,
+        "start": "2016-01-04"
+      },
+      "validation_double_cost": {
+        "end": "2020-12-31",
+        "max_dd_pct": 8.563286,
+        "observations": 1248,
+        "position_changes": 16,
+        "return_pct": -6.803894,
+        "start": "2016-01-04"
+      }
+    },
+    {
+      "config": {
+        "allocation": 0.35,
+        "allow_short": false,
+        "capital": 1000000,
+        "fast": 50,
+        "slow": 150,
+        "spread_pips": 1.4
+      },
+      "passed_research_gates": false,
+      "score": -11.097378,
+      "train": {
+        "end": "2015-12-31",
+        "max_dd_pct": 7.737203,
+        "observations": 2144,
+        "position_changes": 11,
+        "return_pct": 7.238968,
+        "start": "2007-06-20"
+      },
+      "validation": {
+        "end": "2020-12-31",
+        "max_dd_pct": 7.630051,
+        "observations": 1248,
+        "position_changes": 12,
+        "return_pct": -7.282352,
+        "start": "2016-01-04"
+      },
+      "validation_double_cost": {
+        "end": "2020-12-31",
+        "max_dd_pct": 7.667383,
+        "observations": 1248,
+        "position_changes": 12,
+        "return_pct": -7.331449,
+        "start": "2016-01-04"
+      }
+    },
+    {
+      "config": {
+        "allocation": 0.25,
+        "allow_short": true,
+        "capital": 1000000,
+        "fast": 20,
+        "slow": 150,
+        "spread_pips": 1.4
+      },
+      "passed_research_gates": false,
+      "score": -11.385287,
+      "train": {
+        "end": "2015-12-31",
+        "max_dd_pct": 5.72585,
+        "observations": 2144,
+        "position_changes": 19,
+        "return_pct": 9.881313,
+        "start": "2007-06-20"
+      },
+      "validation": {
+        "end": "2020-12-31",
+        "max_dd_pct": 10.946384,
+        "observations": 1248,
+        "position_changes": 20,
+        "return_pct": -5.912095,
+        "start": "2016-01-04"
+      },
+      "validation_double_cost": {
+        "end": "2020-12-31",
+        "max_dd_pct": 11.048202,
+        "observations": 1248,
+        "position_changes": 20,
+        "return_pct": -6.02792,
+        "start": "2016-01-04"
+      }
+    },
+    {
+      "config": {
+        "allocation": 0.35,
+        "allow_short": false,
+        "capital": 1000000,
+        "fast": 20,
+        "slow": 200,
+        "spread_pips": 1.4
+      },
+      "passed_research_gates": false,
+      "score": -11.458743,
+      "train": {
+        "end": "2015-12-31",
+        "max_dd_pct": 5.132033,
+        "observations": 2094,
+        "position_changes": 9,
+        "return_pct": 10.187468,
+        "start": "2007-08-30"
+      },
+      "validation": {
+        "end": "2020-12-31",
+        "max_dd_pct": 8.56192,
+        "observations": 1248,
+        "position_changes": 22,
+        "return_pct": -7.177783,
+        "start": "2016-01-04"
+      },
+      "validation_double_cost": {
+        "end": "2020-12-31",
+        "max_dd_pct": 8.639282,
+        "observations": 1248,
+        "position_changes": 22,
+        "return_pct": -7.26804,
+        "start": "2016-01-04"
+      }
+    },
+    {
+      "config": {
+        "allocation": 0.35,
+        "allow_short": false,
+        "capital": 1000000,
+        "fast": 15,
+        "slow": 200,
+        "spread_pips": 1.4
+      },
+      "passed_research_gates": false,
+      "score": -11.644782,
+      "train": {
+        "end": "2015-12-31",
+        "max_dd_pct": 5.36309,
+        "observations": 2094,
+        "position_changes": 9,
+        "return_pct": 10.165186,
+        "start": "2007-08-30"
+      },
+      "validation": {
+        "end": "2020-12-31",
+        "max_dd_pct": 8.802514,
+        "observations": 1248,
+        "position_changes": 28,
+        "return_pct": -7.243525,
+        "start": "2016-01-04"
+      },
+      "validation_double_cost": {
+        "end": "2020-12-31",
+        "max_dd_pct": 8.904083,
+        "observations": 1248,
+        "position_changes": 28,
+        "return_pct": -7.358534,
+        "start": "2016-01-04"
+      }
+    },
+    {
+      "config": {
+        "allocation": 0.25,
+        "allow_short": true,
+        "capital": 1000000,
+        "fast": 50,
+        "slow": 100,
+        "spread_pips": 1.4
+      },
+      "passed_research_gates": false,
+      "score": -12.265922,
+      "train": {
+        "end": "2015-12-31",
+        "max_dd_pct": 5.2759,
+        "observations": 2194,
+        "position_changes": 16,
+        "return_pct": 8.821549,
+        "start": "2007-04-10"
+      },
+      "validation": {
+        "end": "2020-12-31",
+        "max_dd_pct": 11.739941,
+        "observations": 1248,
+        "position_changes": 16,
+        "return_pct": -6.395951,
+        "start": "2016-01-04"
+      },
+      "validation_double_cost": {
+        "end": "2020-12-31",
+        "max_dd_pct": 11.818621,
+        "observations": 1248,
+        "position_changes": 16,
+        "return_pct": -6.487607,
+        "start": "2016-01-04"
+      }
+    },
+    {
+      "config": {
+        "allocation": 0.25,
+        "allow_short": true,
+        "capital": 1000000,
+        "fast": 50,
+        "slow": 200,
+        "spread_pips": 1.4
+      },
+      "passed_research_gates": false,
+      "score": -12.467406,
+      "train": {
+        "end": "2015-12-31",
+        "max_dd_pct": 3.777389,
+        "observations": 2094,
+        "position_changes": 8,
+        "return_pct": 15.13089,
+        "start": "2007-08-30"
+      },
+      "validation": {
+        "end": "2020-12-31",
+        "max_dd_pct": 11.130495,
+        "observations": 1248,
+        "position_changes": 12,
+        "return_pct": -6.902159,
+        "start": "2016-01-04"
+      },
+      "validation_double_cost": {
+        "end": "2020-12-31",
+        "max_dd_pct": 11.187158,
+        "observations": 1248,
+        "position_changes": 12,
+        "return_pct": -6.969841,
+        "start": "2016-01-04"
+      }
+    },
+    {
+      "config": {
+        "allocation": 0.35,
+        "allow_short": true,
+        "capital": 1000000,
+        "fast": 15,
+        "slow": 150,
+        "spread_pips": 1.4
+      },
+      "passed_research_gates": false,
+      "score": -12.706847,
+      "train": {
+        "end": "2015-12-31",
+        "max_dd_pct": 8.536416,
+        "observations": 2144,
+        "position_changes": 23,
+        "return_pct": 14.537653,
+        "start": "2007-06-20"
+      },
+      "validation": {
+        "end": "2020-12-31",
+        "max_dd_pct": 13.433109,
+        "observations": 1248,
+        "position_changes": 21,
+        "return_pct": -5.990292,
+        "start": "2016-01-04"
+      },
+      "validation_double_cost": {
+        "end": "2020-12-31",
+        "max_dd_pct": 13.587185,
+        "observations": 1248,
+        "position_changes": 21,
+        "return_pct": -6.161427,
+        "start": "2016-01-04"
+      }
+    },
+    {
+      "config": {
+        "allocation": 0.25,
+        "allow_short": true,
+        "capital": 1000000,
+        "fast": 20,
+        "slow": 200,
+        "spread_pips": 1.4
+      },
+      "passed_research_gates": false,
+      "score": -12.910459,
+      "train": {
+        "end": "2015-12-31",
+        "max_dd_pct": 5.203912,
+        "observations": 2094,
+        "position_changes": 10,
+        "return_pct": 12.305761,
+        "start": "2007-08-30"
+      },
+      "validation": {
+        "end": "2020-12-31",
+        "max_dd_pct": 11.760234,
+        "observations": 1248,
+        "position_changes": 22,
+        "return_pct": -7.030342,
+        "start": "2016-01-04"
+      },
+      "validation_double_cost": {
+        "end": "2020-12-31",
+        "max_dd_pct": 11.872364,
+        "observations": 1248,
+        "position_changes": 22,
+        "return_pct": -7.156707,
+        "start": "2016-01-04"
+      }
+    },
+    {
+      "config": {
+        "allocation": 0.25,
+        "allow_short": true,
+        "capital": 1000000,
+        "fast": 15,
+        "slow": 200,
+        "spread_pips": 1.4
+      },
+      "passed_research_gates": false,
+      "score": -13.028784,
+      "train": {
+        "end": "2015-12-31",
+        "max_dd_pct": 5.81525,
+        "observations": 2094,
+        "position_changes": 10,
+        "return_pct": 12.274254,
+        "start": "2007-08-30"
+      },
+      "validation": {
+        "end": "2020-12-31",
+        "max_dd_pct": 11.811568,
+        "observations": 1248,
+        "position_changes": 28,
+        "return_pct": -7.123,
+        "start": "2016-01-04"
+      },
+      "validation_double_cost": {
+        "end": "2020-12-31",
+        "max_dd_pct": 11.95738,
+        "observations": 1248,
+        "position_changes": 28,
+        "return_pct": -7.284739,
+        "start": "2016-01-04"
+      }
+    },
+    {
+      "config": {
+        "allocation": 0.25,
+        "allow_short": true,
+        "capital": 1000000,
+        "fast": 50,
+        "slow": 150,
+        "spread_pips": 1.4
+      },
+      "passed_research_gates": false,
+      "score": -13.072923,
+      "train": {
+        "end": "2015-12-31",
+        "max_dd_pct": 4.692807,
+        "observations": 2144,
+        "position_changes": 11,
+        "return_pct": 9.837699,
+        "start": "2007-06-20"
+      },
+      "validation": {
+        "end": "2020-12-31",
+        "max_dd_pct": 11.798787,
+        "observations": 1248,
+        "position_changes": 12,
+        "return_pct": -7.173529,
+        "start": "2016-01-04"
+      },
+      "validation_double_cost": {
+        "end": "2020-12-31",
+        "max_dd_pct": 11.855135,
+        "observations": 1248,
+        "position_changes": 12,
+        "return_pct": -7.241068,
+        "start": "2016-01-04"
+      }
+    },
+    {
+      "config": {
+        "allocation": 0.35,
+        "allow_short": true,
+        "capital": 1000000,
+        "fast": 10,
+        "slow": 200,
+        "spread_pips": 1.4
+      },
+      "passed_research_gates": false,
+      "score": -15.17265,
+      "train": {
+        "end": "2015-12-31",
+        "max_dd_pct": 7.65857,
+        "observations": 2094,
+        "position_changes": 16,
+        "return_pct": 19.06339,
+        "start": "2007-08-30"
+      },
+      "validation": {
+        "end": "2020-12-31",
+        "max_dd_pct": 14.17972,
+        "observations": 1248,
+        "position_changes": 30,
+        "return_pct": -8.08279,
+        "start": "2016-01-04"
+      },
+      "validation_double_cost": {
+        "end": "2020-12-31",
+        "max_dd_pct": 14.393836,
+        "observations": 1248,
+        "position_changes": 30,
+        "return_pct": -8.323409,
+        "start": "2016-01-04"
+      }
+    },
+    {
+      "config": {
+        "allocation": 0.35,
+        "allow_short": true,
+        "capital": 1000000,
+        "fast": 20,
+        "slow": 150,
+        "spread_pips": 1.4
+      },
+      "passed_research_gates": false,
+      "score": -15.746239,
+      "train": {
+        "end": "2015-12-31",
+        "max_dd_pct": 7.994019,
+        "observations": 2144,
+        "position_changes": 19,
+        "return_pct": 13.900694,
+        "start": "2007-06-20"
+      },
+      "validation": {
+        "end": "2020-12-31",
+        "max_dd_pct": 15.017164,
+        "observations": 1248,
+        "position_changes": 20,
+        "return_pct": -8.237657,
+        "start": "2016-01-04"
+      },
+      "validation_double_cost": {
+        "end": "2020-12-31",
+        "max_dd_pct": 15.153144,
+        "observations": 1248,
+        "position_changes": 20,
+        "return_pct": -8.395747,
+        "start": "2016-01-04"
+      }
+    },
+    {
+      "config": {
+        "allocation": 0.35,
+        "allow_short": true,
+        "capital": 1000000,
+        "fast": 50,
+        "slow": 100,
+        "spread_pips": 1.4
+      },
+      "passed_research_gates": false,
+      "score": -16.934577,
+      "train": {
+        "end": "2015-12-31",
+        "max_dd_pct": 7.379301,
+        "observations": 2194,
+        "position_changes": 16,
+        "return_pct": 12.364806,
+        "start": "2007-04-10"
+      },
+      "validation": {
+        "end": "2020-12-31",
+        "max_dd_pct": 16.073784,
+        "observations": 1248,
+        "position_changes": 16,
+        "return_pct": -8.897685,
+        "start": "2016-01-04"
+      },
+      "validation_double_cost": {
+        "end": "2020-12-31",
+        "max_dd_pct": 16.178522,
+        "observations": 1248,
+        "position_changes": 16,
+        "return_pct": -9.022563,
+        "start": "2016-01-04"
+      }
+    },
+    {
+      "config": {
+        "allocation": 0.35,
+        "allow_short": true,
+        "capital": 1000000,
+        "fast": 50,
+        "slow": 200,
+        "spread_pips": 1.4
+      },
+      "passed_research_gates": false,
+      "score": -17.217358,
+      "train": {
+        "end": "2015-12-31",
+        "max_dd_pct": 5.258767,
+        "observations": 2094,
+        "position_changes": 8,
+        "return_pct": 21.595669,
+        "start": "2007-08-30"
+      },
+      "validation": {
+        "end": "2020-12-31",
+        "max_dd_pct": 15.26133,
+        "observations": 1248,
+        "position_changes": 12,
+        "return_pct": -9.586693,
+        "start": "2016-01-04"
+      },
+      "validation_double_cost": {
+        "end": "2020-12-31",
+        "max_dd_pct": 15.336965,
+        "observations": 1248,
+        "position_changes": 12,
+        "return_pct": -9.678719,
+        "start": "2016-01-04"
+      }
+    },
+    {
+      "config": {
+        "allocation": 0.35,
+        "allow_short": true,
+        "capital": 1000000,
+        "fast": 20,
+        "slow": 200,
+        "spread_pips": 1.4
+      },
+      "passed_research_gates": false,
+      "score": -17.81124,
+      "train": {
+        "end": "2015-12-31",
+        "max_dd_pct": 7.248606,
+        "observations": 2094,
+        "position_changes": 10,
+        "return_pct": 17.438944,
+        "start": "2007-08-30"
+      },
+      "validation": {
+        "end": "2020-12-31",
+        "max_dd_pct": 16.100747,
+        "observations": 1248,
+        "position_changes": 22,
+        "return_pct": -9.760867,
+        "start": "2016-01-04"
+      },
+      "validation_double_cost": {
+        "end": "2020-12-31",
+        "max_dd_pct": 16.249953,
+        "observations": 1248,
+        "position_changes": 22,
+        "return_pct": -9.93252,
+        "start": "2016-01-04"
+      }
+    },
+    {
+      "config": {
+        "allocation": 0.35,
+        "allow_short": true,
+        "capital": 1000000,
+        "fast": 15,
+        "slow": 200,
+        "spread_pips": 1.4
+      },
+      "passed_research_gates": false,
+      "score": -17.972189,
+      "train": {
+        "end": "2015-12-31",
+        "max_dd_pct": 8.084947,
+        "observations": 2094,
+        "position_changes": 10,
+        "return_pct": 17.392805,
+        "start": "2007-08-30"
+      },
+      "validation": {
+        "end": "2020-12-31",
+        "max_dd_pct": 16.170823,
+        "observations": 1248,
+        "position_changes": 28,
+        "return_pct": -9.886777,
+        "start": "2016-01-04"
+      },
+      "validation_double_cost": {
+        "end": "2020-12-31",
+        "max_dd_pct": 16.36481,
+        "observations": 1248,
+        "position_changes": 28,
+        "return_pct": -10.1064,
+        "start": "2016-01-04"
+      }
+    },
+    {
+      "config": {
+        "allocation": 0.35,
+        "allow_short": true,
+        "capital": 1000000,
+        "fast": 50,
+        "slow": 150,
+        "spread_pips": 1.4
+      },
+      "passed_research_gates": false,
+      "score": -18.031511,
+      "train": {
+        "end": "2015-12-31",
+        "max_dd_pct": 6.558523,
+        "observations": 2144,
+        "position_changes": 11,
+        "return_pct": 13.837431,
+        "start": "2007-06-20"
+      },
+      "validation": {
+        "end": "2020-12-31",
+        "max_dd_pct": 16.152122,
+        "observations": 1248,
+        "position_changes": 12,
+        "return_pct": -9.95545,
+        "start": "2016-01-04"
+      },
+      "validation_double_cost": {
+        "end": "2020-12-31",
+        "max_dd_pct": 16.227124,
+        "observations": 1248,
+        "position_changes": 12,
+        "return_pct": -10.047183,
+        "start": "2016-01-04"
+      }
+    }
+  ],
+  "data_range": [
+    "2006-11-13",
+    "2026-11-06"
+  ],
+  "data_rows": 5006,
+  "engine_sha256": {
+    "github_pipeline.py": "f43730adb7c4bf0d8b24de99412f1f2a831784ffa0a21cd960a631164c5e9fc5",
+    "repro_lab.py": "e86b40e9721f1a4793d9bc0b0562a58d2b24b6ea714b3478268cf3af4d1dde59"
+  },
+  "holdout_examined_once_for_top_candidate": {
+    "config": {
+      "allocation": 0.25,
+      "allow_short": false,
+      "capital": 1000000,
+      "fast": 15,
+      "slow": 100,
+      "spread_pips": 1.4
+    },
+    "holdout": {
+      "end": "2026-11-06",
+      "max_dd_pct": 3.543606,
+      "observations": 1463,
+      "position_changes": 12,
+      "return_pct": 9.322954,
+      "start": "2021-01-04"
+    },
+    "holdout_double_cost": {
+      "end": "2026-11-06",
+      "max_dd_pct": 3.553537,
+      "observations": 1463,
+      "position_changes": 12,
+      "return_pct": 9.290208,
+      "start": "2021-01-04"
+    }
+  },
+  "random_seed": 42,
+  "report_sha256": "00031439269564e499e80969bff4a21ab8944d4c91e0642bafd3ee685b69b0cb",
+  "research_gate_passed": false,
+  "schema": "fx-aegis-repro-1",
+  "selection_rule": "max validation_return_pct - 0.5 * validation_max_dd; training and validation only",
+  "software": {
+    "numpy": "2.3.5",
+    "pandas": "2.2.3",
+    "python": "3.11.18"
+  },
+  "source": {
+    "data_sha256": "344f00cb5b66495fe0ff1176d1d73b02148cd4621f8b3b41634de158742050dc",
+    "kind": "FRED_DAILY_REFERENCE_NON_EXECUTABLE",
+    "metadata_sha256": "379f02fa346ddbbfcaca58d962d144fa28c0b422bcb1968871b7379768e71845",
+    "source": "https://fred.stlouisfed.org/series/DEXJPUS"
+  },
+  "splits": [
+    [
+      "train",
+      "2006-11-13",
+      "2016-01-01"
+    ],
+    [
+      "validation",
+      "2016-01-01",
+      "2021-01-01"
+    ],
+    [
+      "holdout",
+      "2021-01-01",
+      "9999-12-31"
+    ]
+  ],
+  "warning": "Repeated use of this fixed holdout to change the grid/strategy invalidates it as an unused holdout."
+}

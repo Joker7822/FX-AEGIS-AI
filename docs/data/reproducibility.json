@@ -1,0 +1,36 @@
+{
+  "approved_for_live_trading": false,
+  "candidate_count": 48,
+  "data_sha256": "344f00cb5b66495fe0ff1176d1d73b02148cd4621f8b3b41634de158742050dc",
+  "record_sha256": "e08ac672545eb28950b77184cde895bba6ace0cbba97b4ab03c31abe31cf8a52",
+  "research_gate_passed": false,
+  "scan_sha256": "00031439269564e499e80969bff4a21ab8944d4c91e0642bafd3ee685b69b0cb",
+  "schema": "fx-aegis-repro-1",
+  "selected_config": {
+    "allocation": 0.25,
+    "allow_short": false,
+    "capital": 1000000,
+    "fast": 15,
+    "slow": 100,
+    "spread_pips": 1.4
+  },
+  "selected_holdout": {
+    "end": "2026-11-06",
+    "max_dd_pct": 3.543606,
+    "observations": 1463,
+    "position_changes": 12,
+    "return_pct": 9.322954,
+    "start": "2021-01-04"
+  },
+  "selected_validation": {
+    "end": "2020-12-31",
+    "max_dd_pct": 4.968197,
+    "observations": 1248,
+    "position_changes": 22,
+    "return_pct": -2.473249,
+    "start": "2016-01-04"
+  },
+  "source_kind": "FRED_DAILY_REFERENCE_NON_EXECUTABLE",
+  "status": "REPLAY_VERIFIED",
+  "warning": "Reproducibility is not profitability. FRED daily reference results are not executable FX backtests."
+}

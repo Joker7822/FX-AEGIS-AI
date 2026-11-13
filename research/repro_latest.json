@@ -1,0 +1,95 @@
+{
+  "created_at_utc": "2026-11-13T14:20:16.796600+00:00",
+  "git_revision": "612ca95f4ff61163748780679f77fc51ad9b6093",
+  "record": {
+    "manifest": {
+      "config": {
+        "allocation": 0.25,
+        "allow_short": true,
+        "capital": 1000000,
+        "fast": 15,
+        "slow": 100,
+        "spread_pips": 1.4
+      },
+      "data_rows": 5006,
+      "engine_sha256": {
+        "github_pipeline.py": "f43730adb7c4bf0d8b24de99412f1f2a831784ffa0a21cd960a631164c5e9fc5",
+        "repro_lab.py": "e86b40e9721f1a4793d9bc0b0562a58d2b24b6ea714b3478268cf3af4d1dde59"
+      },
+      "first_observation": "2006-11-13",
+      "last_observation": "2026-11-06",
+      "model": "ema_cross_daily_reference_v1",
+      "schema": "fx-aegis-repro-1",
+      "seed": 42,
+      "seed_usage": "Recorded for future stochastic agents; EMA calculations are deterministic without RNG",
+      "software": {
+        "numpy": "2.3.5",
+        "pandas": "2.2.3",
+        "python": "3.11.18"
+      },
+      "source": {
+        "data_sha256": "344f00cb5b66495fe0ff1176d1d73b02148cd4621f8b3b41634de158742050dc",
+        "kind": "FRED_DAILY_REFERENCE_NON_EXECUTABLE",
+        "metadata_sha256": "379f02fa346ddbbfcaca58d962d144fa28c0b422bcb1968871b7379768e71845",
+        "source": "https://fred.stlouisfed.org/series/DEXJPUS"
+      },
+      "splits": [
+        [
+          "train",
+          "2006-11-13",
+          "2016-01-01"
+        ],
+        [
+          "validation",
+          "2016-01-01",
+          "2021-01-01"
+        ],
+        [
+          "holdout",
+          "2021-01-01",
+          "9999-12-31"
+        ]
+      ]
+    },
+    "result": {
+      "approved_for_live_trading": false,
+      "disclaimer": "Historical FRED daily reference exercise, not an executable backtest or future-return forecast",
+      "metrics": {
+        "holdout": {
+          "end": "2026-11-06",
+          "max_dd_pct": 4.896782,
+          "observations": 1463,
+          "position_changes": 13,
+          "return_pct": 6.717223,
+          "start": "2021-01-04"
+        },
+        "holdout_double_cost": {
+          "end": "2026-11-06",
+          "max_dd_pct": 4.934316,
+          "observations": 1463,
+          "position_changes": 13,
+          "return_pct": 6.649743,
+          "start": "2021-01-04"
+        },
+        "train": {
+          "end": "2015-12-31",
+          "max_dd_pct": 5.926769,
+          "observations": 2194,
+          "position_changes": 31,
+          "return_pct": 8.124586,
+          "start": "2007-04-10"
+        },
+        "validation": {
+          "end": "2020-12-31",
+          "max_dd_pct": 7.782593,
+          "observations": 1248,
+          "position_changes": 23,
+          "return_pct": -1.6708,
+          "start": "2016-01-04"
+        }
+      },
+      "schema": "fx-aegis-repro-1"
+    }
+  },
+  "record_sha256": "e08ac672545eb28950b77184cde895bba6ace0cbba97b4ab03c31abe31cf8a52"
+}
