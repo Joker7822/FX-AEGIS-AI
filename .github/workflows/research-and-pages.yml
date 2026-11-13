@@ -14,6 +14,7 @@ on:
       - 'repro_lab.py'
       - 'self_evolve.py'
       - 'overfit_guard.py'
+      - '.gitignore'
       - 'execution_lab.py'
       - 'research/**'
   schedule:

@@ -9,7 +9,7 @@ results/
 *.zip
 
 # Private/possibly licensed broker quotes and reports. NEVER commit them.
-data/
+/data/
 datasets/broker/
 private_quotes/
 private_reports/
