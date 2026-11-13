@@ -41,6 +41,7 @@ class Config:
     volatility_cap_quantile: float = 0.80
     max_bar_gap_hours: float = 4.0
     retrain_every_bars: int = 168
+    max_training_bars: int | None = None
     seed: int = 42
 
 
@@ -261,7 +262,9 @@ def walk_forward_predictions(data: pd.DataFrame, start: int, stop: int,
     parts = []
     for block_start in range(start, stop, cfg.retrain_every_bars):
         block_end = min(stop, block_start + cfg.retrain_every_bars)
-        history = data.iloc[:block_start - 1]
+        hist_end = block_start - 1
+        hist_start = max(0, hist_end - cfg.max_training_bars) if cfg.max_training_bars is not None else 0
+        history = data.iloc[hist_start:hist_end]
         if len(history) < 300:
             raise ValueError("Insufficient history for walk-forward model fit")
         council = CouncilAgent(cfg)
@@ -461,6 +464,7 @@ def run(csv: str | Path, out: str | Path, cfg: Config,
         "notes": [
             "Validation and test are independently initialized with virtual 1,000,000 JPY each.",
             "Each walk-forward block re-fits on strictly older data and purges 1 row before block start.",
+            "Optional max_training_bars truncates older history to control long-term regime drift and runtime.",
             "Signal is computed at completed candle t; simulated entry next open; exit following open.",
             "Fixed spread/slippage assumptions are not observed market costs.",
             "No live execution. Synthetic demo is not a profitability claim.",
@@ -474,6 +478,10 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Research-only USDJPY multi-agent FX backtester")
     parser.add_argument("--csv", required=True, help="UTC OHLC CSV (time,open,high,low,close)")
     parser.add_argument("--out", default="results", help="Results directory")
+    parser.add_argument("--retrain-every-bars", type=int, default=168,
+                        help="Re-fit cadence; for 20y H1 research consider 2160-4320 (not validated optimum)")
+    parser.add_argument("--max-training-bars", type=int, default=None,
+                        help="Optional trailing training bars; e.g. 25000 for multi-year H1 learning")
     parser.add_argument("--spread-pips", type=float, default=1.0)
     parser.add_argument("--slippage-pips", type=float, default=0.2)
     parser.add_argument('--ai-threshold', type=float, default=0.60)
@@ -494,8 +502,11 @@ def main() -> None:
         parser.error('AI probability threshold must be strictly between 0.5 and 1')
     if not 0 <= args.min_adx <= 100 or not 0 <= args.max_spread_pips <= 100:
         parser.error('ADX must be 0-100 and spread cap 0-100 pips')
+    if args.retrain_every_bars < 1 or (args.max_training_bars is not None and args.max_training_bars < 300):
+        parser.error("retrain-every-bars must be positive and max-training-bars >=300")
     cfg = Config(spread_pips=args.spread_pips, slippage_pips_per_side=args.slippage_pips,
-                 p_threshold=args.ai_threshold)
+                 p_threshold=args.ai_threshold, retrain_every_bars=args.retrain_every_bars,
+                 max_training_bars=args.max_training_bars)
     gates = TradeGates(min_adx=args.min_adx, max_spread_pips=args.max_spread_pips)
     result = run(args.csv, args.out, cfg,
                  strategy=args.strategy, event_csv=args.events_csv, gates=gates,

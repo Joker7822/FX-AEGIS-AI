@@ -1,4 +1,4 @@
-# FX AEGIS AI v1.4 — evolutionary agent discovery + one-screen dashboard
+# FX Multi-Agent AI v1.2 — one-screen dashboard + v1.1 research engine
 
 **Updated: 2026-11-13 JST. Research-only.** No order placement, broker credentials, or live trading. This code **does not demonstrate positive expected returns**.
 
@@ -184,3 +184,11 @@ python dashboard.py --results results/demo_evolved_compare \
 The evolutionary agent is **veto-only**, so it cannot create a new trade when the existing Council or safety gates say `WAIT`. The dashboard shows the candidate, validation status and research mode. To use a promoted paper incumbent in another **offline** backtest, give `--evolved-agent results/production_research/incumbent_paper.json`.
 
 **Important limitations:** The backtest uses mid-price approximation with configurable/recorded spread, assumed slippage, ignores broker order-book, intrabar excursions, leverage/margin, financing and taxes. Repeated manual use of final holdout results to alter design can overfit that holdout. Even passing all gates does not establish profitable future returns. There is no real-time market feed, live-order executor, job scheduler, or broker credential manager in this release.
+
+---
+
+## v1.5 (2026-11-13): Twenty-year historical-data layer
+
+See [`HISTORY20_GUIDE_JA.md`](HISTORY20_GUIDE_JA.md). The new `history20.py` downloads/imports **official FRED DEXJPUS daily reference observations** for 2006-11-13 through 2026-11-13, reports annual reference-rate regimes, imports and audits independently obtained **broker H1 OHLC**, and summarizes yearly realized simulated P&L from existing backtests. FRED reference rates are **not broker-executable OHLC** and are **not AI trading labels/features**. No historical real FX data is bundled. Download connectivity could not be verified here.
+
+The research backtester now accepts `--retrain-every-bars` and `--max-training-bars` to keep 20-year H1 walk-forward retraining computationally bounded. Full-broker-H1 quality auditing is separate and mandatory to claim full 20-year coverage; sample import is not proof of data authenticity. The one-screen dashboard adds a `20年` price-chart toggle if a real FRED daily file is supplied, plus a compact history/coverage status in the existing safety panel. No order placement.

@@ -46,7 +46,8 @@ def epoch(v):
 
 
 def build_payload(results: Path, market: Path, segment: str, research: Path | None = None,
-                  evolution_report: Path | None = None) -> dict:
+                  evolution_report: Path | None = None, history_report: Path | None = None,
+                  hourly_quality: Path | None = None, reference_daily: Path | None = None) -> dict:
     summary = read_json(results / "summary.json")
     part = "validation" if segment == "validation" else "test"
     stats = summary.get(f"{part}_20pct", {})
@@ -80,6 +81,32 @@ def build_payload(results: Path, market: Path, segment: str, research: Path | No
             evolution = read_json(evolution_report)
         except (OSError, ValueError, TypeError):
             evolution = {}
+    long_report = {}
+    h1_report = {}
+    for path, key in ((history_report, 'long'), (hourly_quality, 'h1')):
+        if path is not None and path.is_file():
+            try:
+                record = read_json(path)
+                if isinstance(record, dict):
+                    if key == 'long': long_report = record
+                    else: h1_report = record
+            except (OSError, ValueError, TypeError):
+                pass
+    reference_points = []
+    if reference_daily is not None and reference_daily.is_file():
+        # Daily series is used solely for a separate historic reference chart.
+        # No trading/backtest signal derives from these retrospective values.
+        last_date = ''
+        for rec in read_csv(reference_daily):
+            dat = rec.get('date', '')
+            val = number(rec.get('close'))
+            if dat and len(dat) == 10 and dat > last_date and val is not None and val > 0:
+                try:
+                    datetime.strptime(dat, '%Y-%m-%d')
+                except ValueError:
+                    continue
+                reference_points.append({'date': dat, 'close': val})
+                last_date = dat
     hits = research_data.get("trusted_official_hits", [])
     if not isinstance(hits, list):
         hits = []
@@ -136,6 +163,18 @@ def build_payload(results: Path, market: Path, segment: str, research: Path | No
             "validation_net_yen": (evolution.get("validation") or {}).get("net_yen"),
             "double_cost_net_yen": (evolution.get("validation") or {}).get("stress_2x_net_yen"),
         },
+        "history20": {
+            "available": bool(long_report) or bool(h1_report),
+            "daily_observations": long_report.get('rows_with_reference_rate'),
+            "daily_start": long_report.get('actual_start'),
+            "daily_end": long_report.get('actual_end'),
+            "daily_full_span": long_report.get('has_full_requested_span') is True,
+            "hourly_coverage_pct": h1_report.get('covered_full_months_pct'),
+            "hourly_20y_ready": h1_report.get('coverage_ready_for_20y_research') is True,
+            "hourly_bars": h1_report.get('total_bars'),
+            "reference_chart_available": bool(reference_points),
+        },
+        "reference_daily": reference_points,
         "online_research": {
             "retrieved_at_utc": research_data.get("retrieved_at_utc"),
             "official_hit_count": len(hits),
@@ -148,7 +187,8 @@ def build_payload(results: Path, market: Path, segment: str, research: Path | No
 
 
 def make_handler(results:Path, market:Path, data_label:str, research:Path|None=None,
-                 evolution_report:Path|None=None):
+                 evolution_report:Path|None=None, history_report:Path|None=None,
+                 hourly_quality:Path|None=None, reference_daily:Path|None=None):
     class Handler(BaseHTTPRequestHandler):
         def do_GET(self):
             url=urlparse(self.path)
@@ -157,7 +197,7 @@ def make_handler(results:Path, market:Path, data_label:str, research:Path|None=N
                 if part not in ("test", "validation"):
                     return self.respond(400, b'{"error":"Invalid segment"}', "application/json")
                 try:
-                    payload=build_payload(results,market,part,research,evolution_report)
+                    payload=build_payload(results,market,part,research,evolution_report,history_report,hourly_quality,reference_daily)
                     payload["data_label"]=data_label
                     self.respond(200,json.dumps(payload,ensure_ascii=False,allow_nan=False).encode("utf-8"),"application/json; charset=utf-8")
                 except (OSError,ValueError,KeyError,TypeError) as exc:
@@ -196,15 +236,18 @@ def main():
     ap.add_argument("--research",type=Path,default=PROJECT/"data"/"official_web_search.json",help="Optional output of research_agent.py search")
     ap.add_argument("--data-label",default=None,help="Provenance of the loaded input, displayed prominently")
     ap.add_argument("--evolution-report",type=Path,default=PROJECT/"results"/"demo_evolution"/"evolution_report.json")
+    ap.add_argument("--history-report",type=Path,default=PROJECT/"results"/"history20"/"history20_summary.json")
+    ap.add_argument("--hourly-quality",type=Path,default=PROJECT/"results"/"history20"/"hourly_quality.json")
+    ap.add_argument("--reference-daily",type=Path,default=PROJECT/"results"/"history20"/"fred_reference_daily.csv")
     ap.add_argument("--port",type=int,default=8501)
     ap.add_argument("--host",default="127.0.0.1",help="Defaults to localhost for safety")
     args=ap.parse_args()
     if not (args.results/"summary.json").is_file():
         ap.error(f"summary.json not found under {args.results}; run main.py first")
-    build_payload(args.results,args.market,"test",args.research,args.evolution_report)
+    build_payload(args.results,args.market,"test",args.research,args.evolution_report,args.history_report,args.hourly_quality,args.reference_daily)
     demo = (PROJECT/"data"/"demo_synthetic_usdjpy.csv").resolve()
     data_label = args.data_label or ("人工生成データ / DEMO" if args.market.resolve() == demo else "入力データ / 出典未検証")
-    server=ThreadingHTTPServer((args.host,args.port),make_handler(args.results,args.market,data_label,args.research,args.evolution_report))
+    server=ThreadingHTTPServer((args.host,args.port),make_handler(args.results,args.market,data_label,args.research,args.evolution_report,args.history_report,args.hourly_quality,args.reference_daily))
     print(f"FX Dashboard: http://{args.host}:{args.port} (read-only; no real orders)")
     print("Set browser full-screen (F11) to fit on one display. Ctrl+C to stop.")
     try:

@@ -7,7 +7,7 @@
     <div class="header-right"><span class="context"><span class="small-dot"></span> OFFLINE BACKTEST</span><div class="clock"><div id="localClock">--:--:-- <small>JST</small></div><div id="modelTime">検証シグナル: --</div></div></div>
   </header>
   <section class="status-strip" aria-label="データ状態">
-    <div class="strip-left"><span class="tag tag-alert">実発注なし</span><span class="tag tag-muted" id="dataLabel">人工生成データ / DEMO</span><span class="mid-sep">|</span><span class="symbol">USD / JPY</span><span class="divider-dot">•</span><span class="subtle">H1 · Trend gated</span><span class="divider-dot">•</span><span class="subtle" id="segmentDates">期間読み込み中</span></div>
+    <div class="strip-left"><span class="tag tag-alert">実発注なし</span><span class="tag tag-muted" id="dataLabel">人工生成データ / DEMO</span><span class="mid-sep">|</span><span class="symbol">USD / JPY</span><span class="divider-dot">•</span><span class="subtle" id="timeframeLabel">H1 · Trend gated</span><span class="divider-dot">•</span><span class="subtle" id="segmentDates">期間読み込み中</span></div>
     <div class="strip-right"><label for="segment">検証区間</label><select id="segment" aria-label="検証区間"><option value="test">最終テスト 20%</option><option value="validation">検証 20%</option></select><span class="refresh" id="freshness">ファイル監視: 15秒</span></div>
   </section>
   <section class="kpis" aria-label="主要な成績指標">
@@ -18,7 +18,7 @@
     <article class="kpi"><div class="kpi-label">利益係数 <span>PROFIT FACTOR</span></div><div class="kpi-value" id="profitFactor">--</div><div class="kpi-foot" id="pfIndicator">総利益 ÷ 総損失</div></article>
   </section>
   <section class="center-grid" aria-label="チャートとAI判断">
-    <article class="panel chart-panel"><div class="panel-top"><div><div class="panel-kicker">01 <span>/ MARKET & PERFORMANCE</span></div><h2 id="chartTitle">ドル円 価格推移</h2></div><div class="tools"><div class="pill-group" id="modeGroup" aria-label="チャート種類"><button data-mode="price" class="selected">価格</button><button data-mode="equity">資産推移</button></div><div class="pill-group" id="windowGroup" aria-label="表示範囲"><button data-window="24">24H</button><button data-window="168">7D</button><button data-window="all" class="selected">ALL</button></div></div></div>
+    <article class="panel chart-panel"><div class="panel-top"><div><div class="panel-kicker">01 <span>/ MARKET & PERFORMANCE</span></div><h2 id="chartTitle">ドル円 価格推移</h2></div><div class="tools"><div class="pill-group" id="modeGroup" aria-label="チャート種類"><button data-mode="price" class="selected">価格</button><button data-mode="equity">資産推移</button><button data-mode="long">20年</button></div><div class="pill-group" id="windowGroup" aria-label="表示範囲"><button data-window="24">24H</button><button data-window="168">7D</button><button data-window="all" class="selected">ALL</button></div></div></div>
       <div class="chart-inner"><div class="chart-tags"><span class="swatch swatch-price"></span><span id="chartLegend">終値</span><span class="swatch swatch-ema"></span><span id="chartExtraLegend">EMA50</span><span id="chartNote">価格は入力した検証用データ</span></div><canvas id="priceChart" aria-label="検証データのチャート" role="img"></canvas><div id="chartTooltip" class="chart-tooltip" hidden></div></div>
       <div class="chart-bottom"><span id="chartRange">--</span><span class="auto-refresh"><span class="pulse"></span>15秒ごとにローカルファイルを再読込（市場のライブ配信ではありません）</span></div></article>
     <article class="panel ai-panel"><div class="panel-top"><div><div class="panel-kicker">02 <span>/ DECISION ENGINE</span></div><h2>AI 合議シグナル</h2></div><span class="small-label" id="agentCount">3 MODEL + GATES</span></div>
@@ -35,8 +35,8 @@
        <div class="guard-line"><span>最大許容DD</span><strong id="ddLimit">--</strong></div>
        <div class="guard-line"><span>経済指標イベント</span><strong id="eventCount">--</strong></div>
        <div class="guard-line"><span>公式情報検索</span><strong id="researchStatus">--</strong></div>
-       <div class="guard-line"><span>戦略フィルター</span><strong id="gateSummary">--</strong></div>
+       <div class="guard-line"><span id="gateLabel">戦略フィルター</span><strong id="gateSummary">--</strong></div>
     </div><div class="guard-notice"><span class="attention">!</span><span>利益予測ではありません。実市場収益性は未検証。AI判断は売買指示ではありません。</span></div></article>
   </section>
-  <footer class="bottom-status"><span>RESEARCH TERMINAL V1.4 <span class="muted">/</span> 6-AGENT BACKTEST</span><span id="fileStamp">読み込み中...</span><span>DATA ISOLATED <span class="green-dot">●</span> NO BROKER CONNECTION</span></footer>
+  <footer class="bottom-status"><span>RESEARCH TERMINAL V1.5 <span class="muted">/</span> 6-AGENT BACKTEST</span><span id="fileStamp">読み込み中...</span><span>DATA ISOLATED <span class="green-dot">●</span> NO BROKER CONNECTION</span></footer>
 </main></body></html>
