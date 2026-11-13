@@ -164,23 +164,986 @@
   ],
   "generations_count": 5,
   "observation_count": 5006,
+  "overfit_audit": {
+    "approved_for_live_trading": false,
+    "bootstrap": {
+      "block_length_observations": 20,
+      "candidate_count": 54,
+      "candidate_max_t_adjusted_p": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        0.95711501,
+        0.98245614,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "candidate_mean_daily_log_excess": [
+        -1.718899e-05,
+        -1.4481344e-05,
+        -1.3279832e-05,
+        -1.1453378e-05,
+        -1.3408933e-05,
+        -1.1698588e-05,
+        -1.12381e-05,
+        -1.2188988e-05,
+        -1.0820922e-05,
+        -1.8753531e-05,
+        -1.8753531e-05,
+        -1.7666465e-05,
+        -1.5778735e-05,
+        -2.561914e-05,
+        -1.8970775e-05,
+        -1.9187403e-05,
+        -1.9075266e-05,
+        -1.9364996e-05,
+        -1.5120767e-05,
+        -1.1487665e-05,
+        -1.9911077e-05,
+        -1.7194193e-05,
+        -1.3249526e-05,
+        -1.735865e-05,
+        -1.8809234e-05,
+        -1.9082788e-05,
+        -9.807575e-06,
+        -1.7781773e-05,
+        -1.6287154e-05,
+        -9.390082e-06,
+        -1.2067451e-05,
+        -1.450891e-05,
+        -1.2978375e-05,
+        -4.757203e-06,
+        -7.0084e-06,
+        -7.221304e-06,
+        -1.473384e-05,
+        -1.473384e-05,
+        -2.237625e-06,
+        6.080509e-06,
+        1.748925e-06,
+        -2.037001e-06,
+        -4.54735e-07,
+        0.0,
+        -1.1716014e-05,
+        -2.8220974e-05,
+        -2.731209e-06,
+        -3.0913957e-05,
+        -1.9440562e-05,
+        -1.1382672e-05,
+        -1.3142306e-05,
+        -8.261958e-06,
+        -1.9458317e-05,
+        -8.52987e-07
+      ],
+      "n_observations": 2752,
+      "replicates": 512,
+      "seed": 202687,
+      "significance_is_provisional": true
+    },
+    "candidate_tests": [
+      {
+        "adjusted_p": 1.0,
+        "gene": {
+          "allocation": 0.1,
+          "allow_short": false,
+          "family": "close_breakout",
+          "fast": 5,
+          "slow": 80,
+          "vol_cap_pct": 0.6,
+          "vol_window": 40
+        },
+        "mean_daily_log_excess": -1.718899e-05,
+        "statistical_gate": false
+      },
+      {
+        "adjusted_p": 1.0,
+        "gene": {
+          "allocation": 0.1,
+          "allow_short": false,
+          "family": "ema_cross",
+          "fast": 40,
+          "slow": 80,
+          "vol_cap_pct": 0.6,
+          "vol_window": 40
+        },
+        "mean_daily_log_excess": -1.4481344e-05,
+        "statistical_gate": false
+      },
+      {
+        "adjusted_p": 1.0,
+        "gene": {
+          "allocation": 0.1,
+          "allow_short": false,
+          "family": "ema_cross",
+          "fast": 5,
+          "slow": 100,
+          "vol_cap_pct": 0.6,
+          "vol_window": 40
+        },
+        "mean_daily_log_excess": -1.3279832e-05,
+        "statistical_gate": false
+      },
+      {
+        "adjusted_p": 1.0,
+        "gene": {
+          "allocation": 0.1,
+          "allow_short": false,
+          "family": "ema_cross",
+          "fast": 5,
+          "slow": 150,
+          "vol_cap_pct": 0.6,
+          "vol_window": 40
+        },
+        "mean_daily_log_excess": -1.1453378e-05,
+        "statistical_gate": false
+      },
+      {
+        "adjusted_p": 1.0,
+        "gene": {
+          "allocation": 0.1,
+          "allow_short": false,
+          "family": "ema_cross",
+          "fast": 5,
+          "slow": 80,
+          "vol_cap_pct": 0.6,
+          "vol_window": 40
+        },
+        "mean_daily_log_excess": -1.3408933e-05,
+        "statistical_gate": false
+      },
+      {
+        "adjusted_p": 1.0,
+        "gene": {
+          "allocation": 0.1,
+          "allow_short": false,
+          "family": "ema_cross",
+          "fast": 5,
+          "slow": 80,
+          "vol_cap_pct": 2.0,
+          "vol_window": 40
+        },
+        "mean_daily_log_excess": -1.1698588e-05,
+        "statistical_gate": false
+      },
+      {
+        "adjusted_p": 1.0,
+        "gene": {
+          "allocation": 0.1,
+          "allow_short": false,
+          "family": "ema_slope",
+          "fast": 5,
+          "slow": 100,
+          "vol_cap_pct": 0.6,
+          "vol_window": 40
+        },
+        "mean_daily_log_excess": -1.12381e-05,
+        "statistical_gate": false
+      },
+      {
+        "adjusted_p": 1.0,
+        "gene": {
+          "allocation": 0.1,
+          "allow_short": false,
+          "family": "ema_slope",
+          "fast": 5,
+          "slow": 80,
+          "vol_cap_pct": 0.6,
+          "vol_window": 40
+        },
+        "mean_daily_log_excess": -1.2188988e-05,
+        "statistical_gate": false
+      },
+      {
+        "adjusted_p": 1.0,
+        "gene": {
+          "allocation": 0.1,
+          "allow_short": false,
+          "family": "ema_slope",
+          "fast": 75,
+          "slow": 100,
+          "vol_cap_pct": 0.6,
+          "vol_window": 40
+        },
+        "mean_daily_log_excess": -1.0820922e-05,
+        "statistical_gate": false
+      },
+      {
+        "adjusted_p": 1.0,
+        "gene": {
+          "allocation": 0.1,
+          "allow_short": true,
+          "family": "close_breakout",
+          "fast": 5,
+          "slow": 100,
+          "vol_cap_pct": 0.6,
+          "vol_window": 40
+        },
+        "mean_daily_log_excess": -1.8753531e-05,
+        "statistical_gate": false
+      },
+      {
+        "adjusted_p": 1.0,
+        "gene": {
+          "allocation": 0.1,
+          "allow_short": true,
+          "family": "close_breakout",
+          "fast": 5,
+          "slow": 80,
+          "vol_cap_pct": 0.6,
+          "vol_window": 40
+        },
+        "mean_daily_log_excess": -1.8753531e-05,
+        "statistical_gate": false
+      },
+      {
+        "adjusted_p": 1.0,
+        "gene": {
+          "allocation": 0.1,
+          "allow_short": true,
+          "family": "ema_cross",
+          "fast": 10,
+          "slow": 100,
+          "vol_cap_pct": 0.6,
+          "vol_window": 40
+        },
+        "mean_daily_log_excess": -1.7666465e-05,
+        "statistical_gate": false
+      },
+      {
+        "adjusted_p": 1.0,
+        "gene": {
+          "allocation": 0.1,
+          "allow_short": true,
+          "family": "ema_cross",
+          "fast": 10,
+          "slow": 80,
+          "vol_cap_pct": 0.6,
+          "vol_window": 40
+        },
+        "mean_daily_log_excess": -1.5778735e-05,
+        "statistical_gate": false
+      },
+      {
+        "adjusted_p": 1.0,
+        "gene": {
+          "allocation": 0.1,
+          "allow_short": true,
+          "family": "ema_cross",
+          "fast": 40,
+          "slow": 100,
+          "vol_cap_pct": 0.6,
+          "vol_window": 40
+        },
+        "mean_daily_log_excess": -2.561914e-05,
+        "statistical_gate": false
+      },
+      {
+        "adjusted_p": 1.0,
+        "gene": {
+          "allocation": 0.1,
+          "allow_short": true,
+          "family": "ema_cross",
+          "fast": 5,
+          "slow": 100,
+          "vol_cap_pct": 0.6,
+          "vol_window": 20
+        },
+        "mean_daily_log_excess": -1.8970775e-05,
+        "statistical_gate": false
+      },
+      {
+        "adjusted_p": 1.0,
+        "gene": {
+          "allocation": 0.1,
+          "allow_short": true,
+          "family": "ema_cross",
+          "fast": 5,
+          "slow": 100,
+          "vol_cap_pct": 0.6,
+          "vol_window": 40
+        },
+        "mean_daily_log_excess": -1.9187403e-05,
+        "statistical_gate": false
+      },
+      {
+        "adjusted_p": 1.0,
+        "gene": {
+          "allocation": 0.1,
+          "allow_short": true,
+          "family": "ema_cross",
+          "fast": 5,
+          "slow": 80,
+          "vol_cap_pct": 0.6,
+          "vol_window": 20
+        },
+        "mean_daily_log_excess": -1.9075266e-05,
+        "statistical_gate": false
+      },
+      {
+        "adjusted_p": 1.0,
+        "gene": {
+          "allocation": 0.1,
+          "allow_short": true,
+          "family": "ema_cross",
+          "fast": 5,
+          "slow": 80,
+          "vol_cap_pct": 0.6,
+          "vol_window": 40
+        },
+        "mean_daily_log_excess": -1.9364996e-05,
+        "statistical_gate": false
+      },
+      {
+        "adjusted_p": 1.0,
+        "gene": {
+          "allocation": 0.1,
+          "allow_short": true,
+          "family": "ema_cross",
+          "fast": 5,
+          "slow": 80,
+          "vol_cap_pct": 99.0,
+          "vol_window": 40
+        },
+        "mean_daily_log_excess": -1.5120767e-05,
+        "statistical_gate": false
+      },
+      {
+        "adjusted_p": 1.0,
+        "gene": {
+          "allocation": 0.1,
+          "allow_short": true,
+          "family": "ema_cross",
+          "fast": 50,
+          "slow": 100,
+          "vol_cap_pct": 1.2,
+          "vol_window": 20
+        },
+        "mean_daily_log_excess": -1.1487665e-05,
+        "statistical_gate": false
+      },
+      {
+        "adjusted_p": 1.0,
+        "gene": {
+          "allocation": 0.1,
+          "allow_short": true,
+          "family": "ema_cross",
+          "fast": 50,
+          "slow": 250,
+          "vol_cap_pct": 0.6,
+          "vol_window": 40
+        },
+        "mean_daily_log_excess": -1.9911077e-05,
+        "statistical_gate": false
+      },
+      {
+        "adjusted_p": 1.0,
+        "gene": {
+          "allocation": 0.1,
+          "allow_short": true,
+          "family": "ema_slope",
+          "fast": 20,
+          "slow": 250,
+          "vol_cap_pct": 0.6,
+          "vol_window": 40
+        },
+        "mean_daily_log_excess": -1.7194193e-05,
+        "statistical_gate": false
+      },
+      {
+        "adjusted_p": 1.0,
+        "gene": {
+          "allocation": 0.1,
+          "allow_short": true,
+          "family": "ema_slope",
+          "fast": 20,
+          "slow": 250,
+          "vol_cap_pct": 1.2,
+          "vol_window": 20
+        },
+        "mean_daily_log_excess": -1.3249526e-05,
+        "statistical_gate": false
+      },
+      {
+        "adjusted_p": 1.0,
+        "gene": {
+          "allocation": 0.1,
+          "allow_short": true,
+          "family": "ema_slope",
+          "fast": 5,
+          "slow": 100,
+          "vol_cap_pct": 0.6,
+          "vol_window": 40
+        },
+        "mean_daily_log_excess": -1.735865e-05,
+        "statistical_gate": false
+      },
+      {
+        "adjusted_p": 1.0,
+        "gene": {
+          "allocation": 0.1,
+          "allow_short": true,
+          "family": "ema_slope",
+          "fast": 5,
+          "slow": 80,
+          "vol_cap_pct": 0.6,
+          "vol_window": 40
+        },
+        "mean_daily_log_excess": -1.8809234e-05,
+        "statistical_gate": false
+      },
+      {
+        "adjusted_p": 1.0,
+        "gene": {
+          "allocation": 0.1,
+          "allow_short": true,
+          "family": "ema_slope",
+          "fast": 5,
+          "slow": 80,
+          "vol_cap_pct": 1.2,
+          "vol_window": 40
+        },
+        "mean_daily_log_excess": -1.9082788e-05,
+        "statistical_gate": false
+      },
+      {
+        "adjusted_p": 1.0,
+        "gene": {
+          "allocation": 0.1,
+          "allow_short": true,
+          "family": "ema_slope",
+          "fast": 50,
+          "slow": 250,
+          "vol_cap_pct": 1.2,
+          "vol_window": 20
+        },
+        "mean_daily_log_excess": -9.807575e-06,
+        "statistical_gate": false
+      },
+      {
+        "adjusted_p": 1.0,
+        "gene": {
+          "allocation": 0.1,
+          "allow_short": true,
+          "family": "ema_slope",
+          "fast": 50,
+          "slow": 80,
+          "vol_cap_pct": 0.6,
+          "vol_window": 40
+        },
+        "mean_daily_log_excess": -1.7781773e-05,
+        "statistical_gate": false
+      },
+      {
+        "adjusted_p": 1.0,
+        "gene": {
+          "allocation": 0.2,
+          "allow_short": false,
+          "family": "close_breakout",
+          "fast": 20,
+          "slow": 100,
+          "vol_cap_pct": 0.6,
+          "vol_window": 40
+        },
+        "mean_daily_log_excess": -1.6287154e-05,
+        "statistical_gate": false
+      },
+      {
+        "adjusted_p": 1.0,
+        "gene": {
+          "allocation": 0.2,
+          "allow_short": false,
+          "family": "ema_cross",
+          "fast": 15,
+          "slow": 80,
+          "vol_cap_pct": 0.6,
+          "vol_window": 40
+        },
+        "mean_daily_log_excess": -9.390082e-06,
+        "statistical_gate": false
+      },
+      {
+        "adjusted_p": 1.0,
+        "gene": {
+          "allocation": 0.2,
+          "allow_short": false,
+          "family": "ema_cross",
+          "fast": 20,
+          "slow": 100,
+          "vol_cap_pct": 0.6,
+          "vol_window": 40
+        },
+        "mean_daily_log_excess": -1.2067451e-05,
+        "statistical_gate": false
+      },
+      {
+        "adjusted_p": 1.0,
+        "gene": {
+          "allocation": 0.2,
+          "allow_short": false,
+          "family": "ema_cross",
+          "fast": 20,
+          "slow": 80,
+          "vol_cap_pct": 0.6,
+          "vol_window": 10
+        },
+        "mean_daily_log_excess": -1.450891e-05,
+        "statistical_gate": false
+      },
+      {
+        "adjusted_p": 1.0,
+        "gene": {
+          "allocation": 0.2,
+          "allow_short": false,
+          "family": "ema_cross",
+          "fast": 5,
+          "slow": 100,
+          "vol_cap_pct": 0.6,
+          "vol_window": 40
+        },
+        "mean_daily_log_excess": -1.2978375e-05,
+        "statistical_gate": false
+      },
+      {
+        "adjusted_p": 1.0,
+        "gene": {
+          "allocation": 0.2,
+          "allow_short": false,
+          "family": "ema_cross",
+          "fast": 50,
+          "slow": 250,
+          "vol_cap_pct": 1.2,
+          "vol_window": 10
+        },
+        "mean_daily_log_excess": -4.757203e-06,
+        "statistical_gate": false
+      },
+      {
+        "adjusted_p": 1.0,
+        "gene": {
+          "allocation": 0.2,
+          "allow_short": false,
+          "family": "ema_cross",
+          "fast": 75,
+          "slow": 80,
+          "vol_cap_pct": 2.0,
+          "vol_window": 20
+        },
+        "mean_daily_log_excess": -7.0084e-06,
+        "statistical_gate": false
+      },
+      {
+        "adjusted_p": 1.0,
+        "gene": {
+          "allocation": 0.2,
+          "allow_short": false,
+          "family": "ema_slope",
+          "fast": 15,
+          "slow": 100,
+          "vol_cap_pct": 2.0,
+          "vol_window": 20
+        },
+        "mean_daily_log_excess": -7.221304e-06,
+        "statistical_gate": false
+      },
+      {
+        "adjusted_p": 1.0,
+        "gene": {
+          "allocation": 0.2,
+          "allow_short": true,
+          "family": "close_breakout",
+          "fast": 40,
+          "slow": 200,
+          "vol_cap_pct": 2.0,
+          "vol_window": 10
+        },
+        "mean_daily_log_excess": -1.473384e-05,
+        "statistical_gate": false
+      },
+      {
+        "adjusted_p": 1.0,
+        "gene": {
+          "allocation": 0.2,
+          "allow_short": true,
+          "family": "close_breakout",
+          "fast": 40,
+          "slow": 250,
+          "vol_cap_pct": 2.0,
+          "vol_window": 10
+        },
+        "mean_daily_log_excess": -1.473384e-05,
+        "statistical_gate": false
+      },
+      {
+        "adjusted_p": 1.0,
+        "gene": {
+          "allocation": 0.2,
+          "allow_short": true,
+          "family": "ema_cross",
+          "fast": 10,
+          "slow": 100,
+          "vol_cap_pct": 1.2,
+          "vol_window": 10
+        },
+        "mean_daily_log_excess": -2.237625e-06,
+        "statistical_gate": false
+      },
+      {
+        "adjusted_p": 0.95711501,
+        "gene": {
+          "allocation": 0.2,
+          "allow_short": true,
+          "family": "ema_cross",
+          "fast": 10,
+          "slow": 150,
+          "vol_cap_pct": 1.2,
+          "vol_window": 10
+        },
+        "mean_daily_log_excess": 6.080509e-06,
+        "statistical_gate": false
+      },
+      {
+        "adjusted_p": 0.98245614,
+        "gene": {
+          "allocation": 0.2,
+          "allow_short": true,
+          "family": "ema_cross",
+          "fast": 10,
+          "slow": 150,
+          "vol_cap_pct": 99.0,
+          "vol_window": 20
+        },
+        "mean_daily_log_excess": 1.748925e-06,
+        "statistical_gate": false
+      },
+      {
+        "adjusted_p": 1.0,
+        "gene": {
+          "allocation": 0.2,
+          "allow_short": true,
+          "family": "ema_cross",
+          "fast": 40,
+          "slow": 80,
+          "vol_cap_pct": 2.0,
+          "vol_window": 10
+        },
+        "mean_daily_log_excess": -2.037001e-06,
+        "statistical_gate": false
+      },
+      {
+        "adjusted_p": 1.0,
+        "gene": {
+          "allocation": 0.2,
+          "allow_short": true,
+          "family": "ema_cross",
+          "fast": 50,
+          "slow": 200,
+          "vol_cap_pct": 1.2,
+          "vol_window": 10
+        },
+        "mean_daily_log_excess": -4.54735e-07,
+        "statistical_gate": false
+      },
+      {
+        "adjusted_p": 1.0,
+        "gene": {
+          "allocation": 0.25,
+          "allow_short": false,
+          "family": "ema_cross",
+          "fast": 15,
+          "slow": 100,
+          "vol_cap_pct": 2.0,
+          "vol_window": 20
+        },
+        "mean_daily_log_excess": 0.0,
+        "statistical_gate": false
+      },
+      {
+        "adjusted_p": 1.0,
+        "gene": {
+          "allocation": 0.25,
+          "allow_short": false,
+          "family": "ema_cross",
+          "fast": 20,
+          "slow": 100,
+          "vol_cap_pct": 0.6,
+          "vol_window": 40
+        },
+        "mean_daily_log_excess": -1.1716014e-05,
+        "statistical_gate": false
+      },
+      {
+        "adjusted_p": 1.0,
+        "gene": {
+          "allocation": 0.25,
+          "allow_short": true,
+          "family": "ema_cross",
+          "fast": 5,
+          "slow": 80,
+          "vol_cap_pct": 0.6,
+          "vol_window": 40
+        },
+        "mean_daily_log_excess": -2.8220974e-05,
+        "statistical_gate": false
+      },
+      {
+        "adjusted_p": 1.0,
+        "gene": {
+          "allocation": 0.25,
+          "allow_short": true,
+          "family": "ema_cross",
+          "fast": 50,
+          "slow": 200,
+          "vol_cap_pct": 99.0,
+          "vol_window": 20
+        },
+        "mean_daily_log_excess": -2.731209e-06,
+        "statistical_gate": false
+      },
+      {
+        "adjusted_p": 1.0,
+        "gene": {
+          "allocation": 0.25,
+          "allow_short": true,
+          "family": "ema_slope",
+          "fast": 30,
+          "slow": 150,
+          "vol_cap_pct": 1.2,
+          "vol_window": 40
+        },
+        "mean_daily_log_excess": -3.0913957e-05,
+        "statistical_gate": false
+      },
+      {
+        "adjusted_p": 1.0,
+        "gene": {
+          "allocation": 0.25,
+          "allow_short": true,
+          "family": "ema_slope",
+          "fast": 40,
+          "slow": 80,
+          "vol_cap_pct": 0.6,
+          "vol_window": 10
+        },
+        "mean_daily_log_excess": -1.9440562e-05,
+        "statistical_gate": false
+      },
+      {
+        "adjusted_p": 1.0,
+        "gene": {
+          "allocation": 0.3,
+          "allow_short": false,
+          "family": "ema_cross",
+          "fast": 20,
+          "slow": 100,
+          "vol_cap_pct": 0.6,
+          "vol_window": 40
+        },
+        "mean_daily_log_excess": -1.1382672e-05,
+        "statistical_gate": false
+      },
+      {
+        "adjusted_p": 1.0,
+        "gene": {
+          "allocation": 0.3,
+          "allow_short": false,
+          "family": "ema_cross",
+          "fast": 5,
+          "slow": 80,
+          "vol_cap_pct": 0.6,
+          "vol_window": 40
+        },
+        "mean_daily_log_excess": -1.3142306e-05,
+        "statistical_gate": false
+      },
+      {
+        "adjusted_p": 1.0,
+        "gene": {
+          "allocation": 0.3,
+          "allow_short": false,
+          "family": "ema_cross",
+          "fast": 5,
+          "slow": 80,
+          "vol_cap_pct": 2.0,
+          "vol_window": 20
+        },
+        "mean_daily_log_excess": -8.261958e-06,
+        "statistical_gate": false
+      },
+      {
+        "adjusted_p": 1.0,
+        "gene": {
+          "allocation": 0.3,
+          "allow_short": true,
+          "family": "close_breakout",
+          "fast": 30,
+          "slow": 80,
+          "vol_cap_pct": 0.6,
+          "vol_window": 40
+        },
+        "mean_daily_log_excess": -1.9458317e-05,
+        "statistical_gate": false
+      },
+      {
+        "adjusted_p": 1.0,
+        "gene": {
+          "allocation": 0.3,
+          "allow_short": true,
+          "family": "ema_cross",
+          "fast": 20,
+          "slow": 80,
+          "vol_cap_pct": 99.0,
+          "vol_window": 10
+        },
+        "mean_daily_log_excess": -8.52987e-07,
+        "statistical_gate": false
+      }
+    ],
+    "passed_genes": [],
+    "rank_instability": {
+      "folds": 8,
+      "fraction": 0.742857,
+      "splits": 70,
+      "state": "DESCRIPTIVE_ONLY_NOT_PROBABILITY_OF_FUTURE_LOSS",
+      "strategy_count": 54
+    },
+    "reference_benchmark": {
+      "allocation": 0.25,
+      "allow_short": false,
+      "family": "ema_cross",
+      "fast": 15,
+      "slow": 100,
+      "vol_cap_pct": 2.0,
+      "vol_window": 20
+    },
+    "research_end": "2020-12-31",
+    "research_start": "2010-01-04",
+    "schema": "fx-aegis-overfit-guard-1",
+    "status": "SCREENED_CURRENT_FAMILY",
+    "tested_candidates_current": 54,
+    "tracked_search_trials_total": 54,
+    "walk_forward_fixed_library": {
+      "compounded_reference_return_pct": 2.414244,
+      "fixed_library_size": 4,
+      "periods": [
+        {
+          "chosen_fixed_library_index": 1,
+          "fold": 3,
+          "reference_return_pct": 5.636522,
+          "test_end": "2014-02-12",
+          "test_start": "2012-09-27",
+          "train_through": "2012-09-26"
+        },
+        {
+          "chosen_fixed_library_index": 1,
+          "fold": 4,
+          "reference_return_pct": 4.946722,
+          "test_end": "2015-06-26",
+          "test_start": "2014-02-13",
+          "train_through": "2014-02-12"
+        },
+        {
+          "chosen_fixed_library_index": 1,
+          "fold": 5,
+          "reference_return_pct": 0.838674,
+          "test_end": "2016-11-08",
+          "test_start": "2015-06-29",
+          "train_through": "2015-06-26"
+        },
+        {
+          "chosen_fixed_library_index": 1,
+          "fold": 6,
+          "reference_return_pct": -3.560706,
+          "test_end": "2018-03-28",
+          "test_start": "2016-11-09",
+          "train_through": "2016-11-08"
+        },
+        {
+          "chosen_fixed_library_index": 1,
+          "fold": 7,
+          "reference_return_pct": -2.146276,
+          "test_end": "2019-08-14",
+          "test_start": "2018-03-29",
+          "train_through": "2018-03-28"
+        },
+        {
+          "chosen_fixed_library_index": 1,
+          "fold": 8,
+          "reference_return_pct": -2.922432,
+          "test_end": "2020-12-31",
+          "test_start": "2019-08-15",
+          "train_through": "2019-08-14"
+        }
+      ],
+      "state": "EXPLORATORY_WALK_FORWARD_PRE2021_ONLY",
+      "used_to_select_evolved_candidate": false
+    },
+    "warning": "Daily reference-rate, repeated historic model selection; not an executable backtest or future-profit estimate."
+  },
+  "overfit_audit_sha256": "451a1d7f90b64e18b9271608540dc22337ef57e629b6e34e2f4a148ac8b02de6",
   "paper_champion_present": false,
   "population": 16,
   "random_seed": 202687,
   "schema": "fx-aegis-self-evolve-1",
   "search_window_end_exclusive": "2021-01-01",
   "seed_policy": "weekly",
-  "sha256": "d12977c700aaa6a70e4b2a4993b72ea61a5e679e655f81a56958c577900d0fdc",
+  "sha256": "c25f591a985c4327f60178143e2e6ac9b354a385dd5a94932d9819452bf9c785",
   "shadow": {
     "approved_for_live_trading": false,
-    "state": "NO_RESEARCH_ELIGIBLE_CANDIDATE"
+    "state": "NO_STATISTICALLY_SCREENED_CANDIDATE"
   },
   "source": {
     "data_sha256": "344f00cb5b66495fe0ff1176d1d73b02148cd4621f8b3b41634de158742050dc",
     "kind": "FRED_DAILY_REFERENCE_NON_EXECUTABLE",
-    "metadata_sha256": "03b44143935131a7c3679c4d14b60844dc50d5dd96eac4c8cb0ed0a380e846fa",
+    "metadata_sha256": "12f45edf8dc72e4928915d609dd009c313f284860b2c48c837b02ce8ae25f8a6",
     "source": "https://fred.stlouisfed.org/series/DEXJPUS"
   },
+  "statistically_screened_count": 0,
   "top": [
     {
       "eligible": false,

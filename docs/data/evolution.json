@@ -14,10 +14,14 @@
   "data_to": "2026-11-06",
   "eligible_count": 0,
   "exploration_history_runs": 1,
+  "overfit_audit_status": "SCREENED_CURRENT_FAMILY",
   "paper_champion_present": false,
-  "report_sha256": "d12977c700aaa6a70e4b2a4993b72ea61a5e679e655f81a56958c577900d0fdc",
+  "rank_instability_fraction": 0.742857,
+  "report_sha256": "c25f591a985c4327f60178143e2e6ac9b354a385dd5a94932d9819452bf9c785",
   "schema": "fx-aegis-self-evolve-1",
-  "shadow_state": "NO_RESEARCH_ELIGIBLE_CANDIDATE",
+  "shadow_state": "NO_STATISTICALLY_SCREENED_CANDIDATE",
   "source_kind": "FRED_DAILY_REFERENCE_NON_EXECUTABLE",
+  "statistically_screened_count": 0,
+  "walk_forward_fixed_library_return_pct": 2.414244,
   "warning": "Not a reliable forecast or executable backtest; FRED daily reference only."
 }
