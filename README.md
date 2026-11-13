@@ -1,4 +1,4 @@
-# FX AEGIS AI — Multi-Agent FX Research Dashboard (v1.2)
+# FX AEGIS AI v1.3 — one-screen dashboard + custom agent factory
 
 **Updated: 2026-11-13 JST. Research-only.** No order placement, broker credentials, or live trading. This code **does not demonstrate positive expected returns**.
 
@@ -27,6 +27,18 @@ python -m venv .venv
 pip install -r requirements.txt
 python -m unittest discover -s tests -v
 ```
+
+## Custom AI agent generation (v1.3, backtest only)
+
+```bash
+python custom_agents.py create --name AegisMomentum --template momentum --model logistic --threshold 0.60
+python custom_agents.py validate agents/AegisMomentum.json
+python custom_agents.py list
+python main.py --csv data/demo_synthetic_usdjpy.csv --strategy trend --custom-agent agents/AegisMomentum.json --out results/demo_custom
+python dashboard.py --results results/demo_custom --market data/demo_synthetic_usdjpy.csv
+```
+
+Custom direction models use `momentum`, `reversal`, or `session` predefined historical features and `logistic`, `random_forest`, or `gradient_boosting` classifiers. You can specify multiple `--custom-agent` paths. Each model is trained only on the prior walk-forward training window and may **veto** existing BUY/SELL decisions, never create new orders. Configs are validated JSON without arbitrary executable Python or future target columns. The decision audit contains `custom_votes_json`, `custom_veto`, and the summary lists custom agent definitions. **This generator configures ML agents, not LLM-based autonomous agents, and does not prove profitability.**
 
 ## Baseline against trend-gated candidate
 
@@ -120,8 +132,6 @@ The `dashboard.py` HTTP server and `dashboard_ui/` UI provide a **one-screen des
 
 ```bash
 # after generating a result by running main.py
-python generate_demo.py --output data/demo_synthetic_usdjpy.csv
-python main.py --csv data/demo_synthetic_usdjpy.csv --strategy trend --out results/demo_trend
 python dashboard.py --results results/demo_trend --market data/demo_synthetic_usdjpy.csv
 ```
 
@@ -134,4 +144,4 @@ python main.py --csv data/verified_usdjpy_h1.csv --strategy trend --out results/
 python dashboard.py --results results/my_test --market data/verified_usdjpy_h1.csv --data-label "ユーザー入力データ・実市場性未検証"
 ```
 
-**Do not expose this local server to the public internet**: the HTTP service is intended for `127.0.0.1` only. This UI is a display layer; it does not implement news collection, live quotes, extra models, or order execution beyond the existing research pipeline. Screenshots and pre-generated results are excluded from the source repository; generate local demo data with the commands above.
+**Do not expose this local server to the public internet**: the HTTP service is intended for `127.0.0.1` only. This UI is a display layer; it does not implement news collection, live quotes, extra models, or order execution beyond the existing research pipeline. Sample screenshots can be found in `dashboard_preview_1920x1080.png` and `dashboard_preview_1366x768.png` if included in the release package.

@@ -1,0 +1,16 @@
+{
+  "name": "AegisMomentum",
+  "model": "logistic",
+  "features": [
+    "return_1",
+    "return_3",
+    "return_6",
+    "ema_gap",
+    "ma_slope",
+    "range_pct"
+  ],
+  "threshold": 0.6,
+  "seed": 42,
+  "role": "veto_only",
+  "version": 1
+}

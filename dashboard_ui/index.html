@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><meta name="color-scheme" content="dark"/><title>FX AEGIS AI · CONTROL DASHBOARD</title><link rel="stylesheet" href="/styles.css"/><script defer src="/app.js"></script></head>
+<body>
+<main class="shell">
+  <header class="topbar">
+    <div class="brand"><div class="brand-icon"><span class="bars">▮▮▮</span></div><div><div class="eyebrow">ALGORITHMIC RESEARCH TERMINAL <span class="edition">/ 01</span></div><h1>FX <span>AEGIS</span> <strong>AI</strong></h1></div></div>
+    <div class="header-right"><span class="context"><span class="small-dot"></span> OFFLINE BACKTEST</span><div class="clock"><div id="localClock">--:--:-- <small>JST</small></div><div id="modelTime">検証シグナル: --</div></div></div>
+  </header>
+  <section class="status-strip" aria-label="データ状態">
+    <div class="strip-left"><span class="tag tag-alert">実発注なし</span><span class="tag tag-muted" id="dataLabel">人工生成データ / DEMO</span><span class="mid-sep">|</span><span class="symbol">USD / JPY</span><span class="divider-dot">•</span><span class="subtle">H1 · Trend gated</span><span class="divider-dot">•</span><span class="subtle" id="segmentDates">期間読み込み中</span></div>
+    <div class="strip-right"><label for="segment">検証区間</label><select id="segment" aria-label="検証区間"><option value="test">最終テスト 20%</option><option value="validation">検証 20%</option></select><span class="refresh" id="freshness">ファイル監視: 15秒</span></div>
+  </section>
+  <section class="kpis" aria-label="主要な成績指標">
+    <article class="kpi"><div class="kpi-label">仮想口座残高 <span>ACCOUNT EQUITY</span></div><div class="kpi-value" id="equity">--</div><div class="kpi-foot"><span class="tiny-line">●</span>初期資金 <span id="initialBalance">--</span></div></article>
+    <article class="kpi"><div class="kpi-label">期間損益 <span>NET P&L</span></div><div class="kpi-value" id="netPnl">--</div><div class="kpi-foot" id="returnPct">--</div></article>
+    <article class="kpi"><div class="kpi-label">最大DD <span>MAX DRAWDOWN</span></div><div class="kpi-value" id="maxDd">--</div><div class="kpi-foot">決済後の資産曲線基準</div></article>
+    <article class="kpi"><div class="kpi-label">勝率 <span>WIN RATE</span></div><div class="kpi-value" id="winRate">--</div><div class="kpi-foot" id="tradeCount">-- 取引</div></article>
+    <article class="kpi"><div class="kpi-label">利益係数 <span>PROFIT FACTOR</span></div><div class="kpi-value" id="profitFactor">--</div><div class="kpi-foot" id="pfIndicator">総利益 ÷ 総損失</div></article>
+  </section>
+  <section class="center-grid" aria-label="チャートとAI判断">
+    <article class="panel chart-panel"><div class="panel-top"><div><div class="panel-kicker">01 <span>/ MARKET & PERFORMANCE</span></div><h2 id="chartTitle">ドル円 価格推移</h2></div><div class="tools"><div class="pill-group" id="modeGroup" aria-label="チャート種類"><button data-mode="price" class="selected">価格</button><button data-mode="equity">資産推移</button></div><div class="pill-group" id="windowGroup" aria-label="表示範囲"><button data-window="24">24H</button><button data-window="168">7D</button><button data-window="all" class="selected">ALL</button></div></div></div>
+      <div class="chart-inner"><div class="chart-tags"><span class="swatch swatch-price"></span><span id="chartLegend">終値</span><span class="swatch swatch-ema"></span><span id="chartExtraLegend">EMA50</span><span id="chartNote">価格は入力した検証用データ</span></div><canvas id="priceChart" aria-label="検証データのチャート" role="img"></canvas><div id="chartTooltip" class="chart-tooltip" hidden></div></div>
+      <div class="chart-bottom"><span id="chartRange">--</span><span class="auto-refresh"><span class="pulse"></span>15秒ごとにローカルファイルを再読込（市場のライブ配信ではありません）</span></div></article>
+    <article class="panel ai-panel"><div class="panel-top"><div><div class="panel-kicker">02 <span>/ DECISION ENGINE</span></div><h2>AI 合議シグナル</h2></div><span class="small-label" id="agentCount">3 MODEL + GATES</span></div>
+      <div class="signal-wrap"><div class="signal-text"><span>最新の確定足</span><strong id="signalSide">--</strong></div><div class="signal-sub" id="signalReason">判断を読み込み中</div></div>
+      <div class="model-bars"><div class="model-row"><div class="model-head"><span><b class="model-icon">01</b> トレンドAI</span><strong id="trendProb">--</strong></div><div class="bar-track"><span id="trendBar"></span><i></i></div></div><div class="model-row"><div class="model-head"><span><b class="model-icon">02</b> 反転AI</span><strong id="revertProb">--</strong></div><div class="bar-track"><span id="revertBar"></span><i></i></div></div><div class="model-row"><div class="model-head"><span><b class="model-icon">03</b> 変動リスクAI</span><strong id="volStatus">--</strong></div><div class="bar-track risk-bar"><span id="volBar"></span><i></i></div></div></div>
+      <div class="ai-detail"><span>合議条件：両方向AIが <b>60%以上</b> / <b>40%以下</b></span><span id="aiGateStatus" class="mini-status">判定待ち</span></div>
+    </article>
+  </section>
+  <section class="bottom-grid" aria-label="取引履歴と管理条件">
+    <article class="panel activity-panel"><div class="panel-top"><div><div class="panel-kicker">03 <span>/ EXECUTION JOURNAL</span></div><h2>直近の検証取引</h2></div><span class="small-label" id="tradeLabel">CLOSED POSITIONS</span></div><div class="table-wrap"><table><thead><tr><th>決済日時（JST）</th><th>方向</th><th>確定損益</th><th>決済後残高</th></tr></thead><tbody id="tradeRows"><tr><td colspan="4" class="no-data">読み込み中...</td></tr></tbody></table></div></article>
+    <article class="panel guard-panel"><div class="panel-top"><div><div class="panel-kicker">04 <span>/ SAFETY & DATA CONTROL</span></div><h2>リスク監視・情報連携</h2></div><span class="small-label">READ ONLY</span></div><div class="guard-list">
+       <div class="guard-line"><span>新規注文</span><strong class="danger-text">無効 <small>実発注機能なし</small></strong></div>
+       <div class="guard-line"><span>DDによる停止</span><strong id="haltStatus">--</strong></div>
+       <div class="guard-line"><span>最大許容DD</span><strong id="ddLimit">--</strong></div>
+       <div class="guard-line"><span>経済指標イベント</span><strong id="eventCount">--</strong></div>
+       <div class="guard-line"><span>公式情報検索</span><strong id="researchStatus">--</strong></div>
+       <div class="guard-line"><span>戦略フィルター</span><strong id="gateSummary">--</strong></div>
+    </div><div class="guard-notice"><span class="attention">!</span><span>利益予測ではありません。実市場収益性は未検証。AI判断は売買指示ではありません。</span></div></article>
+  </section>
+  <footer class="bottom-status"><span>RESEARCH TERMINAL V1.2 <span class="muted">/</span> 6-AGENT BACKTEST</span><span id="fileStamp">読み込み中...</span><span>DATA ISOLATED <span class="green-dot">●</span> NO BROKER CONNECTION</span></footer>
+</main></body></html>
