@@ -1,4 +1,4 @@
-# FX Multi-Agent AI v1.2 — one-screen dashboard + v1.1 research engine
+# FX AEGIS AI v1.4 — evolutionary agent discovery + one-screen dashboard
 
 **Updated: 2026-11-13 JST. Research-only.** No order placement, broker credentials, or live trading. This code **does not demonstrate positive expected returns**.
 
