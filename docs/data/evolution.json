@@ -1,0 +1,22 @@
+{
+  "approved_for_live_trading": false,
+  "best": {
+    "allocation": 0.1,
+    "allow_short": false,
+    "family": "close_breakout",
+    "fast": 40,
+    "slow": 100,
+    "vol_cap_pct": 1.2,
+    "vol_window": 40
+  },
+  "candidate_count": 48,
+  "data_sha256": "344f00cb5b66495fe0ff1176d1d73b02148cd4621f8b3b41634de158742050dc",
+  "data_to": "2026-11-06",
+  "eligible_count": 0,
+  "paper_champion_present": false,
+  "report_sha256": "eb95d77caf13f2cf77f250568bf1ae7585cd478832332fa4df4b712b4bc901f4",
+  "schema": "fx-aegis-self-evolve-1",
+  "shadow_state": "NO_RESEARCH_ELIGIBLE_CANDIDATE",
+  "source_kind": "FRED_DAILY_REFERENCE_NON_EXECUTABLE",
+  "warning": "Not a reliable forecast or executable backtest; FRED daily reference only."
+}
