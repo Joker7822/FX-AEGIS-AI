@@ -1,4 +1,4 @@
-# FX Multi-Agent AI v1.2 — one-screen dashboard + v1.1 research engine
+# FX AEGIS AI v1.8 — multi-agent research and self-evolution
 
 ## v1.8 — autonomous strategy discovery (research-only)
 
@@ -6,7 +6,7 @@ The new deterministic `self_evolve.py` generates strategy/volatility-filter vari
 
 ```bash
 python -m unittest discover -s tests -v
-python self_evolve.py --population 16 --generations 5 --seed 42
+python self_evolve.py --population 16 --generations 5 --seed 42 --seed-mode weekly
 ```
 
 See [SELF_EVOLUTION_GUIDE_JA.md](SELF_EVOLUTION_GUIDE_JA.md). The public GitHub Pages dashboard reports candidate counts and research state; real orders stay disabled.

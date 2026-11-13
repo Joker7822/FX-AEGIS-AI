@@ -48,7 +48,7 @@ async function loadEvolution(){
   const expected=state.data?.provenance?.csv_sha256;
   if(!expected||e.data_sha256!==expected||e.approved_for_live_trading!==false||e.source_kind!=='FRED_DAILY_REFERENCE_NON_EXECUTABLE')throw Error('進化証跡不一致');
   $('evolutionState').textContent=`${e.candidate_count}案 / 合格${e.eligible_count}件`;
-  $('evolutionState').title='新データ126件以上の紙上検証が必要。過去の参考レートでの最適化は将来利益を保証しません。';
+  $('evolutionState').title=`探索履歴${e.exploration_history_runs||0}週分。新データ126件以上の紙上検証が必要。将来利益は保証しません。`;
  }catch(err){$('evolutionState').textContent='未確認（売買禁止）';}
 }
 function boot(){setInterval(()=>{$('clockJst').textContent=new Date().toLocaleTimeString('ja-JP',{timeZone:'Asia/Tokyo',hour12:false})+' JST'},1000);$('scenarioForm').addEventListener('submit',e=>{e.preventDefault();recalc()});document.querySelectorAll('[data-plot]').forEach(b=>b.addEventListener('click',()=>{state.plot=b.dataset.plot;document.querySelectorAll('[data-plot]').forEach(x=>x.classList.toggle('active',x===b));draw()}));document.querySelectorAll('[data-window]').forEach(b=>b.addEventListener('click',()=>{state.window=b.dataset.window;document.querySelectorAll('[data-window]').forEach(x=>x.classList.toggle('active',x===b));draw()}));window.addEventListener('resize',draw);load().then(()=>Promise.all([loadRepro(),loadEvolution()]))};document.addEventListener('DOMContentLoaded',boot);

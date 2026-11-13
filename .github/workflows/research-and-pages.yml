@@ -69,7 +69,7 @@ jobs:
           OPENBLAS_NUM_THREADS: '1'
           MKL_NUM_THREADS: '1'
         run: |
-          python self_evolve.py --population 16 --generations 5 --seed 42 --spread-pips 1.4
+          python self_evolve.py --population 16 --generations 5 --seed 42 --seed-mode weekly --spread-pips 1.4
       - name: Produce static read-only website and scenario payload
         run: python github_pipeline.py build
       - name: Persist reference history and publication JSON in Git history

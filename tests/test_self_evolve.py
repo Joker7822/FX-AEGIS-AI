@@ -102,6 +102,34 @@ class SelfEvolutionTests(unittest.TestCase):
                 run(self.csv,root/'missing',root/'report.json',root/'challenger.json',
                     root/'paper.json',root/'site.json',fixture=True,population=4,generations=1)
 
+    def test_weekly_archive_is_deterministic_and_not_duplicated(self):
+        with tempfile.TemporaryDirectory() as d:
+            r=Path(d)
+            params=dict(dataset=self.csv,metadata=r/'absent',report_file=r/'report.json',
+                        challenger_file=r/'challenger.json',paper_file=r/'paper.json',
+                        site_file=r/'site.json',fixture=True,population=6,generations=2,
+                        seed=42,seed_mode='weekly',archive_file=r/'archive.json')
+            a=run(**params)
+            b=run(**params)
+            archived=json.loads((r/'archive.json').read_text())
+            self.assertEqual(a['sha256'],b['sha256'])
+            self.assertEqual(len(archived['weekly_runs']),1)
+            self.assertEqual(archived['candidate_evaluations_total'],a['evaluated'])
+
+    def test_tampered_archive_causes_safe_failure(self):
+        with tempfile.TemporaryDirectory() as d:
+            r=Path(d)
+            params=dict(dataset=self.csv,metadata=r/'absent',report_file=r/'report.json',
+                        challenger_file=r/'challenger.json',paper_file=r/'paper.json',
+                        site_file=r/'site.json',fixture=True,population=4,generations=1,
+                        seed_mode='weekly',archive_file=r/'archive.json')
+            run(**params)
+            record=json.loads((r/'archive.json').read_text())
+            record['weekly_runs'][0]['eligible_count']=1000
+            (r/'archive.json').write_text(json.dumps(record))
+            with self.assertRaisesRegex(ValueError,'modified'):
+                run(**params)
+
     def test_shadow_threshold_not_bypassed(self):
         # 2027 future rows newly arriving, fewer than 126 observations.
         p=self.points.copy()

@@ -41,10 +41,11 @@ jobs:
           OPENBLAS_NUM_THREADS: '1'
           MKL_NUM_THREADS: '1'
         run: |
-          python self_evolve.py --population 16 --generations 5 --seed 42 \
+          python self_evolve.py --population 16 --generations 5 --seed 42 --seed-mode weekly \
             --report artifacts/evolution_report.json \
             --challenger artifacts/evolution_challenger.json \
             --paper artifacts/paper_champion.json \
+            --archive artifacts/evolution_archive.json \
             --site artifacts/evolution_public.json
       - name: Model regression smoke test using explicitly SYNTHETIC H1
         run: |
@@ -60,5 +61,6 @@ jobs:
             artifacts/repro_scan.json
             artifacts/evolution_report.json
             artifacts/evolution_public.json
+            artifacts/evolution_archive.json
             results/demo_trend/summary.json
           retention-days: 30

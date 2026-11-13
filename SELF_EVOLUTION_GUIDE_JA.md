@@ -49,12 +49,14 @@
 ```bash
 pip install -r requirements-repro.txt
 python -m unittest discover -s tests -v
-python self_evolve.py --population 16 --generations 5 --seed 42
+python self_evolve.py --population 16 --generations 5 --seed 42 --seed-mode weekly
 ```
 
 公開済み FRED の `datasets/fred/dexjpus_daily.csv` と `metadata.json` が必要です。
 出力は `research/evolution_latest.json`、合格時のみ `research/evolution_challenger.json`、
 その後の新規データ試験に成功した場合のみ `research/paper_champion.json` です。
+探索履歴は `research/evolution_archive.json` に保存し、同じ週は同じ乱数シードで再現できます。
+毎週異なるシードで新候補を探索しますが、過去データへの試行回数が増えるほど過学習リスクも高まります。
 公開画面用には `docs/data/evolution.json` を出力します。
 
 GitHub Actionsの平日ジョブに組み込み、週末には独立した実験ログをArtifactsに保存します。

@@ -18,7 +18,7 @@ import math
 import random
 import statistics
 from dataclasses import asdict, dataclass
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from pathlib import Path
 
 from github_pipeline import DATASET, META, ema_series
@@ -249,13 +249,48 @@ def shadow_status(ind: Indicators, g: Genome, discovery_end: str,
             "metrics_double_cost": record, "approved_for_live_trading": False}
 
 
+def update_archive(path: Path, *, seed_mode: str, week_id: str, seed: int,
+                   results: dict, source_sha: str) -> dict:
+    """Persistent, integrity-checked research lineage; no holdout-based selection."""
+    if path.exists():
+        archive = json.loads(path.read_text(encoding="utf-8"))
+        digest = archive.pop("archive_sha256", None)
+        if archive.get("schema") != SCHEMA or digest != sha256(canonical(archive)):
+            raise ValueError("Exploration archive has been modified or is incompatible")
+    else:
+        archive = {"schema": SCHEMA, "seed_mode": seed_mode, "weekly_runs": []}
+    if archive["seed_mode"] != seed_mode:
+        raise ValueError("Seed policy changed: choose a separate research archive")
+    if not any(x["week_id"] == week_id for x in archive["weekly_runs"]):
+        archive["weekly_runs"].append({
+            "week_id": week_id, "seed": seed, "source_sha256": source_sha,
+            "evaluated": results["evaluated"], "eligible_count": results["eligible_count"],
+            "best_gene": results["best"]["gene"],
+            "best_score": results["best"]["score"],
+        })
+    archive["candidate_evaluations_total"] = sum(x["evaluated"] for x in archive["weekly_runs"])
+    archive["archive_sha256"] = sha256(canonical(archive))
+    atomic_json(path, archive)
+    return archive
+
+
 def run(dataset: Path, metadata: Path, report_file: Path, challenger_file: Path,
         paper_file: Path, site_file: Path, *, fixture: bool = False,
         seed: int = 42, population: int = 16, generations: int = 5,
-        base_cost: float = 1.4) -> dict:
+        base_cost: float = 1.4, seed_mode: str = "fixed",
+        archive_file: Path | None = None) -> dict:
     points, source = validate_source(dataset, metadata, fixture=fixture)
     ind = Indicators(points)
-    result = evolve(ind, seed=seed, population=population, generations=generations, base_cost=base_cost)
+    if seed_mode not in ("fixed", "weekly"):
+        raise ValueError("Unknown seed policy")
+    calendar = date.fromisoformat(points[-1]["date"]).isocalendar()
+    week_id = f"{calendar.year}-W{calendar.week:02d}"
+    effective_seed = seed if seed_mode == "fixed" else seed + calendar.year * 100 + calendar.week
+    result = evolve(ind, seed=effective_seed, population=population,
+                    generations=generations, base_cost=base_cost)
+    archive = update_archive(archive_file, seed_mode=seed_mode, week_id=week_id,
+                             seed=effective_seed, results=result,
+                             source_sha=source["data_sha256"]) if archive_file else None
     challenger = None
     shadow = {"state": "NO_RESEARCH_ELIGIBLE_CANDIDATE", "approved_for_live_trading": False}
     if challenger_file.exists():
@@ -285,7 +320,11 @@ def run(dataset: Path, metadata: Path, report_file: Path, challenger_file: Path,
     summary = {"schema": SCHEMA, "source": source, "observation_count": len(points),
                "end_observation": points[-1]["date"], "search_window_end_exclusive": "2021-01-01",
                "warning": "Selection uses pre-2021 reference data only. 2021+ was previously inspected and is not fresh validation.",
-               "random_seed": seed, "population": population, "generations_count": generations,
+               "random_seed": effective_seed, "seed_policy": seed_mode, "exploration_week": week_id,
+               "exploration_history": ({"weekly_runs": len(archive["weekly_runs"]),
+                                          "candidate_evaluations_total": archive["candidate_evaluations_total"],
+                                          "archive_sha256": archive["archive_sha256"]} if archive else None),
+               "population": population, "generations_count": generations,
                "base_assumed_cost_pips": base_cost, "eligible_count": result["eligible_count"],
                "evaluated": result["evaluated"], "best": result["best"], "top": result["top"],
                "generation_history": result["generations"], "shadow": shadow,
@@ -297,6 +336,7 @@ def run(dataset: Path, metadata: Path, report_file: Path, challenger_file: Path,
                             "data_sha256": source["data_sha256"],
                             "report_sha256": summary["sha256"],
                             "data_to": points[-1]["date"], "candidate_count": result["evaluated"],
+                            "exploration_history_runs": len(archive["weekly_runs"]) if archive else 0,
                             "eligible_count": result["eligible_count"],
                             "best": result["best"]["gene"],
                             "shadow_state": shadow["state"],
@@ -316,17 +356,23 @@ def main() -> None:
     p.add_argument("--site", type=Path, default=PROJECT / "docs/data/evolution.json")
     p.add_argument("--fixture", action="store_true", help="Explicit synthetic tests only")
     p.add_argument("--seed", type=int, default=42)
+    p.add_argument("--seed-mode", choices=("fixed", "weekly"), default="fixed",
+                   help="weekly=repeatably explore a different seeded population each ISO week")
+    p.add_argument("--archive", type=Path, default=PROJECT / "research/evolution_archive.json")
     p.add_argument("--population", type=int, default=16)
     p.add_argument("--generations", type=int, default=5)
     p.add_argument("--spread-pips", type=float, default=1.4)
     a = p.parse_args()
     outcome = run(a.dataset, a.metadata, a.report, a.challenger, a.paper, a.site,
                   fixture=a.fixture, seed=a.seed, population=a.population,
-                  generations=a.generations, base_cost=a.spread_pips)
+                  generations=a.generations, base_cost=a.spread_pips,
+                  seed_mode=a.seed_mode, archive_file=a.archive)
     print(json.dumps({"evaluated": outcome["evaluated"],
                       "eligible_count": outcome["eligible_count"],
                       "best": outcome["best"]["gene"],
                       "best_score": outcome["best"]["score"],
+                      "seed_policy": outcome["seed_policy"],
+                      "exploration_history": outcome["exploration_history"],
                       "shadow": outcome["shadow"],
                       "approved_for_live_trading": False}, ensure_ascii=False, indent=2))
 
