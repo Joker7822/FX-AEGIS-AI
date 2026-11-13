@@ -203,3 +203,9 @@ The research backtester now accepts `--retrain-every-bars` and `--max-training-b
 - Pages initial setup and URL verification: `GITHUB_AUTOMATION_GUIDE_JA.md`.
 
 No live orders, no account connections, no claim of profitable trading.
+
+
+## v1.7 — reproducibility / protocol-locked evaluation (2026-11-13)
+
+See [`REPRODUCIBILITY_GUIDE_JA.md`](REPRODUCIBILITY_GUIDE_JA.md).
+The GitHub workflow runs the deterministic experiment twice, checks exact data, metadata, runtime and engine hashes, then stores proof in `research/repro_latest.json`. Parameter search ranks candidates from **2006–2015 training + 2016–2020 validation only**, evaluating **2021–latest holdout once** for the selected candidate. Daily reference prices cannot establish real-execution profitability. No live-order or automatic broker activation.

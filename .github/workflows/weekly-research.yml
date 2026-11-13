@@ -19,11 +19,21 @@ jobs:
         with:
           python-version: '3.11'
           cache: 'pip'
-      - run: pip install -r requirements.txt
+      - run: pip install -r requirements-repro.txt
       - name: Simulate retained official daily reference dataset (non-executable scenario)
         run: |
           mkdir -p artifacts
           python github_pipeline.py simulate --dataset datasets/fred/dexjpus_daily.csv --out artifacts/weekly_reference_scenario.json
+      - name: Reproduce fixed experiment and scan without future-data selection
+        env:
+          PYTHONHASHSEED: '42'
+          OMP_NUM_THREADS: '1'
+          OPENBLAS_NUM_THREADS: '1'
+          MKL_NUM_THREADS: '1'
+        run: |
+          python repro_lab.py capture --out artifacts/repro_proof.json
+          python repro_lab.py verify --proof artifacts/repro_proof.json
+          python repro_lab.py scan --out artifacts/repro_scan.json
       - name: Model regression smoke test using explicitly SYNTHETIC H1
         run: |
           python generate_demo.py
@@ -34,5 +44,7 @@ jobs:
           name: weekly-fx-research-outputs
           path: |
             artifacts/weekly_reference_scenario.json
+            artifacts/repro_proof.json
+            artifacts/repro_scan.json
             results/demo_trend/summary.json
           retention-days: 30

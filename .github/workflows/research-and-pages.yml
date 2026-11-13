@@ -10,6 +10,9 @@ on:
       - 'docs/**'
       - 'tests/**'
       - 'requirements.txt'
+      - 'requirements-repro.txt'
+      - 'repro_lab.py'
+      - 'research/**'
   schedule:
     # UTC 02:13 = JST 11:13; weekdays. Scheduled jobs may be delayed.
     - cron: '13 2 * * 1-5'
@@ -36,8 +39,8 @@ jobs:
         with:
           python-version: '3.11'
           cache: 'pip'
-      - name: Install pinned research dependencies
-        run: pip install -r requirements.txt
+      - name: Install exact reproducibility environment
+        run: pip install -r requirements-repro.txt
       - name: Generate reproducible synthetic fixture (test-only)
         run: |
           python generate_demo.py
@@ -46,13 +49,25 @@ jobs:
         run: python -m unittest discover -s tests -v
       - name: Download official FRED DEXJPUS and validate provenance
         run: python github_pipeline.py refresh
+      - name: Replay proof and parameter stability scan on verified historical data
+        env:
+          PYTHONHASHSEED: '42'
+          OMP_NUM_THREADS: '1'
+          OPENBLAS_NUM_THREADS: '1'
+          MKL_NUM_THREADS: '1'
+        run: |
+          mkdir -p research
+          python repro_lab.py capture --out research/repro_latest.json --fast 15 --slow 100 --allocation 0.25 --spread-pips 1.4
+          python repro_lab.py verify --proof research/repro_latest.json
+          python repro_lab.py scan --out research/scan_latest.json --seed 42 --spread-pips 1.4
+          python repro_lab.py publish --proof research/repro_latest.json --scan research/scan_latest.json --out docs/data/reproducibility.json
       - name: Produce static read-only website and scenario payload
         run: python github_pipeline.py build
       - name: Persist reference history and publication JSON in Git history
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add datasets/fred/dexjpus_daily.csv datasets/fred/metadata.json docs/data/research.json
+          git add datasets/fred/dexjpus_daily.csv datasets/fred/metadata.json docs/data/research.json docs/data/reproducibility.json research/repro_latest.json research/scan_latest.json
           if ! git diff --cached --quiet; then
             git commit -m 'data: refresh verified FRED USDJPY reference snapshot [skip ci]'
             git push origin HEAD:main
