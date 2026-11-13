@@ -1,0 +1,25 @@
+{
+  "archive_sha256": "13f3a861a732fbaf5d50b1b03e5d1ebefd8dcfed3bedff9309fc043bff794215",
+  "candidate_evaluations_total": 54,
+  "schema": "fx-aegis-self-evolve-1",
+  "seed_mode": "weekly",
+  "weekly_runs": [
+    {
+      "best_gene": {
+        "allocation": 0.1,
+        "allow_short": false,
+        "family": "ema_cross",
+        "fast": 5,
+        "slow": 150,
+        "vol_cap_pct": 0.6,
+        "vol_window": 40
+      },
+      "best_score": -2.133459,
+      "eligible_count": 0,
+      "evaluated": 54,
+      "seed": 202687,
+      "source_sha256": "344f00cb5b66495fe0ff1176d1d73b02148cd4621f8b3b41634de158742050dc",
+      "week_id": "2026-W45"
+    }
+  ]
+}
