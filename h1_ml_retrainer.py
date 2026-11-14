@@ -88,6 +88,11 @@ def _fit(x,y,idx,seed):
     return model1,model2
 
 
+# Backward-compatible fit entry point for immutable forward-paper replay.
+# Same model family, seed, training indices, and causal features as _fit.
+_fit_agents = _fit
+
+
 def predict_fold(quotes,start,stop,cfg):
     """Train only on matured labels; trades cannot cross a frozen fold boundary."""
     cfg.check()
