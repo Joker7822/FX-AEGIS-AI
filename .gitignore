@@ -13,3 +13,7 @@ results/
 datasets/broker/
 private_quotes/
 private_reports/
+# v2.3 broker snapshots / immutable paper locks are ALWAYS local/private.
+private_quotes/
+private_reports/
+*.api-token

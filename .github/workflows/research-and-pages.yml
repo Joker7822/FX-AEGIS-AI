@@ -18,6 +18,10 @@ on:
       - 'execution_lab.py'
       - 'h1_evolution_guard.py'
       - 'h1_ml_retrainer.py'
+      - 'broker_h1_oanda.py'
+      - 'forward_paper.py'
+      - 'BROKER_FORWARD_GUIDE_JA.md'
+      - '.github/workflows/private-broker-h1-research.yml'
       - 'H1_ML_RETRAIN_GUIDE_JA.md'
       - 'research/**'
   schedule:
@@ -75,7 +79,7 @@ jobs:
             --commission-jpy-per-roundtrip 0 \
             --bootstrap-reps 64 --out results/h1_evolution_fixture.json
           python -c "import json; a=json.load(open('results/h1_evolution_fixture.json')); assert a['status']=='SYNTHETIC_TEST_ONLY' and not a['eligible_for_paper_promotion'] and not a['approved_for_live_trading']"
-      - name: Retrain H1 ML on strictly SYNTHETIC quotes (no broker, no orders)
+      - name: ML retraining with strictly SYNTHETIC Bid/Ask fixture; paper/live promotion disabled
         env:
           PYTHONHASHSEED: '42'
           OMP_NUM_THREADS: '1'

@@ -1,15 +1,27 @@
-# FX AEGIS AI v2.2 — H1 Bid/Ask ML retraining
+# FX AEGIS AI v2.3 — Private OANDA H1 ingestion & locked forward-paper research
 
-**2026-11-14 JST / Research-only / no real orders.** The new [H1 ML retrainer](h1_ml_retrainer.py) periodically refits LogisticRegression and HistGradientBoostingClassifier using only causally matured H1 Bid/Ask training labels. Signals are checked through the existing Bid/Ask execution simulator with hypothetical slippage, commission and financing vetoes. Fixed chronological 60/20/20 research/validation/diagnostic splits; no model auto-promotion. **Future profitability not established.**
+**2026-11-14 JST · research only · real trading disabled.**
 
-Run a synthetic-only smoke test:
+Existing v2.2 `h1_ml_retrainer.py` refits two direction classifiers (`LogisticRegression` and
+`HistGradientBoostingClassifier`) on causally available labels from real or
+explicitly synthetic H1 Bid/Ask USDJPY data. For signal on completed bar `i`,
+all training labels mature no later than open `i` (`j+2 <= i`). Each model is
+retrained every 72 H1 observations by default, with a bounded history and
+fixed configuration. Predictions feed `execution_lab.py` to charge supplied
+Bid/Ask entry/exit spreads, assumed slippage, commissions and signed swap where
+known. Results are segmented 60/20/20 chronologically, with the last 20%
+**diagnostic-only**. A fixed EMA baseline is reported. Neither model approval
+nor live/paper orders are implemented. No commercial price feed is included.
 
 ```bash
-python execution_lab.py fixture --rows 1250 --out data/bidask_fixture
-python h1_ml_retrainer.py --quotes data/bidask_fixture/bidask_h1_synthetic.csv --provenance data/bidask_fixture/provenance.json --allow-synthetic --slippage-pips-per-side 0.2 --commission-jpy-per-roundtrip 0 --out results/h1_ml_fixture
+python execution_lab.py fixture --rows 1250 --seed 42 --out data/bidask_fixture
+python h1_ml_retrainer.py --quotes data/bidask_fixture/bidask_h1_synthetic.csv \
+  --provenance data/bidask_fixture/provenance.json --allow-synthetic \
+  --slippage-pips-per-side 0.2 --commission-jpy-per-roundtrip 0 \
+  --out results/h1_ml_fixture
 ```
 
-Details: [H1 ML Retraining Guide](H1_ML_RETRAIN_GUIDE_JA.md).
+See [H1_ML_RETRAIN_GUIDE_JA.md](H1_ML_RETRAIN_GUIDE_JA.md).
 
 ---
 
@@ -103,6 +115,16 @@ See [SELF_EVOLUTION_GUIDE_JA.md](SELF_EVOLUTION_GUIDE_JA.md). The public GitHub 
 - **Audit**: per-trade, per-signal logs; validation/holdout summary plus sensitivity to doubled transaction costs.
 
 **These are distinct modules/ML models, not general-purpose autonomous LLMs.** The news and cost modules are deterministic, and they are allowed to reject AI signals.
+
+
+## v2.3 — Private broker H1 data and immutable forward-paper model
+
+- `broker_h1_oanda.py`: OANDA v20 H1 USD/JPY Bid+Ask download and verification; uses only `OANDA_API_TOKEN` environment variable; output must be private and is not committed/published. **No credentials have been provided; real broker quotes and their profitability are not yet verified.**
+- `forward_paper.py`: freeze a retrained ML model against its immutable quote prefix and evaluate only bars opening after the actual lock timestamp (closed bar + next-bar paper fills, no actual orders). Any history revision, code/dependency mismatch or unsigned lock fails closed.
+- `.github/workflows/private-broker-h1-research.yml`: optional manually dispatched, secret-gated runner-only ingestion and historical ML validation. Raw data/derived financial reports are never uploaded as artifacts. This is *not* an automated persistent forward-paper store.
+- Private quote data require explicit contractual permissions. FRED daily reference data are still not broker-executable prices. See [BROKER_FORWARD_GUIDE_JA.md](BROKER_FORWARD_GUIDE_JA.md).
+
+**2026-11-14 JST. No live order connection, no autonomous live promotion, no proven positive expected return.**
 
 ## Installation
 

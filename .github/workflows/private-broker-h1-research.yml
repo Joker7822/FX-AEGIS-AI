@@ -1,0 +1,100 @@
+name: FX AEGIS AI · Private OANDA H1 Research (Manual)
+
+# Never stores broker data, tokens, or accounts in a public repository/artifact.
+# The repository owner must personally confirm usage rights and configure secrets.
+on:
+  workflow_dispatch:
+    inputs:
+      history_days:
+        description: 'Completed H1 days requested (within broker history availability)'
+        required: true
+        type: choice
+        options: ['90', '120', '180']
+        default: '90'
+      environment:
+        description: 'OANDA v20 price-data environment (NO trading calls)'
+        required: true
+        type: choice
+        options: ['practice', 'live']
+        default: 'practice'
+      slippage_pips_per_side:
+        description: 'Declared hypothetical slippage per side, pips'
+        required: true
+        type: string
+      commission_jpy_per_roundtrip:
+        description: 'Declared commission per completed trade, JPY'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  private-reference-research:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      OANDA_API_TOKEN: ${{ secrets.OANDA_API_TOKEN }}
+      RESEARCH_LICENSE_ACK: ${{ vars.OANDA_RESEARCH_LICENSE_OK }}
+      HISTORY_DAYS: ${{ inputs.history_days }}
+      OANDA_ENVIRONMENT: ${{ inputs.environment }}
+      RESEARCH_SLIPPAGE: ${{ inputs.slippage_pips_per_side }}
+      RESEARCH_COMMISSION: ${{ inputs.commission_jpy_per_roundtrip }}
+      PYTHONHASHSEED: '42'
+      OMP_NUM_THREADS: '1'
+      OPENBLAS_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+      - name: Check opt-in / token without printing either
+        id: preflight
+        shell: bash
+        run: |
+          if [[ -z "${OANDA_API_TOKEN:-}" || "${RESEARCH_LICENSE_ACK:-}" != 'true' ]]; then
+            echo 'status=NOT_CONFIGURED_OR_NOT_LICENSE_ACKNOWLEDGED' >> "$GITHUB_OUTPUT"
+            echo 'Private broker H1 research skipped. No market data was retrieved.'
+            exit 0
+          fi
+          echo 'status=READY' >> "$GITHUB_OUTPUT"
+      - name: Install reproducible research dependencies
+        if: steps.preflight.outputs.status == 'READY'
+        run: pip install -r requirements-repro.txt
+      - name: Download H1 Bid/Ask to runner-only temporary directory
+        if: steps.preflight.outputs.status == 'READY'
+        shell: bash
+        run: |
+          FROM="$(date -u -d "${HISTORY_DAYS} days ago" '+%Y-%m-%dT%H:00:00Z')"
+          TO="$(date -u '+%Y-%m-%dT%H:00:00Z')"
+          python broker_h1_oanda.py \
+            --from-utc "$FROM" --to-utc "$TO" \
+            --out "$RUNNER_TEMP/aegis-private-quotes" \
+            --environment "$OANDA_ENVIRONMENT" \
+            --license-scope 'research only; no public redistribution' \
+            --license-acknowledged
+      - name: Historical ML walk-forward evaluation (not genuine forward performance)
+        if: steps.preflight.outputs.status == 'READY'
+        run: |
+          python h1_ml_retrainer.py \
+            --quotes "$RUNNER_TEMP/aegis-private-quotes/bidask_h1.csv" \
+            --provenance "$RUNNER_TEMP/aegis-private-quotes/provenance.json" \
+            --slippage-pips-per-side "$RESEARCH_SLIPPAGE" \
+            --commission-jpy-per-roundtrip "$RESEARCH_COMMISSION" \
+            --out "$RUNNER_TEMP/aegis-private-research"
+          python - <<'PY'
+          import json, os, pathlib
+          p=pathlib.Path(os.environ['RUNNER_TEMP'])/'aegis-private-research/h1_ml_retraining_report.json'
+          r=json.loads(p.read_text(encoding='utf-8'))
+          assert r['status']=='BROKER_USER_ATTESTED_RESEARCH_ONLY'
+          assert not r['approved_for_live_trading']
+          print('Private H1 research finished; source authenticity and future profitability remain unverified.')
+          print('No quotes or financial results are published or uploaded as artifacts.')
+          PY
+      - name: Clean up raw quotes and private reports
+        if: always()
+        shell: bash
+        run: |
+          rm -rf "$RUNNER_TEMP/aegis-private-quotes" "$RUNNER_TEMP/aegis-private-research"
