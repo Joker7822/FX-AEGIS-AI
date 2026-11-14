@@ -1,3 +1,7 @@
+# FX AEGIS AI v2.4 — offline Dukascopy import / OANDA deferred
+
+**2026-11-14 JST.** USD/JPY local Dukascopy tick CSV / daily `.bi5` -> audited, private H1 Bid/Ask research quotes. **No live download or trading.** OANDA v20 importer remains implemented but **ON HOLD**: explicit `--enable-api` and a separately opted-in private GitHub workflow are required. See [DUKASCOPY_OFFLINE_GUIDE_JA.md](DUKASCOPY_OFFLINE_GUIDE_JA.md). No claim of 20 years of broker quotes or positive future returns.
+
 # FX AEGIS AI v2.3 — Private OANDA H1 ingestion & locked forward-paper research
 
 **2026-11-14 JST · research only · real trading disabled.**

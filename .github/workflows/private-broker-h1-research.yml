@@ -31,7 +31,7 @@ permissions:
 
 jobs:
   private-reference-research:
-    # OANDA API is on hold until explicitly enabled by repository owner.
+    # OANDA is deferred. This opt-in variable is not configured by the project.
     if: ${{ vars.OANDA_RESEARCH_ENABLED == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 45

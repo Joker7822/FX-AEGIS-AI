@@ -19,6 +19,8 @@ on:
       - 'h1_evolution_guard.py'
       - 'h1_ml_retrainer.py'
       - 'broker_h1_oanda.py'
+      - 'dukascopy_h1.py'
+      - 'DUKASCOPY_OFFLINE_GUIDE_JA.md'
       - 'forward_paper.py'
       - 'BROKER_FORWARD_GUIDE_JA.md'
       - '.github/workflows/private-broker-h1-research.yml'
