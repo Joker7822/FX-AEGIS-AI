@@ -55,6 +55,12 @@ jobs:
         with:
           python-version: '3.11'
           cache: 'pip'
+      - name: Validate zero-dependency dashboard chart engine
+        run: |
+          node --check docs/chart-model.js
+          node --check docs/chart-view.js
+          node --check docs/app.js
+          node --test tests/test_chart_model.cjs
       - name: Validate manual-only OANDA security gates (offline; no broker API)
         run: python oanda_policy_audit.py
       - name: Install exact reproducibility environment

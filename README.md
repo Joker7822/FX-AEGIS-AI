@@ -1,3 +1,9 @@
+# FX AEGIS AI v2.9 — Private H1 candlestick viewer and chart UX (2026-11-15)
+
+The public FRED NY-noon daily USD/JPY reference series remains a **line chart**; FRED provides no OHLC and no fictitious candles are constructed. The public dashboard now supports **bid/ask H1 candlestick and UTC daily aggregation** from user-selected local `bidask_h1.csv` plus `provenance.json` after in-browser SHA-256 verification. EMA20/EMA50, time windows, zoom/pan, chart tooltip, mobile layout, and offline Node tests are included. Broker quote files are processed only in browser memory—never uploaded, published or used to populate the public FRED scenario. [日本語操作ガイド](CHART_CANDLES_GUIDE_JA.md). Source authenticity, market execution and expected profitability are not verified; OANDA fetching remains opt-in only and no trading API is added.
+
+---
+
 # FX AEGIS AI v2.7 — Offline OANDA safety audit (2026-11-15 JST)
 
 The research-only OANDA workflow remains **manual and opt-in**. New standard-library `oanda_policy_audit.py` tests the checked-in GitHub Actions workflow offline, without inspecting secrets, contacting OANDA or triggering data retrieval. A separate read-only GitHub Actions workflow audits every security-related change; the existing CI also runs the audit before installing research dependencies. This verifies **workflow source policy**, not actual GitHub variables, token availability, account permissions or profitability. See [OANDA_OFFLINE_POLICY_GUIDE_JA.md](OANDA_OFFLINE_POLICY_GUIDE_JA.md).
