@@ -31,6 +31,8 @@ permissions:
 
 jobs:
   private-reference-research:
+    # OANDA API is on hold until explicitly enabled by repository owner.
+    if: ${{ vars.OANDA_RESEARCH_ENABLED == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 45
     env:
@@ -69,7 +71,7 @@ jobs:
         run: |
           FROM="$(date -u -d "${HISTORY_DAYS} days ago" '+%Y-%m-%dT%H:00:00Z')"
           TO="$(date -u '+%Y-%m-%dT%H:00:00Z')"
-          python broker_h1_oanda.py \
+          python broker_h1_oanda.py --enable-api \
             --from-utc "$FROM" --to-utc "$TO" \
             --out "$RUNNER_TEMP/aegis-private-quotes" \
             --environment "$OANDA_ENVIRONMENT" \

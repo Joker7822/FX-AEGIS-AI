@@ -200,7 +200,10 @@ def main() -> None:
     parser.add_argument("--environment", choices=sorted(API_HOSTS), default="practice")
     parser.add_argument("--license-scope", required=True)
     parser.add_argument("--license-acknowledged", action="store_true")
+    parser.add_argument("--enable-api", action="store_true", help="Explicit opt-in; OANDA disabled by default")
     args = parser.parse_args()
+    if not args.enable_api:
+        parser.error("OANDA API is ON HOLD: no network call unless --enable-api is supplied")
     if not args.license_acknowledged:
         parser.error("You must check your OANDA data license and explicitly pass --license-acknowledged")
     token = os.environ.get("OANDA_API_TOKEN", "")
