@@ -5,6 +5,18 @@ name: FX AEGIS AI · Private OANDA H1 Research (Manual)
 on:
   workflow_dispatch:
     inputs:
+      operation:
+        description: 'Check configuration without API access, or explicitly start private research'
+        required: true
+        type: choice
+        options: ['preflight-only', 'fetch-and-evaluate']
+        default: 'preflight-only'
+      confirm_private_download:
+        description: 'Explicit confirmation required for any OANDA API request'
+        required: true
+        type: choice
+        options: ['no', 'yes']
+        default: 'no'
       history_days:
         description: 'Completed H1 days requested (within broker history availability)'
         required: true
@@ -21,20 +33,46 @@ on:
         description: 'Declared hypothetical slippage per side, pips'
         required: true
         type: string
+        default: '0.2'
       commission_jpy_per_roundtrip:
         description: 'Declared commission per completed trade, JPY'
         required: true
         type: string
+        default: '0'
 
 permissions:
   contents: read
 
 jobs:
+  readiness:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Non-network readiness check (never reads token)
+        shell: bash
+        env:
+          OPT_IN: ${{ vars.OANDA_RESEARCH_ENABLED }}
+          LICENSE_OK: ${{ vars.OANDA_RESEARCH_LICENSE_OK }}
+          OPERATION: ${{ inputs.operation }}
+          CONFIRM_DOWNLOAD: ${{ inputs.confirm_private_download }}
+        run: |
+          echo 'OANDA preflight check: no API access; no broker quotes; no secret inspection.'
+          if [[ "$OPT_IN" == 'true' && "$LICENSE_OK" == 'true' ]]; then
+            echo 'Repository opt-in and licensing acknowledgment are configured.'
+          else
+            echo 'OANDA access is disabled until both repository variables are explicitly true.'
+          fi
+          if [[ "$OPERATION" == 'fetch-and-evaluate' && "$CONFIRM_DOWNLOAD" == 'yes' ]]; then
+            echo 'An explicit private research request was selected.'
+          else
+            echo 'Preflight-only or missing explicit download confirmation; OANDA research will not run.'
+          fi
+          echo 'The API token is intentionally not checked in preflight-only mode.'
   private-reference-research:
-    # Manual dispatch only. Explicit repository opt-in is required in addition to
-    # the API token and research-license acknowledgement checked in preflight.
-    # No scheduled/push trigger and NO broker order API calls.
-    if: ${{ vars.OANDA_RESEARCH_ENABLED == 'true' }}
+    needs: readiness
+    # Manual only, two independent repository opt-ins, and two explicit inputs.
+    # Scheduled and push events cannot launch this job.
+    if: ${{ inputs.operation == 'fetch-and-evaluate' && inputs.confirm_private_download == 'yes' && vars.OANDA_RESEARCH_ENABLED == 'true' && vars.OANDA_RESEARCH_LICENSE_OK == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 45
     env:
@@ -60,8 +98,8 @@ jobs:
         run: |
           if [[ -z "${OANDA_API_TOKEN:-}" || "${RESEARCH_LICENSE_ACK:-}" != 'true' ]]; then
             echo 'status=NOT_CONFIGURED_OR_NOT_LICENSE_ACKNOWLEDGED' >> "$GITHUB_OUTPUT"
-            echo 'Private broker H1 research skipped. No market data was retrieved.'
-            exit 0
+            echo 'Private broker H1 research blocked. No market data was retrieved.'
+            exit 1
           fi
           echo 'status=READY' >> "$GITHUB_OUTPUT"
       - name: Install reproducible research dependencies
