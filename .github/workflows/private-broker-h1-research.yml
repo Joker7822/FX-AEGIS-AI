@@ -31,8 +31,9 @@ permissions:
 
 jobs:
   private-reference-research:
-    # OANDA is deferred. This opt-in variable is not configured by the project.
-    if: ${{ vars.OANDA_RESEARCH_ENABLED == 'true' }}
+    # HARD HOLD: false must be removed in a separately reviewed commit to enable OANDA.
+    # Merely setting a secret or a repository variable cannot start data access.
+    if: ${{ false && vars.OANDA_RESEARCH_ENABLED == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 45
     env:
