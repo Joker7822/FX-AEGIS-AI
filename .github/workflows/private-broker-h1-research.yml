@@ -31,9 +31,10 @@ permissions:
 
 jobs:
   private-reference-research:
-    # HARD HOLD: false must be removed in a separately reviewed commit to enable OANDA.
-    # Merely setting a secret or a repository variable cannot start data access.
-    if: ${{ false && vars.OANDA_RESEARCH_ENABLED == 'true' }}
+    # Manual dispatch only. Explicit repository opt-in is required in addition to
+    # the API token and research-license acknowledgement checked in preflight.
+    # No scheduled/push trigger and NO broker order API calls.
+    if: ${{ vars.OANDA_RESEARCH_ENABLED == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 45
     env:
