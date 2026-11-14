@@ -17,6 +17,8 @@ on:
       - '.gitignore'
       - 'execution_lab.py'
       - 'h1_evolution_guard.py'
+      - 'h1_ml_retrainer.py'
+      - 'H1_ML_RETRAIN_GUIDE_JA.md'
       - 'research/**'
   schedule:
     # UTC 02:13 = JST 11:13; weekdays. Scheduled jobs may be delayed.
@@ -73,6 +75,18 @@ jobs:
             --commission-jpy-per-roundtrip 0 \
             --bootstrap-reps 64 --out results/h1_evolution_fixture.json
           python -c "import json; a=json.load(open('results/h1_evolution_fixture.json')); assert a['status']=='SYNTHETIC_TEST_ONLY' and not a['eligible_for_paper_promotion'] and not a['approved_for_live_trading']"
+      - name: Retrain H1 ML on strictly SYNTHETIC quotes (no broker, no orders)
+        env:
+          PYTHONHASHSEED: '42'
+          OMP_NUM_THREADS: '1'
+          OPENBLAS_NUM_THREADS: '1'
+          MKL_NUM_THREADS: '1'
+        run: |
+          python h1_ml_retrainer.py --quotes data/bidask_fixture/bidask_h1_synthetic.csv \
+            --provenance data/bidask_fixture/provenance.json --allow-synthetic \
+            --slippage-pips-per-side 0.2 --commission-jpy-per-roundtrip 0 \
+            --out results/h1_ml_fixture
+          python -c "import json; r=json.load(open('results/h1_ml_fixture/h1_ml_retraining_report.json')); assert r['status']=='SYNTHETIC_TEST_ONLY' and not r['approved_for_live_trading'] and r['sections']['validation']['retrain_events'] > 0"
       - name: Download official FRED DEXJPUS and validate provenance
         run: python github_pipeline.py refresh
       - name: Replay proof and parameter stability scan on verified historical data

@@ -1,3 +1,18 @@
+# FX AEGIS AI v2.2 — H1 Bid/Ask ML retraining
+
+**2026-11-14 JST / Research-only / no real orders.** The new [H1 ML retrainer](h1_ml_retrainer.py) periodically refits LogisticRegression and HistGradientBoostingClassifier using only causally matured H1 Bid/Ask training labels. Signals are checked through the existing Bid/Ask execution simulator with hypothetical slippage, commission and financing vetoes. Fixed chronological 60/20/20 research/validation/diagnostic splits; no model auto-promotion. **Future profitability not established.**
+
+Run a synthetic-only smoke test:
+
+```bash
+python execution_lab.py fixture --rows 1250 --out data/bidask_fixture
+python h1_ml_retrainer.py --quotes data/bidask_fixture/bidask_h1_synthetic.csv --provenance data/bidask_fixture/provenance.json --allow-synthetic --slippage-pips-per-side 0.2 --commission-jpy-per-roundtrip 0 --out results/h1_ml_fixture
+```
+
+Details: [H1 ML Retraining Guide](H1_ML_RETRAIN_GUIDE_JA.md).
+
+---
+
 # FX AEGIS AI v2.1 — H1 Bid/Ask self-evolution statistical execution audit
 
 **2026-11-14 JST · Research only · No live trading.** v2.1 connects the **full

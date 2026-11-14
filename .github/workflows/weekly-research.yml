@@ -61,6 +61,18 @@ jobs:
             --allow-synthetic --slippage-pips-per-side 0.2 \
             --commission-jpy-per-roundtrip 0 \
             --bootstrap-reps 64 --out artifacts/h1_evolution_fixture.json
+      - name: Refit models on strictly SYNTHETIC H1 Bid/Ask with mature labels
+        env:
+          PYTHONHASHSEED: '42'
+          OMP_NUM_THREADS: '1'
+          OPENBLAS_NUM_THREADS: '1'
+          MKL_NUM_THREADS: '1'
+        run: |
+          python h1_ml_retrainer.py --quotes data/bidask_fixture/bidask_h1_synthetic.csv \
+            --provenance data/bidask_fixture/provenance.json --allow-synthetic \
+            --slippage-pips-per-side 0.2 --commission-jpy-per-roundtrip 0 \
+            --probability-threshold 0.51 --out artifacts/h1_ml_fixture
+          python -c "import json; r=json.load(open('artifacts/h1_ml_fixture/h1_ml_retraining_report.json')); assert r['status']=='SYNTHETIC_TEST_ONLY' and not r['approved_for_live_trading'] and r['sections']['validation']['retrain_events'] > 0"
       - name: Model regression smoke test using explicitly SYNTHETIC H1
         run: |
           python generate_demo.py
@@ -79,5 +91,6 @@ jobs:
             artifacts/execution_lab/quote_audit.json
             artifacts/execution_lab/execution_report.json
             artifacts/h1_evolution_fixture.json
+            artifacts/h1_ml_fixture/h1_ml_retraining_report.json
             results/demo_trend/summary.json
           retention-days: 30
