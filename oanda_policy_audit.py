@@ -14,7 +14,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 WORKFLOW = ROOT / ".github/workflows/private-broker-h1-research.yml"
 EXPECTED_GUARD = (
-    "if: ${{{ inputs.operation == 'fetch-and-evaluate' && "
+    "if: ${{ inputs.operation == 'fetch-and-evaluate' && "
     "inputs.confirm_private_download == 'yes' && "
     "vars.OANDA_RESEARCH_ENABLED == 'true' && "
     "vars.OANDA_RESEARCH_LICENSE_OK == 'true' }}"
@@ -67,7 +67,7 @@ def audit_text(source: str) -> dict:
     check("requires_readiness", "    needs: readiness\n" in private)
     check("token_and_license_gated", "secrets.OANDA_API_TOKEN" in private
           and "vars.OANDA_RESEARCH_LICENSE_OK" in private
-          and 'if [[ -z "${{OANDA_API_TOKEN:-}"' in private
+          and 'if [[ -z "${OANDA_API_TOKEN:-}"' in private
           and "exit 1\n" in private)
     check("cli_explicit_enable", "python broker_h1_oanda.py --enable-api" in private)
     check("private_cleanup_no_public_artifacts", "rm -rf" in private

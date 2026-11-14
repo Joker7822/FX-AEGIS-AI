@@ -22,7 +22,7 @@ class OandaOfflinePolicyTests(unittest.TestCase):
 
     def test_secret_in_readiness_fails(self):
         altered = self.source.replace("  readiness:\n",
-                                      "  readiness:\n    env:\n      TOKEN: ${{{ secrets.OANDA_API_TOKEN }}\n")
+                                      "  readiness:\n    env:\n      TOKEN: ${{ secrets.OANDA_API_TOKEN }}\n")
         self.assertIn("preflight_does_not_read_secrets", audit_text(altered)["failed"])
 
     def test_preflight_unsafe_shell_fails(self):
