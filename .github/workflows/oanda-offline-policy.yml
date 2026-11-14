@@ -1,0 +1,28 @@
+name: FX AEGIS AI · Offline OANDA Security Audit (No Broker Access)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/private-broker-h1-research.yml'
+      - '.github/workflows/oanda-offline-policy.yml'
+      - 'oanda_policy_audit.py'
+      - 'tests/test_oanda_policy_audit.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  policy-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Audit private workflow policy WITHOUT OANDA API connection
+        run: python oanda_policy_audit.py
+      - name: Regression tests of mandatory safety gates
+        run: python -m unittest discover -s tests -p 'test_oanda_policy_audit.py' -v

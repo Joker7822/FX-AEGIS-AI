@@ -1,3 +1,9 @@
+# FX AEGIS AI v2.7 — Offline OANDA safety audit (2026-11-15 JST)
+
+The research-only OANDA workflow remains **manual and opt-in**. New standard-library `oanda_policy_audit.py` tests the checked-in GitHub Actions workflow offline, without inspecting secrets, contacting OANDA or triggering data retrieval. A separate read-only GitHub Actions workflow audits every security-related change; the existing CI also runs the audit before installing research dependencies. This verifies **workflow source policy**, not actual GitHub variables, token availability, account permissions or profitability. See [OANDA_OFFLINE_POLICY_GUIDE_JA.md](OANDA_OFFLINE_POLICY_GUIDE_JA.md).
+
+---
+
 # FX AEGIS AI v2.5 — OANDA opt-in preflight (2026-11-14)
 
 The private OANDA GitHub Actions workflow now defaults to **preflight-only** (zero API access). Actual private research requires manual dispatch with `operation=fetch-and-evaluate`, `confirm_private_download=yes`, two repository variables, and an API token secret. No recurring broker downloads and no live orders. See [OANDA_ACTIVATION_GUIDE_JA.md](OANDA_ACTIVATION_GUIDE_JA.md). The historical 20-year broker dataset and any positive expected return remain unverified.

@@ -24,6 +24,9 @@ on:
       - 'forward_paper.py'
       - 'BROKER_FORWARD_GUIDE_JA.md'
       - '.github/workflows/private-broker-h1-research.yml'
+      - '.github/workflows/oanda-offline-policy.yml'
+      - 'oanda_policy_audit.py'
+      - 'OANDA_OFFLINE_POLICY_GUIDE_JA.md'
       - 'H1_ML_RETRAIN_GUIDE_JA.md'
       - 'research/**'
   schedule:
@@ -52,6 +55,8 @@ jobs:
         with:
           python-version: '3.11'
           cache: 'pip'
+      - name: Validate manual-only OANDA security gates (offline; no broker API)
+        run: python oanda_policy_audit.py
       - name: Install exact reproducibility environment
         run: pip install -r requirements-repro.txt
       - name: Generate reproducible synthetic fixture (test-only)
