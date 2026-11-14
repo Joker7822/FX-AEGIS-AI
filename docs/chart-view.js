@@ -86,6 +86,54 @@
       ctx.lineWidth=1.3;ctx.strokeStyle=stroke;ctx.stroke();
     }
     overlay('ma20',color.gold);overlay('ma50',color.purple);
+    if(style==='candles'&&c.annotations){
+      const a=c.annotations,first=plotBars[0].ts,last=visible.at(-1).ts;
+      const bucket=ts=>{
+        if(ts<first||ts>last)return -1;
+        let lo=0,hi=plotBars.length;
+        while(lo<hi){const m=(lo+hi)>>1;if(plotBars[m].ts<=ts)lo=m+1;else hi=m;}
+        return lo-1;
+      };
+      const marker=(ts,price,tint,shape)=>{
+        const j=bucket(ts);if(j<0||!Number.isFinite(price)||price<lo||price>hi)return;
+        const px=x(j),py=y(price);ctx.save();ctx.strokeStyle=ctx.fillStyle=tint;ctx.lineWidth=1.8;
+        ctx.beginPath();
+        if(shape==='up'){ctx.moveTo(px,py-8);ctx.lineTo(px-5,py+2);ctx.lineTo(px+5,py+2);}
+        else if(shape==='down'){ctx.moveTo(px,py+8);ctx.lineTo(px-5,py-2);ctx.lineTo(px+5,py-2);}
+        else {ctx.arc(px,py,4,0,2*Math.PI);}
+        if(shape==='dot')ctx.stroke();else {ctx.closePath();ctx.fill();}
+        ctx.restore();
+      };
+      if(c.showLevels){
+        for(const t of a.trades.slice(0,300)){
+          const a0=bucket(t.entryTs),a1=bucket(t.exitTs);
+          if(a0<0&&a1<0)continue;
+          const left=x(Math.max(0,a0)),right=x(Math.min(plotBars.length-1,Math.max(0,a1)));
+          if(left>right)continue;
+          for(const [price,tint] of [[t.stopLoss,'#f18e86'],[t.takeProfit,'#6fddaa']]){
+            if(price===null||price<lo||price>hi)continue;
+            ctx.save();ctx.strokeStyle=tint;ctx.globalAlpha=.68;ctx.setLineDash([4,4]);
+            ctx.beginPath();ctx.moveTo(left,y(price));ctx.lineTo(right,y(price));ctx.stroke();ctx.restore();
+          }
+        }
+      }
+      if(c.showTrades){
+        for(const t of a.trades.slice(0,600)){
+          const tint=t.side==='long'?'#69e2b1':'#ffa28c';
+          marker(t.entryTs,t.entry,tint,t.side==='long'?'up':'down');
+          marker(t.exitTs,t.exit,tint,'dot');
+        }
+      }
+      if(c.showPredictions){
+        const preds=a.predictions,step=Math.max(1,Math.ceil(preds.length/320));
+        for(let i=0;i<preds.length;i+=step){
+          const p=preds[i],j=bucket(p.signalTs);
+          if(j<0)continue;
+          const value=plotBars[j].close;
+          marker(p.signalTs,value,p.correct?'#a8d3f4':'#e6b96b','dot');
+        }
+      }
+    }
     if(hoverX!==null && hitBoxes.length){
       const index=clamp(Math.round((hoverX-AXIS_LEFT)/plotW*hitBoxes.length-.5),0,hitBoxes.length-1);
       const hit=hitBoxes[index];ctx.strokeStyle='#9bc8dc90';ctx.lineWidth=1;ctx.setLineDash([4,4]);

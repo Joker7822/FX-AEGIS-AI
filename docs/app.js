@@ -1,6 +1,6 @@
 'use strict';
 const $ = id => document.getElementById(id);
-const state={data:null,points:[],scenario:null,plot:'price',window:'all',localBars:[],localMeta:null,localGaps:0};
+const state={data:null,points:[],scenario:null,plot:'price',window:'all',localBars:[],localMeta:null,localGaps:0,localSha:null,overlay:null};
 const nf = (v,d=0) => v==null?'—':Number(v).toLocaleString('ja-JP',{minimumFractionDigits:d,maximumFractionDigits:d});
 const isoDate=s=>String(s||'').slice(0,10);
 const money=v=>v==null?'—':nf(v,0)+' 円';
@@ -30,7 +30,8 @@ function draw(){
    plot:state.plot,window:state.window,reference:state.points,
    equity:state.scenario?.curve,localBars:state.localBars,
    timeframe:$('candleTimeframe').value,side:$('candleSide').value,
-   showEma:$('showEma').checked
+   showEma:$('showEma').checked,annotations:state.overlay,showTrades:$('showTrades').checked,
+   showLevels:$('showLevels').checked,showPredictions:$('showPredictions').checked
  });
  $('emptyChart').hidden=result.available;
  $('emptyChart').textContent=local?'H1 Bid/AskのCSVと出典JSONを2ファイル選択してください':'表示可能な公表値・計算結果がありません';
@@ -40,6 +41,8 @@ function draw(){
    state.plot==='equity'?'参考値から計算した仮想資産曲線':'FRED DEXJPUS / 日次参考レート';
  $('chartTitle').textContent=local?`USD/JPY ${$('candleTimeframe').value} ${side} ローソク足`:
    state.plot==='equity'?'仮想シナリオの資産曲線':'USD/JPY / 日次参考レート';
+ $('overlayControls').hidden=!local;
+ $('overlayStatus').textContent=local?(state.overlay?('研究用注釈 '+state.overlay.summary.trades+'取引 / '+state.overlay.summary.predictions+'予測 / 正答率 '+(state.overlay.summary.accuracy===null?'—':nf(100*state.overlay.summary.accuracy,1)+'%')+' / Brier '+(state.overlay.summary.brier===null?'—':nf(state.overlay.summary.brier,4))+'。実約定ではありません。'):'注釈JSONを読み込むと売買とAI予測が表示されます。'):'H1データ読込後に利用できます。';
  $('chartExtra').textContent=local?`ローカル照合済み · 時間欠損${state.localGaps}箇所`:
    state.plot==='price'?'OHLCではありません':'';
  $('chartCaption').textContent=result.available?`${result.first} ～ ${result.last} / ${result.count.toLocaleString('ja-JP')}本${result.compressed?'（表示密度に合わせ区間集約）':''} · ${local?'約定価格・出典真正性は未確認':'実約定ではない'}`:'読み込み待ち';
@@ -49,6 +52,7 @@ async function importLocalH1(event){
    $('localStatus').textContent='端末内でファイルのSHA-256とOHLCを検査中…';
    const checked=await AegisChartModel.loadLocalFiles(event.target.files);
    state.localBars=checked.bars;state.localMeta=checked.meta;state.localGaps=checked.gaps;
+   state.localSha=checked.sha256;state.overlay=null;$('overlayClear').hidden=true;
    $('localStatus').textContent=`${checked.meta.synthetic?'人工生成':'ユーザー申告・出典未検証'} / ${nf(checked.bars.length)}本 / SHA-256一致 / 時間欠損${checked.gaps}箇所。ブラウザ内のみ・アップロードなし。`;
    $('localClear').hidden=false;state.plot='candles';state.window='7d';
    AegisChartView.reset();draw();
@@ -56,12 +60,24 @@ async function importLocalH1(event){
  finally{event.target.value='';}
 }
 function clearLocalH1(){
- state.localBars=[];state.localMeta=null;state.localGaps=0;state.plot='price';state.window='all';
+ state.localBars=[];state.localMeta=null;state.localGaps=0;state.localSha=null;state.overlay=null;
+ $('overlayClear').hidden=true;state.plot='price';state.window='all';
  $('localFiles').value='';$('localClear').hidden=true;
  $('localStatus').textContent='端末内のH1データをクリアしました。FREDはローソク足では表示できません。';
  AegisChartView.reset();draw();
 }
 
+async function importOverlay(event){
+ try{
+   if(!state.localBars.length||!state.localSha)throw Error('先にH1価格のCSVと出典JSONが必要です');
+   if(event.target.files.length!==1)throw Error('研究用注釈JSONを1ファイル選択してください');
+   const checked=await AegisAnnotations.load(event.target.files[0],state.localSha,state.localBars);
+   state.overlay=checked;$('overlayClear').hidden=false;
+   AegisChartView.reset();draw();
+ }catch(e){$('overlayStatus').textContent='注釈の取込不可：'+e.message;}
+ finally{event.target.value='';}
+}
+function clearOverlay(){state.overlay=null;$('overlayFile').value='';$('overlayClear').hidden=true;draw();}
 function updateUI(data){const pts=Array.isArray(data.reference_daily)?data.reference_daily:[];state.points=pts.filter(p=>/^\d{4}-\d{2}-\d{2}$/.test(p.date)&&Number.isFinite(p.close)&&p.close>0);const present=state.points.length>0;const meta=data.provenance||{};
  $('datasource').textContent=present?'公式の参考データ保存済み':'実データ未取得';$('lastRate').textContent=present?nf(state.points.at(-1).close,3):'—';$('lastDate').textContent=present?`公表観測日 ${state.points.at(-1).date}`:'最新値なし';$('observations').textContent=present?nf(state.points.length):'0';$('range').textContent=present?`${state.points[0].date} ～ ${state.points.at(-1).date}`:'未取得';$('coverage').textContent=present?'観測日のみ（休場日を除く）':'GitHub Actions初回実行待ち';$('lastSync').textContent=formatSync(meta.retrieved_at_utc);$('hash').textContent=meta.csv_sha256?`SHA256: ${meta.csv_sha256.slice(0,12)}…`:'検証情報なし';$('audit').textContent=meta.csv_sha256?'データSHA記録':'未取得';$('sourceDetail').textContent=meta.source||'日次参考レート・約定価格ではありません';$('footerState').textContent=present?`公開済み観測値 ${state.points.at(-1).date}`:'データ待ち / 未検証';$('scenarioForm').querySelector('button').disabled=!present;
  if(present){recalc()}else{$('simMessage').textContent='公式データ取得完了後にシミュレーションできます';draw()}
@@ -107,6 +123,9 @@ function boot(){
  for(const id of ['candleTimeframe','candleSide','showEma'])$(id).addEventListener('change',()=>{AegisChartView.reset();draw()});
  $('localFiles').addEventListener('change',importLocalH1);
  $('localClear').addEventListener('click',clearLocalH1);
+ $('overlayFile').addEventListener('change',importOverlay);
+ $('overlayClear').addEventListener('click',clearOverlay);
+ for(const id of ['showTrades','showLevels','showPredictions'])$(id).addEventListener('change',draw);
  $('chartReset').addEventListener('click',()=>{AegisChartView.reset();draw()});
  window.addEventListener('resize',draw);
  updateChartControls();

@@ -20,6 +20,8 @@ on:
       - 'h1_ml_retrainer.py'
       - 'broker_h1_oanda.py'
       - 'dukascopy_h1.py'
+      - 'docs/annotations.js'
+      - 'CHART_ANNOTATIONS_GUIDE_JA.md'
       - 'DUKASCOPY_OFFLINE_GUIDE_JA.md'
       - 'forward_paper.py'
       - 'BROKER_FORWARD_GUIDE_JA.md'
@@ -65,6 +67,9 @@ jobs:
         run: python oanda_policy_audit.py
       - name: Install exact reproducibility environment
         run: pip install -r requirements-repro.txt
+      - name: Test JS candlesticks and research overlay without network
+        run: |
+          node --test tests/test_chart_model.cjs tests/test_chart_annotations.cjs
       - name: Generate reproducible synthetic fixture (test-only)
         run: |
           python generate_demo.py

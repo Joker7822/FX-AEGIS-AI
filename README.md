@@ -1,3 +1,9 @@
+# FX AEGIS AI v3.0 — research-only chart annotations (2026-11-15 JST)
+
+Locally loaded H1 Bid/Ask candle charts now support separately imported research-only buy/sell entry/exit markers, hypothetical stop-loss/take-profit lines, and submitted ML probabilities compared with **realized H1 quote movements**. Overlay JSON must bind to the exact quote SHA-256, declare hypothetical execution, and deny live-trading approval. No public quotes, upload, broker API calls or actual orders. See [CHART_ANNOTATIONS_GUIDE_JA.md](CHART_ANNOTATIONS_GUIDE_JA.md).
+
+---
+
 # FX AEGIS AI v2.9 — Private H1 candlestick viewer and chart UX (2026-11-15)
 
 The public FRED NY-noon daily USD/JPY reference series remains a **line chart**; FRED provides no OHLC and no fictitious candles are constructed. The public dashboard now supports **bid/ask H1 candlestick and UTC daily aggregation** from user-selected local `bidask_h1.csv` plus `provenance.json` after in-browser SHA-256 verification. EMA20/EMA50, time windows, zoom/pan, chart tooltip, mobile layout, and offline Node tests are included. Broker quote files are processed only in browser memory—never uploaded, published or used to populate the public FRED scenario. [日本語操作ガイド](CHART_CANDLES_GUIDE_JA.md). Source authenticity, market execution and expected profitability are not verified; OANDA fetching remains opt-in only and no trading API is added.
