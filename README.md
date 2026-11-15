@@ -1,3 +1,9 @@
+# FX AEGIS AI v3.7.1 — Smartphone-only two-finger pinch (2026-11-15 JST)
+
+Two-finger pinch on the main chart is enabled **only** when the primary pointer is coarse and the viewport is 900 CSS pixels wide or narrower. Two real touch contacts are required. Desktop layouts retain mouse-wheel, drag, keyboard and +/- controls. No market data, model, broker API, or trading permissions changed. See [CHART_ZOOM_GUIDE_JA.md](CHART_ZOOM_GUIDE_JA.md).
+
+---
+
 # FX AEGIS AI v3.7 — Zoomable chart workstation (2026-11-15 JST)
 
 All three chart modes now support visible +/− buttons, a full-range reset, a spacious full-screen layout, pointer-anchored mouse-wheel zoom, keyboard controls and two-finger pinch on mobile. This changes the display only, not prices or hypothetical trading records. User-supplied Bid/Ask files remain browser-local, OANDA auto-fetch and broker orders remain disabled. See [CHART_ZOOM_GUIDE_JA.md](CHART_ZOOM_GUIDE_JA.md).

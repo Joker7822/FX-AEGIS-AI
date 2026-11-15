@@ -44,7 +44,7 @@
 .chart-zoom-controls button:disabled{opacity:.42;cursor:not-allowed}
 .chart-zoom-controls button:focus-visible{outline:2px solid var(--mint);outline-offset:2px}
 #chartZoomLevel{font:600 11px/1.4 ui-monospace,SFMono-Regular,Consolas,monospace;color:#c1e8de;min-width:48px;text-align:center;font-variant-numeric:tabular-nums}
-#chart{touch-action:none}
+@media(max-width:900px) and (pointer:coarse){#chart{touch-action:none}}
 body.chart-focus-active{overflow:hidden}
 .chart-panel.chart-expanded{position:fixed;inset:12px;z-index:1000;width:auto;height:calc(100dvh - 24px)!important;max-height:none;display:flex;flex-direction:column;border:1px solid #4c928f;box-shadow:0 0 0 100vmax #030810d9,0 18px 50px #0009;background:#101f2a}
 .chart-panel.chart-expanded .chart-box{min-height:0;flex:1}

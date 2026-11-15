@@ -35,7 +35,7 @@ test('invalid zoom values are rejected',()=>{
  assert.throws(()=>M.zoomRange({start:0,end:30},100,Infinity),/Invalid chart zoom/);
  assert.throws(()=>M.panRange({start:0,end:30},100,NaN),/Invalid chart pan/);
 });
-test('chart view buttons API, mouse wheel, keyboard, drag, pinch share bounded ranges',()=>{
+test('chart view controls enable two-finger pinch only on smartphone touch layout',()=>{
  globalThis.AegisChartModel=M;
  require('../docs/chart-view.js');
  const chart=globalThis.AegisChartView;
@@ -62,14 +62,32 @@ test('chart view buttons API, mouse wheel, keyboard, drag, pinch share bounded r
  events.keydown({key:'-',preventDefault(){}});
  const increased=chart.viewportInfo().end-chart.viewportInfo().start;
  assert.ok(increased>0&&increased<=200);
- const pointer=(pointerId,clientX,clientY=200)=>({pointerId,clientX,clientY,pointerType:'touch',button:0});
+ const pointer=(pointerId,clientX,clientY=200,pointerType='touch')=>({pointerId,clientX,clientY,pointerType,button:0});
+ // Desktop: pinch disabled even on a touch-capable laptop.
+ globalThis.matchMedia=()=>({matches:false});
  events.pointerdown(pointer(1,270));
  events.pointerdown(pointer(2,470));
- const pinchedBefore=chart.viewportInfo().end-chart.viewportInfo().start;
+ const desktopBefore=chart.viewportInfo().end-chart.viewportInfo().start;
  events.pointermove(pointer(2,570));
- const pinchedAfter=chart.viewportInfo().end-chart.viewportInfo().start;
- assert.ok(pinchedAfter<=pinchedBefore);
+ assert.equal(chart.viewportInfo().end-chart.viewportInfo().start,desktopBefore);
  events.pointerup(pointer(2,570));events.pointerup(pointer(1,270));
+ // Smartphone: two real finger contacts pinch and zoom.
+ globalThis.matchMedia=()=>({matches:true});
+ events.pointerdown(pointer(3,270));
+ events.pointerdown(pointer(4,470));
+ const pinchedBefore=chart.viewportInfo().end-chart.viewportInfo().start;
+ events.pointermove(pointer(4,570));
+ const pinchedAfter=chart.viewportInfo().end-chart.viewportInfo().start;
+ assert.ok(pinchedAfter<pinchedBefore);
+ events.pointerup(pointer(4,570));events.pointerup(pointer(3,270));
+ // Pen + touch cannot trigger a pinch.
+ events.pointerdown(pointer(5,270,200,'pen'));
+ events.pointerdown(pointer(6,470,200,'touch'));
+ const mixedBefore=chart.viewportInfo().end-chart.viewportInfo().start;
+ events.pointermove(pointer(6,570));
+ assert.equal(chart.viewportInfo().end-chart.viewportInfo().start,mixedBefore);
+ events.pointerup(pointer(6,570));events.pointerup(pointer(5,270));
+ delete globalThis.matchMedia;
  chart.reset();chart.draw(canvas,{plot:'price',window:'all',reference,showEma:false});
  assert.equal(chart.viewportInfo().end-chart.viewportInfo().start,200);
  assert.ok(redraws>0);

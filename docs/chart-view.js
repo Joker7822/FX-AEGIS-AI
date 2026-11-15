@@ -179,6 +179,10 @@
       return clamp((clientX-box.left-AXIS_LEFT)/Math.max(10,box.width-AXIS_RIGHT-AXIS_LEFT),0,1);
     };
     const touchDistance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+    // Pinch is reserved for the smartphone/coarse-pointer layout.
+    // Desktop mouse, stylus, and touch laptops keep drag/wheel/buttons.
+    const mobilePinchAllowed=()=>typeof root.matchMedia==='function' &&
+      root.matchMedia('(max-width: 900px) and (pointer: coarse)').matches;
     const pointerStop=e=>{
       activePointers.delete(e.pointerId);
       pinch=null;
@@ -190,21 +194,23 @@
     };
     canvas.addEventListener('pointerdown',e=>{
       if(!config||!viewport||(e.pointerType==='mouse' && e.button!==0))return;
-      activePointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+      activePointers.set(e.pointerId,{x:e.clientX,y:e.clientY,touch:e.pointerType==='touch'});
       canvas.setPointerCapture?.(e.pointerId);
       if(activePointers.size===1){
         dragging={x:e.clientX,start:viewport.start};
       }else if(activePointers.size===2){
         const [a,b]=Array.from(activePointers.values());
-        pinch={distance:Math.max(1,touchDistance(a,b)),base:{...viewport},
-          anchorFraction:positionFraction((a.x+b.x)/2)};
+        pinch=(mobilePinchAllowed()&&a.touch&&b.touch)
+          ?{distance:Math.max(1,touchDistance(a,b)),base:{...viewport},
+            anchorFraction:positionFraction((a.x+b.x)/2)}
+          :null;
         dragging=null;
       }
     });
     canvas.addEventListener('pointermove',e=>{
       if(activePointers.has(e.pointerId))
-        activePointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
-      if(activePointers.size>=2&&pinch&&config){
+        activePointers.set(e.pointerId,{x:e.clientX,y:e.clientY,touch:e.pointerType==='touch'});
+      if(activePointers.size>=2&&pinch&&mobilePinchAllowed()&&config){
         const [a,b]=Array.from(activePointers.values());
         const distance=Math.max(1,touchDistance(a,b));
         const total=model(config).filtered.length;
@@ -213,7 +219,7 @@
         const moveFraction=positionFraction((a.x+b.x)/2);
         const delta=(pinch.anchorFraction-moveFraction)*(viewport.end-viewport.start);
         viewport=M.panRange(viewport,total,delta);
-      }else if(dragging&&activePointers.has(e.pointerId)&&config){
+      }else if(activePointers.size===1&&dragging&&activePointers.has(e.pointerId)&&config){
         const total=model(config).filtered.length;
         const span=viewport.end-viewport.start;
         const delta=Math.round((dragging.x-e.clientX)*span/Math.max(1,canvas.clientWidth-AXIS_RIGHT-AXIS_LEFT));
