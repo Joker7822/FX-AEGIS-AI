@@ -1,3 +1,9 @@
+# FX AEGIS AI v3.5 — Offline private forward monitor to local dashboard (2026-11-15 JST)
+
+Research-only `forward_dashboard_bridge.py` runs **one** observation of an already-frozen H1 model from user-supplied local quotes, verifies the hash-linked monitor and supervisor journals, and exports a bounded private `forward_status.json` (no OHLC prices or API credentials). `docs/forward-status.html` reads that file **in the browser only** and charts model probabilities, outcomes, Brier score and stop status; no report is automatically uploaded or published. The existing live OANDA API remains opt-in/manual-only, broker orders disabled. Genuine future market performance remains **unverified**. See [PRIVATE_FORWARD_DASHBOARD_GUIDE_JA.md](PRIVATE_FORWARD_DASHBOARD_GUIDE_JA.md).
+
+---
+
 # FX AEGIS AI v3.4 — Private forward supervisor (2026-11-15 JST)
 
 **Research only; no broker/orders.** Offline `forward_supervisor.py` now runs a **single** existing frozen-model observation, records an append-only hash-linked operations journal, exposes a read-only heartbeat check, and fails closed on model drift, monitored-state inconsistencies, operator-declared missing expected data, or processing errors. The journal is local only and is **not independent timestamp attestation**. Real broker market data ingestion, hosting, service scheduling, and API token setup are NOT done here. See [FORWARD_SUPERVISOR_GUIDE_JA.md](FORWARD_SUPERVISOR_GUIDE_JA.md). OANDA remains manual opt-in, actual orders prohibited.
