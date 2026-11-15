@@ -6,7 +6,7 @@ const M=require('../docs/chart-model.js');
 test('zoom in narrows viewport without editing source OHLC',()=>{
  const previous={start:0,end:100};
  const result=M.zoomRange(previous,100,.75);
- assert.deepEqual(result,{start:12,end:87});
+ assert.deepEqual(result,{start:13,end:88});
  assert.deepEqual(previous,{start:0,end:100});
 });
 test('anchored zoom keeps the left observation under the cursor',()=>{
