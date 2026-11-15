@@ -1,3 +1,9 @@
+# FX AEGIS AI v3.2 — automatic research cycle (2026-11-15 JST)
+
+**Research-only autonomy, NOT autonomous trading.** The offline `autonomous_research.py` coordinates quote provenance checks, irreversible snapshot history, point-in-time ML model refitting, a registered full-family evolution statistical audit, and local chart JSON generation. It skips identical inputs, requires >=24 genuinely new H1 bars for subsequent cycles, detects historical rewriting/config drift, locks concurrent cycles, and **never autonomously promotes or deploys** a trading model. GitHub Actions runs **synthetic-only** automated integration checks. Real market access/continuous data acquisition and profitable forward trading remain unverified. Details: [AUTONOMOUS_RESEARCH_GUIDE_JA.md](AUTONOMOUS_RESEARCH_GUIDE_JA.md).
+
+---
+
 # FX AEGIS AI v3.1 — automatic ML-to-chart annotations (2026-11-15 JST)
 
 New local-only `ml_chart_overlay.py` converts H1 ML validation/diagnostic prediction CSVs and hypothetical trade ledgers into the existing v3.0 `annotations.json` chart format. It verifies quote/report hashes, frozen time splits, matured training labels, next-open fills and declared slippage. The displayed probability is an **uncalibrated arithmetic mean** of two models. No missing stop-loss/take-profit rules, realized orders, or profitability claims are fabricated. Files remain local; CI uses synthetic fixtures only. OANDA access stays opt-in. See [ML_CHART_EXPORT_GUIDE_JA.md](ML_CHART_EXPORT_GUIDE_JA.md).

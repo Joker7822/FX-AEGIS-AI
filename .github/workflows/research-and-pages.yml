@@ -18,6 +18,8 @@ on:
       - 'execution_lab.py'
       - 'h1_evolution_guard.py'
       - 'h1_ml_retrainer.py'
+      - 'autonomous_research.py'
+      - 'AUTONOMOUS_RESEARCH_GUIDE_JA.md'
       - 'ml_chart_overlay.py'
       - 'ML_CHART_EXPORT_GUIDE_JA.md'
       - 'broker_h1_oanda.py'
@@ -128,6 +130,43 @@ jobs:
           if(overlay.summary.predictions<=0)throw Error('Missing synthetic ML predictions');
           console.log('Synthetic ML-to-chart contract accepted:',overlay.summary.trades,'trades;',overlay.summary.predictions,'predictions.');
           JS
+      - name: Autonomous H1 research and evolution audit (SYNTHETIC ONLY, NO ORDERS)
+        env:
+          PYTHONHASHSEED: '42'
+          OMP_NUM_THREADS: '1'
+          OPENBLAS_NUM_THREADS: '1'
+          MKL_NUM_THREADS: '1'
+        run: |
+          python autonomous_research.py \
+            --quotes data/bidask_fixture/bidask_h1_synthetic.csv \
+            --provenance data/bidask_fixture/provenance.json \
+            --universe data/bidask_fixture/universe_fixture.json \
+            --allow-synthetic --slippage-pips-per-side 0.2 \
+            --commission-jpy-per-roundtrip 0 --probability-threshold 0.51 \
+            --bootstrap-reps 64 --out results/autonomous_research_ci
+          python autonomous_research.py \
+            --quotes data/bidask_fixture/bidask_h1_synthetic.csv \
+            --provenance data/bidask_fixture/provenance.json \
+            --universe data/bidask_fixture/universe_fixture.json \
+            --allow-synthetic --slippage-pips-per-side 0.2 \
+            --commission-jpy-per-roundtrip 0 --probability-threshold 0.51 \
+            --bootstrap-reps 64 --out results/autonomous_research_ci \
+            > results/autonomous_research_ci/replay.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          root=Path('results/autonomous_research_ci')
+          state=json.loads((root/'state.json').read_text())
+          summary=json.loads((root/'runs'/state['last_run_id']/'cycle_summary.json').read_text())
+          replay=json.loads((root/'replay.json').read_text())
+          assert state['run_count']==1 and summary['status']=='SYNTHETIC_TEST_ONLY'
+          assert replay['status']=='NO_NEW_H1_BARS'
+          assert summary['self_retraining']['validation']['retrain_events']>0
+          assert summary['self_evolution']['candidate_family_size']>=4
+          assert not summary['approved_for_live_trading']
+          assert summary['broker_access']=='DISABLED'
+          print('Autonomous SYNTHETIC research completed; replay refused; broker access disabled')
+          PY
       - name: Download official FRED DEXJPUS and validate provenance
         run: python github_pipeline.py refresh
       - name: Replay proof and parameter stability scan on verified historical data
