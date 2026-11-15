@@ -1,3 +1,9 @@
+# FX AEGIS AI v3.3 — Frozen forward observation and drift guard
+
+**2026-11-15 JST · Research-only / NO broker orders.** New `forward_monitor.py` pins the historical H1 model and records the wall-clock first-seen time of each subsequently completed private H1 bar. Bars captured more than 15 minutes after close are never counted as timely forward predictions. Directional probabilities are scored only when the required future H1 opens have subsequently arrived. An exploratory rolling accuracy/Brier threshold **pauses all new predictions** pending manual audit; it never self-resumes. No OANDA activation, commercial data upload, order placement, or claim of profitable forward results. See [FORWARD_MONITOR_GUIDE_JA.md](FORWARD_MONITOR_GUIDE_JA.md).
+
+---
+
 # FX AEGIS AI v3.2 — automatic research cycle (2026-11-15 JST)
 
 **Research-only autonomy, NOT autonomous trading.** The offline `autonomous_research.py` coordinates quote provenance checks, irreversible snapshot history, point-in-time ML model refitting, a registered full-family evolution statistical audit, and local chart JSON generation. It skips identical inputs, requires >=24 genuinely new H1 bars for subsequent cycles, detects historical rewriting/config drift, locks concurrent cycles, and **never autonomously promotes or deploys** a trading model. GitHub Actions runs **synthetic-only** automated integration checks. Real market access/continuous data acquisition and profitable forward trading remain unverified. Details: [AUTONOMOUS_RESEARCH_GUIDE_JA.md](AUTONOMOUS_RESEARCH_GUIDE_JA.md).

@@ -19,6 +19,8 @@ on:
       - 'h1_evolution_guard.py'
       - 'h1_ml_retrainer.py'
       - 'autonomous_research.py'
+      - 'forward_monitor.py'
+      - 'FORWARD_MONITOR_GUIDE_JA.md'
       - 'AUTONOMOUS_RESEARCH_GUIDE_JA.md'
       - 'ml_chart_overlay.py'
       - 'ML_CHART_EXPORT_GUIDE_JA.md'
