@@ -20,6 +20,8 @@ on:
       - 'h1_ml_retrainer.py'
       - 'autonomous_research.py'
       - 'forward_monitor.py'
+      - 'forward_supervisor.py'
+      - 'FORWARD_SUPERVISOR_GUIDE_JA.md'
       - 'FORWARD_MONITOR_GUIDE_JA.md'
       - 'AUTONOMOUS_RESEARCH_GUIDE_JA.md'
       - 'ml_chart_overlay.py'

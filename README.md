@@ -1,3 +1,9 @@
+# FX AEGIS AI v3.4 — Private forward supervisor (2026-11-15 JST)
+
+**Research only; no broker/orders.** Offline `forward_supervisor.py` now runs a **single** existing frozen-model observation, records an append-only hash-linked operations journal, exposes a read-only heartbeat check, and fails closed on model drift, monitored-state inconsistencies, operator-declared missing expected data, or processing errors. The journal is local only and is **not independent timestamp attestation**. Real broker market data ingestion, hosting, service scheduling, and API token setup are NOT done here. See [FORWARD_SUPERVISOR_GUIDE_JA.md](FORWARD_SUPERVISOR_GUIDE_JA.md). OANDA remains manual opt-in, actual orders prohibited.
+
+---
+
 # FX AEGIS AI v3.3 — Frozen forward observation and drift guard
 
 **2026-11-15 JST · Research-only / NO broker orders.** New `forward_monitor.py` pins the historical H1 model and records the wall-clock first-seen time of each subsequently completed private H1 bar. Bars captured more than 15 minutes after close are never counted as timely forward predictions. Directional probabilities are scored only when the required future H1 opens have subsequently arrived. An exploratory rolling accuracy/Brier threshold **pauses all new predictions** pending manual audit; it never self-resumes. No OANDA activation, commercial data upload, order placement, or claim of profitable forward results. See [FORWARD_MONITOR_GUIDE_JA.md](FORWARD_MONITOR_GUIDE_JA.md).
