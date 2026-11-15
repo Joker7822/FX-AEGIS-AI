@@ -9,7 +9,7 @@ from pathlib import Path
 import pandas as pd
 
 from execution_lab import load_quotes, make_fixture
-from ml_chart_overlay import export_overlay
+from ml_chart_overlay import export_overlay, _read_csv
 
 
 class ChartExportContractTests(unittest.TestCase):
@@ -122,6 +122,11 @@ class ChartExportContractTests(unittest.TestCase):
         self._save(pred={**self.pred,'entry_bar_time_utc':self.quotes.iloc[self.ival+2]['time'].isoformat()})
         with self.assertRaisesRegex(ValueError,'timestamps'):
             self._run()
+
+    def test_empty_trade_csv_from_pandas_is_valid(self):
+        empty=self.folder/'zero_trades.csv'
+        empty.write_text('\n',encoding='utf-8')
+        self.assertEqual(_read_csv(empty,('signal_bar_time_utc','side')),[])
 
     def test_existing_immutable_output_rejected(self):
         self._run()

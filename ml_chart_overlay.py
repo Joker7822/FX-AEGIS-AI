@@ -56,7 +56,8 @@ def _number(value: str, label: str, *, minimum: float = 0, maximum: float = floa
 def _read_csv(path: Path, expected_fields: tuple[str, ...]) -> list[dict[str, str]]:
     if not path.is_file():
         raise ValueError(f'Missing required ML report CSV: {path.name}')
-    if path.stat().st_size == 0:
+    # pandas.DataFrame([]).to_csv() may emit a single newline when there are zero trades.
+    if not path.read_text(encoding='utf-8-sig').strip():
         return []
     with path.open('r', newline='', encoding='utf-8-sig') as f:
         reader = csv.DictReader(f)
