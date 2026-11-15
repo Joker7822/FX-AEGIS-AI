@@ -1767,7 +1767,7 @@
     }
   },
   "random_seed": 42,
-  "report_sha256": "0d65d155c48a85b89ed96efc158f74df7f0546361f71acdca89fe0393202ac21",
+  "report_sha256": "c061577252e3cc05c5bcca682b7ae25c48a1d045ad49cada862293b1fdf14946",
   "research_gate_passed": false,
   "schema": "fx-aegis-repro-1",
   "selection_rule": "max validation_return_pct - 0.5 * validation_max_dd; training and validation only",
@@ -1779,7 +1779,7 @@
   "source": {
     "data_sha256": "344f00cb5b66495fe0ff1176d1d73b02148cd4621f8b3b41634de158742050dc",
     "kind": "FRED_DAILY_REFERENCE_NON_EXECUTABLE",
-    "metadata_sha256": "163fe81f3dfd9bb975afbea2d05265cd9742ad7b695fb0a30f7aece74d190056",
+    "metadata_sha256": "4d63192c460834cf136c1fe097a125557f592725f8598cd1e3c4323a7fa9d431",
     "source": "https://fred.stlouisfed.org/series/DEXJPUS"
   },
   "splits": [
