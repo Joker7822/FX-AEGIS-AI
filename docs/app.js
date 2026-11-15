@@ -45,6 +45,10 @@ function draw(){
  $('overlayStatus').textContent=local?(state.overlay?('研究用注釈 '+state.overlay.summary.trades+'取引 / '+state.overlay.summary.predictions+'予測 / 正答率 '+(state.overlay.summary.accuracy===null?'—':nf(100*state.overlay.summary.accuracy,1)+'%')+' / Brier '+(state.overlay.summary.brier===null?'—':nf(state.overlay.summary.brier,4))+'。実約定ではありません。'):'注釈JSONを読み込むと売買とAI予測が表示されます。'):'H1データ読込後に利用できます。';
  $('chartExtra').textContent=local?`ローカル照合済み · 時間欠損${state.localGaps}箇所`:
    state.plot==='price'?'OHLCではありません':'';
+ $('chartZoomLevel').textContent=result.available?`${(result.total/Math.max(1,result.count)).toFixed(1)}×`:'—';
+ $('chartZoomIn').disabled=!result.available||result.count<=8;
+ $('chartZoomOut').disabled=!result.available||result.count>=result.total;
+ $('chartReset').disabled=!result.available||result.count>=result.total;
  $('chartCaption').textContent=result.available?`${result.first} ～ ${result.last} / ${result.count.toLocaleString('ja-JP')}本${result.compressed?'（表示密度に合わせ区間集約）':''} · ${local?'約定価格・出典真正性は未確認':'実約定ではない'}`:'読み込み待ち';
 }
 async function importLocalH1(event){
@@ -126,7 +130,22 @@ function boot(){
  $('overlayFile').addEventListener('change',importOverlay);
  $('overlayClear').addEventListener('click',clearOverlay);
  for(const id of ['showTrades','showLevels','showPredictions'])$(id).addEventListener('change',draw);
+ $('chartZoomIn').addEventListener('click',()=>{if(AegisChartView.zoom(.75))draw()});
+ $('chartZoomOut').addEventListener('click',()=>{if(AegisChartView.zoom(1.33))draw()});
  $('chartReset').addEventListener('click',()=>{AegisChartView.reset();draw()});
+ const chartPanel=document.querySelector('.chart-panel');
+ function toggleLargeChart(force){
+   const expanded=typeof force==='boolean'?force:!chartPanel.classList.contains('chart-expanded');
+   chartPanel.classList.toggle('chart-expanded',expanded);
+   document.body.classList.toggle('chart-focus-active',expanded);
+   $('chartExpand').setAttribute('aria-pressed',String(expanded));
+   $('chartExpand').textContent=expanded?'元の大きさ':'大きく表示';
+   draw();
+ }
+ $('chartExpand').addEventListener('click',()=>toggleLargeChart());
+ document.addEventListener('keydown',e=>{
+   if(e.key==='Escape'&&chartPanel.classList.contains('chart-expanded'))toggleLargeChart(false);
+ });
  window.addEventListener('resize',draw);
  updateChartControls();
  load().then(()=>Promise.all([loadRepro(),loadEvolution()]));

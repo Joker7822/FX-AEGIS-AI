@@ -1,3 +1,9 @@
+# FX AEGIS AI v3.7 — Zoomable chart workstation (2026-11-15 JST)
+
+All three chart modes now support visible +/− buttons, a full-range reset, a spacious full-screen layout, pointer-anchored mouse-wheel zoom, keyboard controls and two-finger pinch on mobile. This changes the display only, not prices or hypothetical trading records. User-supplied Bid/Ask files remain browser-local, OANDA auto-fetch and broker orders remain disabled. See [CHART_ZOOM_GUIDE_JA.md](CHART_ZOOM_GUIDE_JA.md).
+
+---
+
 # FX AEGIS AI v3.6 — Private atomic H1 inbox (2026-11-15 JST)
 
 **Private-data operations only; NO broker API, orders, or auto scheduling.** New `private_h1_inbox.py` accepts already-authorized local H1 Bid/Ask CSV plus provenance JSON, validates hashes and completed hours, atomically publishes a ready snapshot, and passes only a private verified copy to the existing frozen forward supervisor and local status dashboard. On success the original drop moves to `processed/`. Missing/partial/mutated or conflicting inputs fail closed. The new workflow tests exclusively synthetic H1 fixtures. This is **not** genuine market-data acquisition, independent source authentication, or proof of forward profitability. OANDA opt-in gates and live-order prohibition are unchanged. See [PRIVATE_H1_INBOX_GUIDE_JA.md](PRIVATE_H1_INBOX_GUIDE_JA.md).

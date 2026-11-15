@@ -2,13 +2,14 @@
 'use strict';
 (function (root) {
   const M = root.AegisChartModel;
-  let viewport=null, key='', config=null, hitBoxes=[], hoverX=null, dragging=null;
+  let viewport=null, key='', config=null, hitBoxes=[], hoverX=null, dragging=null, pinch=null;
+  const activePointers=new Map();
   const AXIS_RIGHT=61, AXIS_LEFT=12, AXIS_TOP=14, AXIS_BOTTOM=28;
   const color={up:'#68d8ba',down:'#ee8c87',line:'#71d5cf',gold:'#e8c889',purple:'#a3a1fa',grid:'#283c48',text:'#9eb4c1'};
   const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
   const fmt=(x,d=3)=>Number(x).toLocaleString('ja-JP',{minimumFractionDigits:d,maximumFractionDigits:d});
 
-  function reset(){viewport=null;key='';hoverX=null;}
+  function reset(){viewport=null;key='';hoverX=null;dragging=null;pinch=null;activePointers.clear();}
 
   function series(c) {
     if(c.plot==='candles') {
@@ -156,49 +157,92 @@
       first:visible[0].date,last:visible.at(-1).date};
   }
 
-  function install(canvas,redraw){
-    if(canvas.dataset.chartWired)return;canvas.dataset.chartWired='1';
-    canvas.addEventListener('pointermove',e=>{
-      if(dragging){
-        const total=viewport.end-viewport.start;
-        const move=Math.round((dragging.x-e.clientX)*total/Math.max(1,canvas.clientWidth-AXIS_RIGHT-AXIS_LEFT));
-        const full=model(config).filtered.length;
-        const start=clamp(dragging.start+move,0,Math.max(0,full-total));
-        viewport={start,end:start+total};
+  function zoom(factor,anchorFraction=.5) {
+    if(!config)return false;
+    const all=model(config).filtered.length;
+    if(all<3)return false;
+    viewport=M.zoomRange(viewport,all,factor,anchorFraction);
+    hoverX=null;
+    return true;
+  }
+  function viewportInfo() {
+    if(!config)return {start:0,end:0,total:0};
+    const all=model(config).filtered.length;
+    return {start:viewport.start,end:viewport.end,total:all};
+  }
+
+  function install(canvas,redraw) {
+    if(canvas.dataset.chartWired)return;
+    canvas.dataset.chartWired='1';
+    const positionFraction=clientX=>{
+      const box=canvas.getBoundingClientRect();
+      return clamp((clientX-box.left-AXIS_LEFT)/Math.max(10,box.width-AXIS_RIGHT-AXIS_LEFT),0,1);
+    };
+    const touchDistance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+    const pointerStop=e=>{
+      activePointers.delete(e.pointerId);
+      pinch=null;
+      dragging=null;
+      if(activePointers.size===1 && viewport){
+        const remaining=activePointers.values().next().value;
+        dragging={x:remaining.x,start:viewport.start};
       }
-      hoverX=e.clientX-canvas.getBoundingClientRect().left;redraw();
-    });
-    canvas.addEventListener('pointerleave',()=>{if(!dragging)hoverX=null;redraw();});
+    };
     canvas.addEventListener('pointerdown',e=>{
-      if(e.button!==0||!viewport)return;
-      dragging={x:e.clientX,start:viewport.start};canvas.setPointerCapture?.(e.pointerId);
+      if(!config||!viewport||(e.pointerType==='mouse' && e.button!==0))return;
+      activePointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+      canvas.setPointerCapture?.(e.pointerId);
+      if(activePointers.size===1){
+        dragging={x:e.clientX,start:viewport.start};
+      }else if(activePointers.size===2){
+        const [a,b]=Array.from(activePointers.values());
+        pinch={distance:Math.max(1,touchDistance(a,b)),base:{...viewport},
+          anchorFraction:positionFraction((a.x+b.x)/2)};
+        dragging=null;
+      }
     });
-    for(const event of ['pointerup','pointercancel'])canvas.addEventListener(event,()=>{dragging=null;});
+    canvas.addEventListener('pointermove',e=>{
+      if(activePointers.has(e.pointerId))
+        activePointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+      if(activePointers.size>=2&&pinch&&config){
+        const [a,b]=Array.from(activePointers.values());
+        const distance=Math.max(1,touchDistance(a,b));
+        const total=model(config).filtered.length;
+        viewport=M.zoomRange(pinch.base,total,pinch.distance/distance,pinch.anchorFraction);
+        // A moving pinch midpoint pans the content without shifting source times.
+        const moveFraction=positionFraction((a.x+b.x)/2);
+        const delta=(pinch.anchorFraction-moveFraction)*(viewport.end-viewport.start);
+        viewport=M.panRange(viewport,total,delta);
+      }else if(dragging&&activePointers.has(e.pointerId)&&config){
+        const total=model(config).filtered.length;
+        const span=viewport.end-viewport.start;
+        const delta=Math.round((dragging.x-e.clientX)*span/Math.max(1,canvas.clientWidth-AXIS_RIGHT-AXIS_LEFT));
+        viewport=M.panRange({start:dragging.start,end:dragging.start+span},total,delta);
+      }
+      hoverX=activePointers.size>=2?null:e.clientX-canvas.getBoundingClientRect().left;
+      redraw();
+    });
+    canvas.addEventListener('pointerleave',()=>{if(!activePointers.size)hoverX=null;redraw();});
+    for(const event of ['pointerup','pointercancel','lostpointercapture'])
+      canvas.addEventListener(event,pointerStop);
     canvas.addEventListener('wheel',e=>{
       if(!config)return;
-      e.preventDefault();const all=model(config).filtered.length;
-      if(all<3)return;
-      const n=viewport.end-viewport.start;
-      const target=clamp(Math.round(n*(e.deltaY>0?1.27:.79)),Math.min(12,all),all);
-      const box=canvas.getBoundingClientRect();
-      const fraction=clamp((e.clientX-box.left-AXIS_LEFT)/Math.max(10,box.width-AXIS_RIGHT-AXIS_LEFT),0,1);
-      const anchor=viewport.start+fraction*n;
-      const start=clamp(Math.round(anchor-fraction*target),0,all-target);
-      viewport={start,end:start+target};redraw();
+      e.preventDefault();
+      if(zoom(e.deltaY>0?1.27:.79,positionFraction(e.clientX)))redraw();
     },{passive:false});
     canvas.addEventListener('keydown',e=>{
-      if(!config||!viewport||!['ArrowLeft','ArrowRight','+','-','Home'].includes(e.key))return;
-      e.preventDefault();const all=model(config).filtered.length,n=viewport.end-viewport.start;
-      if(e.key==='Home'){viewport={start:Math.max(0,all-n),end:all};}
-      else if(e.key==='ArrowLeft'||e.key==='ArrowRight'){
-        const shift=(e.key==='ArrowLeft'?-1:1)*Math.max(1,Math.round(n*.15));
-        const start=clamp(viewport.start+shift,0,all-n);viewport={start,end:start+n};
-      }else{
-        const target=clamp(Math.round(n*(e.key==='+'?.79:1.27)),Math.min(12,all),all);
-        const start=clamp(Math.round((viewport.start+viewport.end-target)/2),0,all-target);
-        viewport={start,end:start+target};
-      }redraw();
+      const accepted=['ArrowLeft','ArrowRight','+','=','-','_','Home','0'];
+      if(!config||!viewport||!accepted.includes(e.key))return;
+      e.preventDefault();
+      const all=model(config).filtered.length;
+      const span=viewport.end-viewport.start;
+      if(e.key==='0')reset();
+      else if(e.key==='Home')viewport={start:Math.max(0,all-span),end:all};
+      else if(e.key==='ArrowLeft'||e.key==='ArrowRight')
+        viewport=M.panRange(viewport,all,(e.key==='ArrowLeft'?-1:1)*Math.max(1,Math.round(span*.15)));
+      else zoom(e.key==='+'||e.key==='='?.79:1.27);
+      redraw();
     });
   }
-  root.AegisChartView={draw,reset,install};
+  root.AegisChartView={draw,reset,install,zoom,viewportInfo};
 })(typeof globalThis==='object'?globalThis:this);

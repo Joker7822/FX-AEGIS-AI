@@ -119,5 +119,29 @@
     }
     return result;
   }
-  return {HEADER,parseH1Csv,validateProvenance,loadLocalFiles,aggregates,ema,filterWindow,compressOHLC};
+  // Pure viewport math: keep the selected observation under the zoom anchor.
+  // These ranges only select existing bars; no OHLC values are fabricated.
+  function zoomRange(range,total,factor,anchorFraction=.5,minBars=8) {
+    if (!Number.isSafeInteger(total)||total<0||!Number.isFinite(factor)||factor<=0)
+      throw Error('Invalid chart zoom arguments');
+    if(total===0)return {start:0,end:0};
+    const span=Math.max(1,Math.min(total,(range?.end??total)-(range?.start??0)));
+    const minimum=Math.min(total,Math.max(2,Math.floor(minBars)));
+    const size=Math.max(minimum,Math.min(total,Math.round(span*factor)));
+    const fraction=Number.isFinite(anchorFraction)?Math.max(0,Math.min(1,anchorFraction)):.5;
+    const anchor=(range?.start??0)+fraction*span;
+    const start=Math.max(0,Math.min(total-size,Math.round(anchor-fraction*size)));
+    return {start,end:start+size};
+  }
+
+  function panRange(range,total,delta) {
+    if(!Number.isSafeInteger(total)||total<0||!Number.isFinite(delta))
+      throw Error('Invalid chart pan arguments');
+    if(total===0)return {start:0,end:0};
+    const span=Math.max(1,Math.min(total,(range?.end??total)-(range?.start??0)));
+    const start=Math.max(0,Math.min(total-span,Math.round((range?.start??0)+delta)));
+    return {start,end:start+span};
+  }
+
+  return {HEADER,parseH1Csv,validateProvenance,loadLocalFiles,aggregates,ema,filterWindow,compressOHLC,zoomRange,panRange};
 });

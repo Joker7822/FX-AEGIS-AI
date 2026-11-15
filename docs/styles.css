@@ -36,3 +36,22 @@
 .overlay-status{min-height:18px;padding:3px 6px;color:#9db6c5;font-size:10px;line-height:1.35}
 @media(max-width:900px){.chart-panel{height:570px}}
 @media(max-width:550px){.chart-panel{height:650px}.overlay-controls{gap:5px}}
+
+
+/* v3.7 — explicit zoom controls, spacious chart view, and mobile two-finger gesture. */
+.chart-zoom-controls{display:inline-flex;align-items:center;gap:5px;flex-wrap:wrap}
+.chart-zoom-controls button{min-height:30px;min-width:34px;padding:4px 9px;font-size:11px;font-weight:700;border-radius:6px}
+.chart-zoom-controls button:disabled{opacity:.42;cursor:not-allowed}
+.chart-zoom-controls button:focus-visible{outline:2px solid var(--mint);outline-offset:2px}
+#chartZoomLevel{font:600 11px/1.4 ui-monospace,SFMono-Regular,Consolas,monospace;color:#c1e8de;min-width:48px;text-align:center;font-variant-numeric:tabular-nums}
+#chart{touch-action:none}
+body.chart-focus-active{overflow:hidden}
+.chart-panel.chart-expanded{position:fixed;inset:12px;z-index:1000;width:auto;height:calc(100dvh - 24px)!important;max-height:none;display:flex;flex-direction:column;border:1px solid #4c928f;box-shadow:0 0 0 100vmax #030810d9,0 18px 50px #0009;background:#101f2a}
+.chart-panel.chart-expanded .chart-box{min-height:0;flex:1}
+.chart-panel.chart-expanded #chart{min-height:160px}
+.chart-panel.chart-expanded .panel-foot{flex-shrink:0}
+@media(max-width:550px){
+  .chart-zoom-controls{gap:3px}
+  .chart-zoom-controls button{min-height:37px;min-width:37px;padding:5px 8px}
+  .chart-panel.chart-expanded{inset:0;border-radius:0;height:100dvh!important}
+}
