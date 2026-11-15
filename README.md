@@ -1,3 +1,9 @@
+# FX AEGIS AI v3.1 — automatic ML-to-chart annotations (2026-11-15 JST)
+
+New local-only `ml_chart_overlay.py` converts H1 ML validation/diagnostic prediction CSVs and hypothetical trade ledgers into the existing v3.0 `annotations.json` chart format. It verifies quote/report hashes, frozen time splits, matured training labels, next-open fills and declared slippage. The displayed probability is an **uncalibrated arithmetic mean** of two models. No missing stop-loss/take-profit rules, realized orders, or profitability claims are fabricated. Files remain local; CI uses synthetic fixtures only. OANDA access stays opt-in. See [ML_CHART_EXPORT_GUIDE_JA.md](ML_CHART_EXPORT_GUIDE_JA.md).
+
+---
+
 # FX AEGIS AI v3.0 — research-only chart annotations (2026-11-15 JST)
 
 Locally loaded H1 Bid/Ask candle charts now support separately imported research-only buy/sell entry/exit markers, hypothetical stop-loss/take-profit lines, and submitted ML probabilities compared with **realized H1 quote movements**. Overlay JSON must bind to the exact quote SHA-256, declare hypothetical execution, and deny live-trading approval. No public quotes, upload, broker API calls or actual orders. See [CHART_ANNOTATIONS_GUIDE_JA.md](CHART_ANNOTATIONS_GUIDE_JA.md).

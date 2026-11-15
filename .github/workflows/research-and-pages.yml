@@ -18,6 +18,8 @@ on:
       - 'execution_lab.py'
       - 'h1_evolution_guard.py'
       - 'h1_ml_retrainer.py'
+      - 'ml_chart_overlay.py'
+      - 'ML_CHART_EXPORT_GUIDE_JA.md'
       - 'broker_h1_oanda.py'
       - 'dukascopy_h1.py'
       - 'docs/annotations.js'
@@ -109,6 +111,23 @@ jobs:
             --slippage-pips-per-side 0.2 --commission-jpy-per-roundtrip 0 \
             --out results/h1_ml_fixture
           python -c "import json; r=json.load(open('results/h1_ml_fixture/h1_ml_retraining_report.json')); assert r['status']=='SYNTHETIC_TEST_ONLY' and not r['approved_for_live_trading'] and r['sections']['validation']['retrain_events'] > 0"
+      - name: Export AI predictions and hypothetical fills to v3.0 chart JSON (SYNTHETIC ONLY)
+        run: |
+          python ml_chart_overlay.py \
+            --quotes data/bidask_fixture/bidask_h1_synthetic.csv \
+            --provenance data/bidask_fixture/provenance.json \
+            --ml-results results/h1_ml_fixture --allow-synthetic \
+            --out results/h1_ml_fixture/annotations.json
+          node - <<'JS'
+          const fs=require('node:fs');
+          const M=require('./docs/chart-model.js');
+          const A=require('./docs/annotations.js');
+          const bars=M.parseH1Csv(fs.readFileSync('data/bidask_fixture/bidask_h1_synthetic.csv','utf8')).bars;
+          const meta=JSON.parse(fs.readFileSync('data/bidask_fixture/provenance.json','utf8'));
+          const overlay=A.parse(fs.readFileSync('results/h1_ml_fixture/annotations.json','utf8'),meta.sha256,bars);
+          if(overlay.summary.predictions<=0)throw Error('Missing synthetic ML predictions');
+          console.log('Synthetic ML-to-chart contract accepted:',overlay.summary.trades,'trades;',overlay.summary.predictions,'predictions.');
+          JS
       - name: Download official FRED DEXJPUS and validate provenance
         run: python github_pipeline.py refresh
       - name: Replay proof and parameter stability scan on verified historical data
