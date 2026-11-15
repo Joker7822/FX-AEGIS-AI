@@ -84,7 +84,7 @@ jobs:
         run: pip install -r requirements-repro.txt
       - name: Test JS candlesticks and research overlay without network
         run: |
-          node --test tests/test_chart_model.cjs tests/test_chart_annotations.cjs tests/test_chart_zoom.cjs
+          node --test tests/test_chart_model.cjs tests/test_chart_annotations.cjs tests/test_chart_zoom.cjs tests/test_chart_demo.cjs
       - name: Generate reproducible synthetic fixture (test-only)
         run: |
           python generate_demo.py

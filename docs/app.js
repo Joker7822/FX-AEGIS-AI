@@ -1,6 +1,7 @@
 'use strict';
 const $ = id => document.getElementById(id);
-const state={data:null,points:[],scenario:null,plot:'price',window:'all',localBars:[],localMeta:null,localGaps:0,localSha:null,overlay:null};
+const state={data:null,points:[],scenario:null,plot:'candles',window:'7d',localBars:[],localMeta:null,localGaps:0,localSha:null,overlay:null};
+let customImportPending=false;
 const nf = (v,d=0) => v==null?'—':Number(v).toLocaleString('ja-JP',{minimumFractionDigits:d,maximumFractionDigits:d});
 const isoDate=s=>String(s||'').slice(0,10);
 const money=v=>v==null?'—':nf(v,0)+' 円';
@@ -26,7 +27,8 @@ function updateChartControls(){
 }
 function draw(){
  updateChartControls();
- const local=state.plot==='candles',result=AegisChartView.draw($('chart'),{
+ const local=state.plot==='candles',demo=local&&state.localMeta?.demo===true;
+ const result=AegisChartView.draw($('chart'),{
    plot:state.plot,window:state.window,reference:state.points,
    equity:state.scenario?.curve,localBars:state.localBars,
    timeframe:$('candleTimeframe').value,side:$('candleSide').value,
@@ -36,22 +38,54 @@ function draw(){
  $('emptyChart').hidden=result.available;
  $('emptyChart').textContent=local?'H1 Bid/AskのCSVと出典JSONを2ファイル選択してください':'表示可能な公表値・計算結果がありません';
  const side=$('candleSide').value.toUpperCase();
- $('chartLegend').textContent=local?
+ $('chartLegend').textContent=demo?'人工H1デモ（市場価格ではありません）':local?
    `端末内の${state.localMeta?.synthetic?'人工生成データ':'出典未検証データ'} · ${side}`:
    state.plot==='equity'?'参考値から計算した仮想資産曲線':'FRED DEXJPUS / 日次参考レート';
- $('chartTitle').textContent=local?`USD/JPY ${$('candleTimeframe').value} ${side} ローソク足`:
+ $('chartDataBadge').hidden=!(local&&state.localMeta?.synthetic);
+ $('chartDataBadge').textContent=demo?'内蔵人工デモ・実勢価格ではありません':'人工データ・実勢価格ではありません';
+ $('chartTitle').textContent=demo?`人工デモ ${$('candleTimeframe').value} ${side} ローソク足`:local?`USD/JPY ${$('candleTimeframe').value} ${side} ローソク足`:
    state.plot==='equity'?'仮想シナリオの資産曲線':'USD/JPY / 日次参考レート';
- $('overlayControls').hidden=!local;
- $('overlayStatus').textContent=local?(state.overlay?('研究用注釈 '+state.overlay.summary.trades+'取引 / '+state.overlay.summary.predictions+'予測 / 正答率 '+(state.overlay.summary.accuracy===null?'—':nf(100*state.overlay.summary.accuracy,1)+'%')+' / Brier '+(state.overlay.summary.brier===null?'—':nf(state.overlay.summary.brier,4))+'。実約定ではありません。'):'注釈JSONを読み込むと売買とAI予測が表示されます。'):'H1データ読込後に利用できます。';
- $('chartExtra').textContent=local?`ローカル照合済み · 時間欠損${state.localGaps}箇所`:
+ $('overlayControls').hidden=!local||demo;
+ $('overlayStatus').textContent=demo?'人工デモ表示中。実市場データ・実取引・AI予測ではありません。':local?(state.overlay?('研究用注釈 '+state.overlay.summary.trades+'取引 / '+state.overlay.summary.predictions+'予測 / 正答率 '+(state.overlay.summary.accuracy===null?'—':nf(100*state.overlay.summary.accuracy,1)+'%')+' / Brier '+(state.overlay.summary.brier===null?'—':nf(state.overlay.summary.brier,4))+'。実約定ではありません。'):'注釈JSONを読み込むと売買とAI予測が表示されます。'):'H1データ読込後に利用できます。';
+ $('chartExtra').textContent=demo?'SHA-256照合済み・人工サンプル':local?`ローカル照合済み · 時間欠損${state.localGaps}箇所`:
    state.plot==='price'?'OHLCではありません':'';
  $('chartZoomLevel').textContent=result.available?`${(result.total/Math.max(1,result.count)).toFixed(1)}×`:'—';
  $('chartZoomIn').disabled=!result.available||result.count<=8;
  $('chartZoomOut').disabled=!result.available||result.count>=result.total;
  $('chartReset').disabled=!result.available||result.count>=result.total;
- $('chartCaption').textContent=result.available?`${result.first} ～ ${result.last} / ${result.count.toLocaleString('ja-JP')}本${result.compressed?'（表示密度に合わせ区間集約）':''} · ${local?'約定価格・出典真正性は未確認':'実約定ではない'}`:'読み込み待ち';
+ $('chartCaption').textContent=result.available?`${result.first} ～ ${result.last} / ${result.count.toLocaleString('ja-JP')}本${result.compressed?'（表示密度に合わせ区間集約）':''} · ${demo?'人工デモ。実相場・実取引ではありません':local?'約定価格・出典真正性は未確認':'実約定ではない'}`:'読み込み待ち';
+}
+async function loadDemoH1(){
+ try{
+  $('localStatus').textContent='人工H1デモの価格CSVと出典JSONを読み込み中…';
+  const [q,m]=await Promise.all([
+    fetch('./demo/bidask_h1_synthetic.csv',{cache:'no-store'}),
+    fetch('./demo/provenance.json',{cache:'no-store'})
+  ]);
+  if(!q.ok||!m.ok)throw Error('デモH1ファイルの取得に失敗しました');
+  const [csvBlob,metaBlob]=await Promise.all([q.blob(),m.blob()]);
+  const files=[
+    {name:'bidask_h1_synthetic.csv',size:csvBlob.size,arrayBuffer:()=>csvBlob.arrayBuffer(),text:()=>csvBlob.text()},
+    {name:'provenance.json',size:metaBlob.size,arrayBuffer:()=>metaBlob.arrayBuffer(),text:()=>metaBlob.text()}
+  ];
+  const checked=await AegisChartModel.loadLocalFiles(files);
+  if(checked.meta.synthetic!==true)throw Error('人工デモに実市場データが混入しています');
+  if(customImportPending||state.localSha)return; // never overwrite user-selected quotes
+  state.localBars=checked.bars;state.localMeta={...checked.meta,demo:true};
+  state.localGaps=checked.gaps;state.localSha=null;state.overlay=null;
+  state.plot='candles';state.window='7d';
+  $('overlayClear').hidden=true;
+  $('localStatus').textContent=`人工H1デモ ${nf(checked.bars.length)}本・SHA-256一致。実相場・実取引ではありません。実データはCSVと出典JSONを選択してください。`;
+  AegisChartView.reset();draw();
+ }catch(e){
+  if(!customImportPending&&!state.localSha){
+    $('localStatus').textContent='人工H1デモの表示に失敗しました：'+e.message+'。H1 CSVと出典JSONを手動選択してください。';
+    draw();
+  }
+ }
 }
 async function importLocalH1(event){
+ customImportPending=true;
  try{
    $('localStatus').textContent='端末内でファイルのSHA-256とOHLCを検査中…';
    const checked=await AegisChartModel.loadLocalFiles(event.target.files);
@@ -61,14 +95,14 @@ async function importLocalH1(event){
    $('localClear').hidden=false;state.plot='candles';state.window='7d';
    AegisChartView.reset();draw();
  }catch(e){$('localStatus').textContent='取込不可：'+e.message;}
- finally{event.target.value='';}
+ finally{customImportPending=false;event.target.value='';}
 }
 function clearLocalH1(){
  state.localBars=[];state.localMeta=null;state.localGaps=0;state.localSha=null;state.overlay=null;
- $('overlayClear').hidden=true;state.plot='price';state.window='all';
+ $('overlayClear').hidden=true;state.plot='candles';state.window='7d';
  $('localFiles').value='';$('localClear').hidden=true;
- $('localStatus').textContent='端末内のH1データをクリアしました。FREDはローソク足では表示できません。';
- AegisChartView.reset();draw();
+ $('localStatus').textContent='実データを解除しました。人工H1デモを再読み込みします。';
+ AegisChartView.reset();draw();loadDemoH1();
 }
 
 async function importOverlay(event){
@@ -148,6 +182,7 @@ function boot(){
  });
  window.addEventListener('resize',draw);
  updateChartControls();
+ loadDemoH1();
  load().then(()=>Promise.all([loadRepro(),loadEvolution()]));
 }
 document.addEventListener('DOMContentLoaded',boot);

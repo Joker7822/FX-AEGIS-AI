@@ -1,0 +1,11 @@
+{
+  "schema": "fx-aegis-h1-bidask-v1",
+  "symbol": "USDJPY",
+  "quote_timezone": "UTC",
+  "timestamp_semantics": "BAR_OPEN",
+  "source_kind": "SYNTHETIC_TEST_FIXTURE",
+  "source_name": "INTERNAL DETERMINISTIC H1 DEMO — NOT MARKET DATA",
+  "sha256": "827f1d654f226f5fa833f7a29130ba1decdb9dace4d583a415813257d09c96ad",
+  "license_scope": "public synthetic UI test only",
+  "no_live_trading": true
+}

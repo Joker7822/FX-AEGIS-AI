@@ -55,3 +55,7 @@ body.chart-focus-active{overflow:hidden}
   .chart-zoom-controls button{min-height:37px;min-width:37px;padding:5px 8px}
   .chart-panel.chart-expanded{inset:0;border-radius:0;height:100dvh!important}
 }
+
+/* v3.8: always-visible disclosure for synthetic H1 OHLC preview. */
+.chart-data-badge{display:inline-flex;align-items:center;border:1px solid #a28a49;background:#4b3c20;color:#ffe9af;border-radius:4px;padding:3px 7px;font-size:10px;font-weight:800;max-width:100%}
+.chart-data-badge[hidden]{display:none}

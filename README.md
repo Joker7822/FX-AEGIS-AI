@@ -1,3 +1,10 @@
+# FX AEGIS AI v3.8 — Visible H1 candlesticks on first load (2026-11-15 JST)
+
+The dashboard loads a clearly labeled, **SHA-256-verified synthetic H1 CSV demo (168 hours)** and renders Bid/Ask OHLC candlesticks immediately. The bundle is NOT market data. User-selected H1 quotes always override the demo; real files remain browser-only. FRED daily reference rates are not turned into invented OHLC. No broker access, private data publication or live orders.
+See [CHART_H1_AUTOLOAD_GUIDE_JA.md](CHART_H1_AUTOLOAD_GUIDE_JA.md).
+
+---
+
 # FX AEGIS AI v3.7.1 — Smartphone-only two-finger pinch (2026-11-15 JST)
 
 Two-finger pinch on the main chart is enabled **only** when the primary pointer is coarse and the viewport is 900 CSS pixels wide or narrower. Two real touch contacts are required. Desktop layouts retain mouse-wheel, drag, keyboard and +/- controls. No market data, model, broker API, or trading permissions changed. See [CHART_ZOOM_GUIDE_JA.md](CHART_ZOOM_GUIDE_JA.md).
