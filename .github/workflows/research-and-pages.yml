@@ -22,6 +22,8 @@ on:
       - 'forward_monitor.py'
       - 'forward_supervisor.py'
       - 'forward_dashboard_bridge.py'
+      - 'private_h1_inbox.py'
+      - 'PRIVATE_H1_INBOX_GUIDE_JA.md'
       - 'PRIVATE_FORWARD_DASHBOARD_GUIDE_JA.md'
       - 'FORWARD_SUPERVISOR_GUIDE_JA.md'
       - 'FORWARD_MONITOR_GUIDE_JA.md'
@@ -89,6 +91,8 @@ jobs:
           python main.py --csv data/demo_synthetic_usdjpy.csv --strategy trend --out results/demo_trend
       - name: Run research and simulation tests
         run: python -m unittest discover -s tests -v
+      - name: Confirm private H1 inbox atomic handling (SYNTHETIC fixtures only)
+        run: python -m unittest discover -s tests -p 'test_private_h1_inbox.py' -v
       - name: Confirm strictly synthetic Bid/Ask execution semantics (no live feed)
         run: |
           python execution_lab.py fixture --out data/bidask_fixture

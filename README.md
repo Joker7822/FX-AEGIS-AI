@@ -1,3 +1,9 @@
+# FX AEGIS AI v3.6 — Private atomic H1 inbox (2026-11-15 JST)
+
+**Private-data operations only; NO broker API, orders, or auto scheduling.** New `private_h1_inbox.py` accepts already-authorized local H1 Bid/Ask CSV plus provenance JSON, validates hashes and completed hours, atomically publishes a ready snapshot, and passes only a private verified copy to the existing frozen forward supervisor and local status dashboard. On success the original drop moves to `processed/`. Missing/partial/mutated or conflicting inputs fail closed. The new workflow tests exclusively synthetic H1 fixtures. This is **not** genuine market-data acquisition, independent source authentication, or proof of forward profitability. OANDA opt-in gates and live-order prohibition are unchanged. See [PRIVATE_H1_INBOX_GUIDE_JA.md](PRIVATE_H1_INBOX_GUIDE_JA.md).
+
+---
+
 # FX AEGIS AI v3.5 — Offline private forward monitor to local dashboard (2026-11-15 JST)
 
 Research-only `forward_dashboard_bridge.py` runs **one** observation of an already-frozen H1 model from user-supplied local quotes, verifies the hash-linked monitor and supervisor journals, and exports a bounded private `forward_status.json` (no OHLC prices or API credentials). `docs/forward-status.html` reads that file **in the browser only** and charts model probabilities, outcomes, Brier score and stop status; no report is automatically uploaded or published. The existing live OANDA API remains opt-in/manual-only, broker orders disabled. Genuine future market performance remains **unverified**. See [PRIVATE_FORWARD_DASHBOARD_GUIDE_JA.md](PRIVATE_FORWARD_DASHBOARD_GUIDE_JA.md).
