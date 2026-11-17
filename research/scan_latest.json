@@ -1733,9 +1733,9 @@
   ],
   "data_range": [
     "2006-11-13",
-    "2026-11-06"
+    "2026-11-13"
   ],
-  "data_rows": 5006,
+  "data_rows": 5010,
   "engine_sha256": {
     "github_pipeline.py": "f43730adb7c4bf0d8b24de99412f1f2a831784ffa0a21cd960a631164c5e9fc5",
     "repro_lab.py": "e86b40e9721f1a4793d9bc0b0562a58d2b24b6ea714b3478268cf3af4d1dde59"
@@ -1750,24 +1750,24 @@
       "spread_pips": 1.4
     },
     "holdout": {
-      "end": "2026-11-06",
+      "end": "2026-11-13",
       "max_dd_pct": 3.543606,
-      "observations": 1463,
+      "observations": 1467,
       "position_changes": 12,
       "return_pct": 9.322954,
       "start": "2021-01-04"
     },
     "holdout_double_cost": {
-      "end": "2026-11-06",
+      "end": "2026-11-13",
       "max_dd_pct": 3.553537,
-      "observations": 1463,
+      "observations": 1467,
       "position_changes": 12,
       "return_pct": 9.290208,
       "start": "2021-01-04"
     }
   },
   "random_seed": 42,
-  "report_sha256": "5d91bf704e4062b5f9353c3f2c1f4f3ebef704dd0798c0c581bf593fe2c16883",
+  "report_sha256": "13b0bd94ea2622c8993741397d3899647424f09ec86324118f0b08860eadbc7a",
   "research_gate_passed": false,
   "schema": "fx-aegis-repro-1",
   "selection_rule": "max validation_return_pct - 0.5 * validation_max_dd; training and validation only",
@@ -1777,9 +1777,9 @@
     "python": "3.11.18"
   },
   "source": {
-    "data_sha256": "344f00cb5b66495fe0ff1176d1d73b02148cd4621f8b3b41634de158742050dc",
+    "data_sha256": "9ff175fff4496b08803228651ba89c7d028c006eae214a501865072cda8fd2dd",
     "kind": "FRED_DAILY_REFERENCE_NON_EXECUTABLE",
-    "metadata_sha256": "f66e62840b1511118e86eb3434f24ddb6e1ae2799c37bb296bbbed9a6e7b7fc8",
+    "metadata_sha256": "9c85cc1d294f1d4f44f9871f1341fdc377cc322e0993bdc01f3ba42938596c20",
     "source": "https://fred.stlouisfed.org/series/DEXJPUS"
   },
   "splits": [

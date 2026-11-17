@@ -1,6 +1,6 @@
 {
-  "archive_sha256": "13f3a861a732fbaf5d50b1b03e5d1ebefd8dcfed3bedff9309fc043bff794215",
-  "candidate_evaluations_total": 54,
+  "archive_sha256": "c15f30b51e828cee1264579d6019715ef6e0472bf67f875f6a9c8b14503332ba",
+  "candidate_evaluations_total": 106,
   "schema": "fx-aegis-self-evolve-1",
   "seed_mode": "weekly",
   "weekly_runs": [
@@ -20,6 +20,23 @@
       "seed": 202687,
       "source_sha256": "344f00cb5b66495fe0ff1176d1d73b02148cd4621f8b3b41634de158742050dc",
       "week_id": "2026-W45"
+    },
+    {
+      "best_gene": {
+        "allocation": 0.1,
+        "allow_short": false,
+        "family": "close_breakout",
+        "fast": 50,
+        "slow": 100,
+        "vol_cap_pct": 0.6,
+        "vol_window": 40
+      },
+      "best_score": -2.093523,
+      "eligible_count": 0,
+      "evaluated": 52,
+      "seed": 202688,
+      "source_sha256": "9ff175fff4496b08803228651ba89c7d028c006eae214a501865072cda8fd2dd",
+      "week_id": "2026-W46"
     }
   ]
 }

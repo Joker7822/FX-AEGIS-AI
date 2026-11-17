@@ -1,10 +1,10 @@
 {
   "approved_for_live_trading": false,
   "candidate_count": 48,
-  "data_sha256": "344f00cb5b66495fe0ff1176d1d73b02148cd4621f8b3b41634de158742050dc",
-  "record_sha256": "4e90f1ac712cc4cdb7eb64c9177697ca13530b7c1c6487dcbbd8fc8412941b1b",
+  "data_sha256": "9ff175fff4496b08803228651ba89c7d028c006eae214a501865072cda8fd2dd",
+  "record_sha256": "c4da4bfbfc123799daafd9e0b66e55df59929bfb1de4a323b240004f8e0c098b",
   "research_gate_passed": false,
-  "scan_sha256": "5d91bf704e4062b5f9353c3f2c1f4f3ebef704dd0798c0c581bf593fe2c16883",
+  "scan_sha256": "13b0bd94ea2622c8993741397d3899647424f09ec86324118f0b08860eadbc7a",
   "schema": "fx-aegis-repro-1",
   "selected_config": {
     "allocation": 0.25,
@@ -15,9 +15,9 @@
     "spread_pips": 1.4
   },
   "selected_holdout": {
-    "end": "2026-11-06",
+    "end": "2026-11-13",
     "max_dd_pct": 3.543606,
-    "observations": 1463,
+    "observations": 1467,
     "position_changes": 12,
     "return_pct": 9.322954,
     "start": "2021-01-04"

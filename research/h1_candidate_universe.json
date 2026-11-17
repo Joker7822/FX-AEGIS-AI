@@ -5,24 +5,33 @@
       "allocation": 0.1,
       "allow_short": false,
       "family": "close_breakout",
+      "fast": 10,
+      "slow": 250,
+      "vol_cap_pct": 2.0,
+      "vol_window": 20
+    },
+    {
+      "allocation": 0.1,
+      "allow_short": false,
+      "family": "close_breakout",
+      "fast": 15,
+      "slow": 80,
+      "vol_cap_pct": 2.0,
+      "vol_window": 10
+    },
+    {
+      "allocation": 0.1,
+      "allow_short": false,
+      "family": "close_breakout",
       "fast": 5,
-      "slow": 80,
+      "slow": 100,
       "vol_cap_pct": 0.6,
-      "vol_window": 40
+      "vol_window": 20
     },
     {
       "allocation": 0.1,
       "allow_short": false,
-      "family": "ema_cross",
-      "fast": 40,
-      "slow": 80,
-      "vol_cap_pct": 0.6,
-      "vol_window": 40
-    },
-    {
-      "allocation": 0.1,
-      "allow_short": false,
-      "family": "ema_cross",
+      "family": "close_breakout",
       "fast": 5,
       "slow": 100,
       "vol_cap_pct": 0.6,
@@ -31,8 +40,26 @@
     {
       "allocation": 0.1,
       "allow_short": false,
-      "family": "ema_cross",
-      "fast": 5,
+      "family": "close_breakout",
+      "fast": 50,
+      "slow": 100,
+      "vol_cap_pct": 0.6,
+      "vol_window": 10
+    },
+    {
+      "allocation": 0.1,
+      "allow_short": false,
+      "family": "close_breakout",
+      "fast": 50,
+      "slow": 100,
+      "vol_cap_pct": 0.6,
+      "vol_window": 40
+    },
+    {
+      "allocation": 0.1,
+      "allow_short": false,
+      "family": "close_breakout",
+      "fast": 50,
       "slow": 150,
       "vol_cap_pct": 0.6,
       "vol_window": 40
@@ -40,9 +67,9 @@
     {
       "allocation": 0.1,
       "allow_short": false,
-      "family": "ema_cross",
-      "fast": 5,
-      "slow": 80,
+      "family": "close_breakout",
+      "fast": 50,
+      "slow": 250,
       "vol_cap_pct": 0.6,
       "vol_window": 40
     },
@@ -50,16 +77,16 @@
       "allocation": 0.1,
       "allow_short": false,
       "family": "ema_cross",
-      "fast": 5,
-      "slow": 80,
-      "vol_cap_pct": 2.0,
+      "fast": 50,
+      "slow": 100,
+      "vol_cap_pct": 0.6,
       "vol_window": 40
     },
     {
       "allocation": 0.1,
       "allow_short": false,
-      "family": "ema_slope",
-      "fast": 5,
+      "family": "ema_cross",
+      "fast": 75,
       "slow": 100,
       "vol_cap_pct": 0.6,
       "vol_window": 40
@@ -68,8 +95,107 @@
       "allocation": 0.1,
       "allow_short": false,
       "family": "ema_slope",
+      "fast": 10,
+      "slow": 150,
+      "vol_cap_pct": 0.6,
+      "vol_window": 20
+    },
+    {
+      "allocation": 0.1,
+      "allow_short": false,
+      "family": "ema_slope",
+      "fast": 20,
+      "slow": 80,
+      "vol_cap_pct": 0.6,
+      "vol_window": 10
+    },
+    {
+      "allocation": 0.1,
+      "allow_short": false,
+      "family": "ema_slope",
+      "fast": 5,
+      "slow": 100,
+      "vol_cap_pct": 0.6,
+      "vol_window": 20
+    },
+    {
+      "allocation": 0.1,
+      "allow_short": false,
+      "family": "ema_slope",
+      "fast": 5,
+      "slow": 150,
+      "vol_cap_pct": 0.6,
+      "vol_window": 10
+    },
+    {
+      "allocation": 0.1,
+      "allow_short": false,
+      "family": "ema_slope",
+      "fast": 5,
+      "slow": 150,
+      "vol_cap_pct": 0.6,
+      "vol_window": 20
+    },
+    {
+      "allocation": 0.1,
+      "allow_short": false,
+      "family": "ema_slope",
+      "fast": 5,
+      "slow": 200,
+      "vol_cap_pct": 0.6,
+      "vol_window": 10
+    },
+    {
+      "allocation": 0.1,
+      "allow_short": false,
+      "family": "ema_slope",
       "fast": 5,
       "slow": 80,
+      "vol_cap_pct": 0.6,
+      "vol_window": 10
+    },
+    {
+      "allocation": 0.1,
+      "allow_short": false,
+      "family": "ema_slope",
+      "fast": 50,
+      "slow": 100,
+      "vol_cap_pct": 0.6,
+      "vol_window": 10
+    },
+    {
+      "allocation": 0.1,
+      "allow_short": false,
+      "family": "ema_slope",
+      "fast": 50,
+      "slow": 150,
+      "vol_cap_pct": 0.6,
+      "vol_window": 20
+    },
+    {
+      "allocation": 0.1,
+      "allow_short": false,
+      "family": "ema_slope",
+      "fast": 50,
+      "slow": 150,
+      "vol_cap_pct": 0.6,
+      "vol_window": 40
+    },
+    {
+      "allocation": 0.1,
+      "allow_short": false,
+      "family": "ema_slope",
+      "fast": 50,
+      "slow": 200,
+      "vol_cap_pct": 0.6,
+      "vol_window": 10
+    },
+    {
+      "allocation": 0.1,
+      "allow_short": false,
+      "family": "ema_slope",
+      "fast": 50,
+      "slow": 250,
       "vol_cap_pct": 0.6,
       "vol_window": 40
     },
@@ -84,237 +210,39 @@
     },
     {
       "allocation": 0.1,
-      "allow_short": true,
-      "family": "close_breakout",
-      "fast": 5,
-      "slow": 100,
-      "vol_cap_pct": 0.6,
-      "vol_window": 40
-    },
-    {
-      "allocation": 0.1,
-      "allow_short": true,
-      "family": "close_breakout",
-      "fast": 5,
-      "slow": 80,
-      "vol_cap_pct": 0.6,
-      "vol_window": 40
-    },
-    {
-      "allocation": 0.1,
-      "allow_short": true,
-      "family": "ema_cross",
-      "fast": 10,
-      "slow": 100,
-      "vol_cap_pct": 0.6,
-      "vol_window": 40
-    },
-    {
-      "allocation": 0.1,
-      "allow_short": true,
-      "family": "ema_cross",
-      "fast": 10,
-      "slow": 80,
-      "vol_cap_pct": 0.6,
-      "vol_window": 40
-    },
-    {
-      "allocation": 0.1,
-      "allow_short": true,
-      "family": "ema_cross",
-      "fast": 40,
-      "slow": 100,
-      "vol_cap_pct": 0.6,
-      "vol_window": 40
-    },
-    {
-      "allocation": 0.1,
-      "allow_short": true,
-      "family": "ema_cross",
-      "fast": 5,
-      "slow": 100,
-      "vol_cap_pct": 0.6,
-      "vol_window": 20
-    },
-    {
-      "allocation": 0.1,
-      "allow_short": true,
-      "family": "ema_cross",
-      "fast": 5,
-      "slow": 100,
-      "vol_cap_pct": 0.6,
-      "vol_window": 40
-    },
-    {
-      "allocation": 0.1,
-      "allow_short": true,
-      "family": "ema_cross",
-      "fast": 5,
-      "slow": 80,
-      "vol_cap_pct": 0.6,
-      "vol_window": 20
-    },
-    {
-      "allocation": 0.1,
-      "allow_short": true,
-      "family": "ema_cross",
-      "fast": 5,
-      "slow": 80,
-      "vol_cap_pct": 0.6,
-      "vol_window": 40
-    },
-    {
-      "allocation": 0.1,
-      "allow_short": true,
-      "family": "ema_cross",
-      "fast": 5,
-      "slow": 80,
-      "vol_cap_pct": 99.0,
-      "vol_window": 40
-    },
-    {
-      "allocation": 0.1,
-      "allow_short": true,
-      "family": "ema_cross",
-      "fast": 50,
-      "slow": 100,
-      "vol_cap_pct": 1.2,
-      "vol_window": 20
-    },
-    {
-      "allocation": 0.1,
-      "allow_short": true,
-      "family": "ema_cross",
-      "fast": 50,
-      "slow": 250,
-      "vol_cap_pct": 0.6,
-      "vol_window": 40
-    },
-    {
-      "allocation": 0.1,
-      "allow_short": true,
-      "family": "ema_slope",
-      "fast": 20,
-      "slow": 250,
-      "vol_cap_pct": 0.6,
-      "vol_window": 40
-    },
-    {
-      "allocation": 0.1,
-      "allow_short": true,
-      "family": "ema_slope",
-      "fast": 20,
-      "slow": 250,
-      "vol_cap_pct": 1.2,
-      "vol_window": 20
-    },
-    {
-      "allocation": 0.1,
-      "allow_short": true,
-      "family": "ema_slope",
-      "fast": 5,
-      "slow": 100,
-      "vol_cap_pct": 0.6,
-      "vol_window": 40
-    },
-    {
-      "allocation": 0.1,
-      "allow_short": true,
-      "family": "ema_slope",
-      "fast": 5,
-      "slow": 80,
-      "vol_cap_pct": 0.6,
-      "vol_window": 40
-    },
-    {
-      "allocation": 0.1,
-      "allow_short": true,
-      "family": "ema_slope",
-      "fast": 5,
-      "slow": 80,
-      "vol_cap_pct": 1.2,
-      "vol_window": 40
-    },
-    {
-      "allocation": 0.1,
-      "allow_short": true,
-      "family": "ema_slope",
-      "fast": 50,
-      "slow": 250,
-      "vol_cap_pct": 1.2,
-      "vol_window": 20
-    },
-    {
-      "allocation": 0.1,
-      "allow_short": true,
-      "family": "ema_slope",
-      "fast": 50,
-      "slow": 80,
-      "vol_cap_pct": 0.6,
-      "vol_window": 40
-    },
-    {
-      "allocation": 0.2,
       "allow_short": false,
-      "family": "close_breakout",
-      "fast": 20,
-      "slow": 100,
-      "vol_cap_pct": 0.6,
-      "vol_window": 40
-    },
-    {
-      "allocation": 0.2,
-      "allow_short": false,
-      "family": "ema_cross",
-      "fast": 15,
-      "slow": 80,
-      "vol_cap_pct": 0.6,
-      "vol_window": 40
-    },
-    {
-      "allocation": 0.2,
-      "allow_short": false,
-      "family": "ema_cross",
-      "fast": 20,
-      "slow": 100,
-      "vol_cap_pct": 0.6,
-      "vol_window": 40
-    },
-    {
-      "allocation": 0.2,
-      "allow_short": false,
-      "family": "ema_cross",
-      "fast": 20,
-      "slow": 80,
-      "vol_cap_pct": 0.6,
-      "vol_window": 10
-    },
-    {
-      "allocation": 0.2,
-      "allow_short": false,
-      "family": "ema_cross",
-      "fast": 5,
-      "slow": 100,
-      "vol_cap_pct": 0.6,
-      "vol_window": 40
-    },
-    {
-      "allocation": 0.2,
-      "allow_short": false,
-      "family": "ema_cross",
-      "fast": 50,
-      "slow": 250,
-      "vol_cap_pct": 1.2,
-      "vol_window": 10
-    },
-    {
-      "allocation": 0.2,
-      "allow_short": false,
-      "family": "ema_cross",
+      "family": "ema_slope",
       "fast": 75,
-      "slow": 80,
-      "vol_cap_pct": 2.0,
+      "slow": 150,
+      "vol_cap_pct": 0.6,
       "vol_window": 20
+    },
+    {
+      "allocation": 0.1,
+      "allow_short": true,
+      "family": "ema_slope",
+      "fast": 5,
+      "slow": 100,
+      "vol_cap_pct": 0.6,
+      "vol_window": 20
+    },
+    {
+      "allocation": 0.1,
+      "allow_short": true,
+      "family": "ema_slope",
+      "fast": 50,
+      "slow": 100,
+      "vol_cap_pct": 0.6,
+      "vol_window": 40
+    },
+    {
+      "allocation": 0.1,
+      "allow_short": true,
+      "family": "ema_slope",
+      "fast": 50,
+      "slow": 150,
+      "vol_cap_pct": 0.6,
+      "vol_window": 40
     },
     {
       "allocation": 0.2,
@@ -327,66 +255,84 @@
     },
     {
       "allocation": 0.2,
-      "allow_short": true,
-      "family": "close_breakout",
-      "fast": 40,
-      "slow": 200,
-      "vol_cap_pct": 2.0,
-      "vol_window": 10
-    },
-    {
-      "allocation": 0.2,
-      "allow_short": true,
-      "family": "close_breakout",
-      "fast": 40,
+      "allow_short": false,
+      "family": "ema_slope",
+      "fast": 15,
       "slow": 250,
-      "vol_cap_pct": 2.0,
-      "vol_window": 10
+      "vol_cap_pct": 0.6,
+      "vol_window": 20
     },
     {
       "allocation": 0.2,
-      "allow_short": true,
-      "family": "ema_cross",
-      "fast": 10,
+      "allow_short": false,
+      "family": "ema_slope",
+      "fast": 5,
       "slow": 100,
-      "vol_cap_pct": 1.2,
-      "vol_window": 10
-    },
-    {
-      "allocation": 0.2,
-      "allow_short": true,
-      "family": "ema_cross",
-      "fast": 10,
-      "slow": 150,
-      "vol_cap_pct": 1.2,
-      "vol_window": 10
-    },
-    {
-      "allocation": 0.2,
-      "allow_short": true,
-      "family": "ema_cross",
-      "fast": 10,
-      "slow": 150,
-      "vol_cap_pct": 99.0,
+      "vol_cap_pct": 0.6,
       "vol_window": 20
     },
     {
       "allocation": 0.2,
       "allow_short": true,
-      "family": "ema_cross",
-      "fast": 40,
-      "slow": 80,
+      "family": "close_breakout",
+      "fast": 15,
+      "slow": 100,
+      "vol_cap_pct": 2.0,
+      "vol_window": 40
+    },
+    {
+      "allocation": 0.2,
+      "allow_short": true,
+      "family": "close_breakout",
+      "fast": 5,
+      "slow": 200,
       "vol_cap_pct": 2.0,
       "vol_window": 10
     },
     {
       "allocation": 0.2,
       "allow_short": true,
-      "family": "ema_cross",
-      "fast": 50,
+      "family": "ema_slope",
+      "fast": 30,
       "slow": 200,
       "vol_cap_pct": 1.2,
+      "vol_window": 20
+    },
+    {
+      "allocation": 0.25,
+      "allow_short": false,
+      "family": "close_breakout",
+      "fast": 15,
+      "slow": 250,
+      "vol_cap_pct": 1.2,
       "vol_window": 10
+    },
+    {
+      "allocation": 0.25,
+      "allow_short": false,
+      "family": "close_breakout",
+      "fast": 50,
+      "slow": 100,
+      "vol_cap_pct": 2.0,
+      "vol_window": 40
+    },
+    {
+      "allocation": 0.25,
+      "allow_short": false,
+      "family": "close_breakout",
+      "fast": 50,
+      "slow": 80,
+      "vol_cap_pct": 0.6,
+      "vol_window": 40
+    },
+    {
+      "allocation": 0.25,
+      "allow_short": false,
+      "family": "close_breakout",
+      "fast": 50,
+      "slow": 80,
+      "vol_cap_pct": 2.0,
+      "vol_window": 40
     },
     {
       "allocation": 0.25,
@@ -401,19 +347,73 @@
       "allocation": 0.25,
       "allow_short": false,
       "family": "ema_cross",
-      "fast": 20,
-      "slow": 100,
+      "fast": 50,
+      "slow": 80,
       "vol_cap_pct": 0.6,
       "vol_window": 40
     },
     {
       "allocation": 0.25,
-      "allow_short": true,
-      "family": "ema_cross",
-      "fast": 5,
+      "allow_short": false,
+      "family": "ema_slope",
+      "fast": 15,
+      "slow": 80,
+      "vol_cap_pct": 0.6,
+      "vol_window": 20
+    },
+    {
+      "allocation": 0.25,
+      "allow_short": false,
+      "family": "ema_slope",
+      "fast": 20,
+      "slow": 80,
+      "vol_cap_pct": 0.6,
+      "vol_window": 20
+    },
+    {
+      "allocation": 0.25,
+      "allow_short": false,
+      "family": "ema_slope",
+      "fast": 50,
+      "slow": 100,
+      "vol_cap_pct": 0.6,
+      "vol_window": 10
+    },
+    {
+      "allocation": 0.25,
+      "allow_short": false,
+      "family": "ema_slope",
+      "fast": 50,
+      "slow": 150,
+      "vol_cap_pct": 0.6,
+      "vol_window": 10
+    },
+    {
+      "allocation": 0.25,
+      "allow_short": false,
+      "family": "ema_slope",
+      "fast": 50,
       "slow": 80,
       "vol_cap_pct": 0.6,
       "vol_window": 40
+    },
+    {
+      "allocation": 0.25,
+      "allow_short": false,
+      "family": "ema_slope",
+      "fast": 50,
+      "slow": 80,
+      "vol_cap_pct": 2.0,
+      "vol_window": 10
+    },
+    {
+      "allocation": 0.25,
+      "allow_short": true,
+      "family": "close_breakout",
+      "fast": 10,
+      "slow": 150,
+      "vol_cap_pct": 99.0,
+      "vol_window": 20
     },
     {
       "allocation": 0.25,
@@ -425,72 +425,54 @@
       "vol_window": 20
     },
     {
-      "allocation": 0.25,
-      "allow_short": true,
-      "family": "ema_slope",
-      "fast": 30,
-      "slow": 150,
-      "vol_cap_pct": 1.2,
-      "vol_window": 40
-    },
-    {
-      "allocation": 0.25,
-      "allow_short": true,
-      "family": "ema_slope",
-      "fast": 40,
+      "allocation": 0.3,
+      "allow_short": false,
+      "family": "ema_cross",
+      "fast": 10,
       "slow": 80,
-      "vol_cap_pct": 0.6,
+      "vol_cap_pct": 2.0,
       "vol_window": 10
     },
     {
       "allocation": 0.3,
       "allow_short": false,
       "family": "ema_cross",
-      "fast": 20,
-      "slow": 100,
-      "vol_cap_pct": 0.6,
-      "vol_window": 40
-    },
-    {
-      "allocation": 0.3,
-      "allow_short": false,
-      "family": "ema_cross",
       "fast": 5,
-      "slow": 80,
-      "vol_cap_pct": 0.6,
-      "vol_window": 40
-    },
-    {
-      "allocation": 0.3,
-      "allow_short": false,
-      "family": "ema_cross",
-      "fast": 5,
-      "slow": 80,
-      "vol_cap_pct": 2.0,
+      "slow": 250,
+      "vol_cap_pct": 1.2,
       "vol_window": 20
     },
     {
       "allocation": 0.3,
       "allow_short": true,
       "family": "close_breakout",
-      "fast": 30,
-      "slow": 80,
-      "vol_cap_pct": 0.6,
+      "fast": 50,
+      "slow": 150,
+      "vol_cap_pct": 99.0,
+      "vol_window": 10
+    },
+    {
+      "allocation": 0.3,
+      "allow_short": true,
+      "family": "close_breakout",
+      "fast": 75,
+      "slow": 200,
+      "vol_cap_pct": 1.2,
       "vol_window": 40
     },
     {
       "allocation": 0.3,
       "allow_short": true,
-      "family": "ema_cross",
-      "fast": 20,
-      "slow": 80,
-      "vol_cap_pct": 99.0,
+      "family": "ema_slope",
+      "fast": 15,
+      "slow": 100,
+      "vol_cap_pct": 1.2,
       "vol_window": 10
     }
   ],
-  "historical_trials_total": 54,
+  "historical_trials_total": 106,
   "paper_only": true,
-  "payload_sha256": "63d8bfda569e094f50dfb1f577b1f608a9d9b8700683fec264d0be6a8e3a599a",
+  "payload_sha256": "97f0c8144eff68788b4e534395a6ebabab386abf61652bae942fdf1c82c9b135",
   "schema": "fx-aegis-h1-evolution-candidate-universe-v1",
   "selected_before": "2021-01-01",
   "selection_source_kind": "FRED_DAILY_REFERENCE_NON_EXECUTABLE"
