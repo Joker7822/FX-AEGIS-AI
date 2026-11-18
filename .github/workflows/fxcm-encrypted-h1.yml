@@ -1,0 +1,129 @@
+name: FX AEGIS AI · FXCM Encrypted H1 Archive (Personal)
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/fxcm-encrypted-h1.yml'
+      - 'fxcm_h1_personal_download.py'
+      - 'tests/test_fxcm_h1_personal_download.py'
+      - 'FXCM_GITHUB_AUTOMATION_GUIDE_JA.md'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Offline preflight, or explicit FXCM fetch and encrypt'
+        required: true
+        type: choice
+        options: [preflight-only, fetch-and-encrypt]
+        default: preflight-only
+  schedule:
+    # Tuesday 08:37 UTC = Tuesday 17:37 JST
+    - cron: '37 8 * * 2'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fxcm-personal-encrypted-h1
+  cancel-in-progress: false
+
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Check FXCM downloader offline (no broker network access)
+        run: |
+          python -m unittest discover -s tests -p 'test_fxcm_h1_personal_download.py' -v
+          python -m py_compile fxcm_h1_personal_download.py
+      - name: Check owner acknowledgments without inspecting any secrets
+        shell: bash
+        env:
+          PERSONAL_ACK: ${{ vars.FXCM_PERSONAL_USE_ACK }}
+          CLOUD_ACK: ${{ vars.FXCM_CLOUD_STORAGE_RIGHTS_ACK }}
+        run: |
+          if [[ "$PERSONAL_ACK" == true && "$CLOUD_ACK" == true ]]; then
+            echo 'Owner opt-ins present; encryption key is still required to fetch.'
+          else
+            echo 'FXCM acquisition remains DISABLED pending two owner opt-ins.'
+          fi
+
+  fetch-encrypt:
+    needs: preflight
+    # Fail closed: never fetch on push, forks, preflight-only or missing rights.
+    if: >-
+      ${{ github.repository == 'Joker7822/FX-AEGIS-AI' &&
+          vars.FXCM_PERSONAL_USE_ACK == 'true' &&
+          vars.FXCM_CLOUD_STORAGE_RIGHTS_ACK == 'true' &&
+          (github.event_name == 'schedule' ||
+            (github.event_name == 'workflow_dispatch' && inputs.mode == 'fetch-and-encrypt')) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install H1 quote validation dependencies
+        run: pip install -r requirements-repro.txt
+      - name: Select last four fully completed ISO weeks
+        shell: bash
+        run: |
+          python - <<'PY' >> "$GITHUB_ENV"
+          from datetime import datetime, timedelta, timezone
+          now=datetime.now(timezone.utc).date()
+          monday=now-timedelta(days=now.weekday()+7)
+          w=monday.isocalendar()
+          print(f'FXCM_YEAR={w.year}')
+          print(f'FXCM_WEEK={w.week}')
+          PY
+      - name: Acquire, validate, and encrypt only in runner temp
+        shell: bash
+        env:
+          PASSPHRASE: ${{ secrets.FXCM_ARCHIVE_PASSPHRASE }}
+        run: |
+          set -euo pipefail
+          umask 077
+          if [[ ${#PASSPHRASE} -lt 32 ]]; then
+            echo 'BLOCKED: FXCM_ARCHIVE_PASSPHRASE must be 32 or more characters.'
+            exit 1
+          fi
+          stage="$(mktemp -d "$RUNNER_TEMP/fxcm-h1.XXXXXXXX")"
+          trap 'rm -rf "$stage"' EXIT
+          python fxcm_h1_personal_download.py \
+            --year "$FXCM_YEAR" --week "$FXCM_WEEK" --weeks 4 \
+            --out "$stage/quotes" --enable-download --accept-fxcm-personal-use \
+            > "$stage/private-result.json"
+          test -s "$stage/quotes/bidask_h1.csv"
+          test -s "$stage/quotes/provenance.json"
+          tar -C "$stage/quotes" -cf "$stage/private.tar" bidask_h1.csv provenance.json
+          printf '%s' "$PASSPHRASE" | \
+            gpg --quiet --batch --yes --pinentry-mode loopback \
+              --passphrase-fd 0 --symmetric --cipher-algo AES256 \
+              --s2k-mode 3 --s2k-digest-algo SHA256 --s2k-count 65011712 \
+              --output "$RUNNER_TEMP/fxcm-usdjpy-h1.tar.gpg" "$stage/private.tar"
+          test -s "$RUNNER_TEMP/fxcm-usdjpy-h1.tar.gpg"
+          printf '%s' "$PASSPHRASE" | \
+            gpg --quiet --batch --yes --pinentry-mode loopback \
+              --passphrase-fd 0 --decrypt --output /dev/null \
+              "$RUNNER_TEMP/fxcm-usdjpy-h1.tar.gpg"
+          echo 'Validated H1 and GPG ciphertext only. No plaintext output or Git commit.'
+      - name: Store encrypted archive for 30 days
+        uses: actions/upload-artifact@v4
+        with:
+          name: fxcm-usdjpy-h1-encrypted-personal
+          path: ${{ runner.temp }}/fxcm-usdjpy-h1.tar.gpg
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 0
+      - name: Remove encrypted working output
+        if: always()
+        shell: bash
+        run: rm -f "$RUNNER_TEMP/fxcm-usdjpy-h1.tar.gpg"
