@@ -1,6 +1,6 @@
 {
-  "created_at_utc": "2026-11-18T10:08:15.585327+00:00",
-  "git_revision": "234108c2104139a540272eaf2e8c6220229b03e2",
+  "created_at_utc": "2026-11-18T22:59:14.457853+00:00",
+  "git_revision": "b8a7b185beccefd9c8404db0ec1b87fa8d8ed577",
   "record": {
     "manifest": {
       "config": {
@@ -30,7 +30,7 @@
       "source": {
         "data_sha256": "9ff175fff4496b08803228651ba89c7d028c006eae214a501865072cda8fd2dd",
         "kind": "FRED_DAILY_REFERENCE_NON_EXECUTABLE",
-        "metadata_sha256": "68c391a9bb738f2f6767a71b3c8dfa7188370e5a9a8863c552cc401dfc7ff4cb",
+        "metadata_sha256": "dce8517ada6a72bbdb998c598685af7eeda79bea361666b83895ba4ba6e1a0fa",
         "source": "https://fred.stlouisfed.org/series/DEXJPUS"
       },
       "splits": [
@@ -91,5 +91,5 @@
       "schema": "fx-aegis-repro-1"
     }
   },
-  "record_sha256": "5015c92ef464c179928a8948429acdaf74af1131157ce3245bec45a6b924a6c4"
+  "record_sha256": "c0eae32202f64ce65f656338417d863643342122b91fe1bd71acd8884ed9c2ea"
 }
