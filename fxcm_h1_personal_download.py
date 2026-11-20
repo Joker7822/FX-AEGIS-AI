@@ -121,20 +121,21 @@ def read_timestamp(value: str) -> datetime:
     return timestamp.astimezone(timezone.utc)
 
 
-def belongs_to_fxcm_trading_week(when: datetime, year: int, week: int) -> bool:
-    """Conservative UTC Sunday-evening-to-Sunday-evening window.
+def fxcm_trading_week_bounds(year: int, week: int) -> tuple[datetime, datetime]:
+    """Return the exclusive-end, UTC H1 archive window for an ISO week.
 
-    ISO weeks start Monday, but FXCM's forex trading session starts Sunday
-    at approximately 17:00 ET (21:00/22:00 UTC). Accept only the three
-    preceding Sunday H1 opens (21:00, 22:00, 23:00 UTC) in addition to the
-    requested ISO week up to (but not including) the next Sunday at 21:00.
-    Never shift bar timestamps, discard records, or assign arbitrary offsets.
+    The forex session begins Sunday approximately 17:00 ET (21:00/22:00 UTC).
+    Allow only the immediately preceding Sunday's 21/22/23 UTC opens. Keep
+    all original bar timestamps; never shift, discard or rewrite prices.
     """
     monday_date = date.fromisocalendar(year, week, 1)
     monday = datetime(monday_date.year, monday_date.month, monday_date.day,
                       tzinfo=timezone.utc)
-    start = monday - timedelta(hours=3)
-    end = monday + timedelta(days=6, hours=21)
+    return monday - timedelta(hours=3), monday + timedelta(days=6, hours=21)
+
+
+def belongs_to_fxcm_trading_week(when: datetime, year: int, week: int) -> bool:
+    start, end = fxcm_trading_week_bounds(year, week)
     return start <= when < end
 
 
@@ -150,14 +151,17 @@ def parse_week_csv(content: bytes, year: int, week: int) -> list[dict]:
     normalized = {name.strip().lower(): name for name in reader.fieldnames}
     if any(name not in normalized for name in REQUIRED) or len(normalized) != len(reader.fieldnames):
         raise ValueError('FXCM CSV must include DateTime and all 8 named Bid/Ask OHLC fields')
+    week_start, week_end = fxcm_trading_week_bounds(year, week)
     records = []
     previous = None
     for raw in reader:
         if any(v is None for v in raw.values()):
             raise ValueError('Incomplete FXCM CSV row')
         when = read_timestamp(raw[normalized['datetime']])
-        if not belongs_to_fxcm_trading_week(when, year, week):
-            raise ValueError('Provider file contains H1 data outside the specified ISO week')
+        if when < week_start:
+            raise ValueError('Provider file contains H1 data outside the specified ISO week (before)')
+        if when >= week_end:
+            raise ValueError('Provider file contains H1 data outside the specified ISO week (after)')
         if previous is not None and when <= previous:
             raise ValueError('Duplicate or nonmonotonic FXCM H1 timestamps')
         previous = when
@@ -286,6 +290,8 @@ def safe_failure_code(exc: Exception) -> str:
             'Invalid FXCM candle timestamp': 'SOURCE_CSV_TIMESTAMP',
             'FXCM H1 timestamp is not aligned to a UTC hour': 'SOURCE_CSV_TIMESTAMP_ALIGNMENT',
             'Provider file contains H1 data outside the specified ISO week': 'SOURCE_CSV_WEEK_MISMATCH',
+            'Provider file contains H1 data outside the specified ISO week (before)': 'SOURCE_CSV_WEEK_BEFORE',
+            'Provider file contains H1 data outside the specified ISO week (after)': 'SOURCE_CSV_WEEK_AFTER',
             'Duplicate or nonmonotonic FXCM H1 timestamps': 'SOURCE_CSV_ORDER',
             'Invalid FXCM Bid/Ask price field': 'SOURCE_CSV_PRICE_FIELD',
             'Nonpositive or nonfinite FXCM price': 'SOURCE_CSV_PRICE_RANGE',
