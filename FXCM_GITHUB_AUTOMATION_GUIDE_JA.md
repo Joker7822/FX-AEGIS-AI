@@ -49,6 +49,7 @@ FXCM公式の週次H1ファイルはUTC時刻で、FXCMが公表する外国為�
 
 - `SOURCE_HTTP_404` / `SOURCE_HTTP_403` / `SOURCE_HTTP_429` / `SOURCE_HTTP_5XX`: FXCM公式週次ファイルのHTTP応答（原因確定には提供側の確認が必要）
 - `SOURCE_CONNECTION_ERROR` / `SOURCE_TIMEOUT`: 通信失敗
+- `SOURCE_CSV_WEEK_BEFORE` / `SOURCE_CSV_WEEK_AFTER`: 許可された取引週より前／後のUTC時刻。価格や行内容はログに出ない
 - `SOURCE_CSV_...` / `SOURCE_GZIP_...`: データ形式・妥当性の検証失敗
 - `H1_DATA_VALIDATION_FAILED`: 未分類の検証拒否。価格の安全性を確認できないため取得中断
 - `LOCAL_IO_FAILED`: 保存処理の失敗
