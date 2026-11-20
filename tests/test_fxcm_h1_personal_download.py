@@ -59,7 +59,7 @@ def week_data_with_sunday(y, w, hours=(21, 22, 23)):
                   bid, high, low, close,
                   ask(bid), ask(high), ask(low), ask(close), 100 + hour]
         added.append(','.join(str(x) for x in fields))
-    return ('\\n'.join([original[0], *added, *original[1:]]) + '\\n').encode()
+    return ('\n'.join([original[0], *added, *original[1:]]) + '\n').encode()
 
 
 class FakeResponse:
