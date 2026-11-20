@@ -95,8 +95,14 @@ class FxcmPrivateTests(unittest.TestCase):
             read_timestamp('2026-11-15T21:00:00Z'), year, week))
         self.assertFalse(belongs_to_fxcm_trading_week(
             read_timestamp('2026-11-16T00:00:00Z'), year, week))
-        with self.assertRaisesRegex(ValueError, 'outside'):
+        with self.assertRaisesRegex(ValueError, 'outside') as before:
             parse_week_csv(week_data_with_sunday(year, week, hours=(20,)), year, week)
+        self.assertEqual(downloader.safe_failure_code(before.exception),
+                         'SOURCE_CSV_WEEK_BEFORE')
+        with self.assertRaisesRegex(ValueError, 'outside') as after:
+            parse_week_csv(week_data_with_sunday(year, week + 1), year, week)
+        self.assertEqual(downloader.safe_failure_code(after.exception),
+                         'SOURCE_CSV_WEEK_AFTER')
         with self.assertRaisesRegex(ValueError, 'outside'):
             parse_week_csv(week_data_with_sunday(year, week), year, week - 1)
 
