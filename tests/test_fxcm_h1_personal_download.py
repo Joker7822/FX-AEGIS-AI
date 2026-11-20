@@ -1,4 +1,5 @@
 """Offline only; all H1 candles are generated test fixtures, NEVER market observations."""
+import contextlib
 import csv
 import gzip
 import hashlib
@@ -7,10 +8,13 @@ import json
 import sys
 import tempfile
 import types
+import urllib.error
 import unittest
 from datetime import date, datetime, timedelta
 from pathlib import Path
 from unittest.mock import patch
+
+import fxcm_h1_personal_download as downloader
 
 from fxcm_h1_personal_download import (
     BASE, COLUMNS, acquire, download_week, parse_week_csv, private_destination,
@@ -136,6 +140,31 @@ class FxcmPrivateTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError,'already exists'):
                 acquire(year=2020,week=11,weeks=2,out=out,
                    enable_download=True,personal_use_accepted=True,opener=opener)
+
+    def test_safe_diagnostic_reports_http_status_without_response_text(self):
+        private_reason = 'SECRET_PROVIDER_RESPONSE_NEVER_LOG'
+        def opener(req, timeout):
+            raise urllib.error.HTTPError(req.full_url, 404, private_reason, {}, None)
+        with self.assertRaises(RuntimeError) as captured:
+            download_week(2026, 46, opener=opener)
+        self.assertEqual(downloader.safe_failure_code(captured.exception), 'SOURCE_HTTP_404')
+        self.assertNotIn(private_reason, downloader.safe_failure_code(captured.exception))
+
+    def test_main_failure_log_is_allowlisted_and_excludes_secret_values(self):
+        fake_secret = 'SECRET_RAW_QUOTE_OR_CREDENTIAL'
+        stdout, stderr = io.StringIO(), io.StringIO()
+        with patch.object(downloader, 'acquire', side_effect=ValueError(fake_secret)), \
+                patch.object(sys, 'argv', [
+                    'fxcm_h1_personal_download.py', '--year', '2026', '--week', '46'
+                ]), contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+            code = downloader.main()
+        self.assertEqual(code, 2)
+        self.assertEqual(stderr.getvalue().strip(),
+                         'FXCM_SAFE_DIAGNOSTIC=H1_DATA_VALIDATION_FAILED')
+        payload = json.loads(stdout.getvalue())
+        self.assertEqual(payload['status'], 'FAILED_CLOSED')
+        self.assertEqual(payload['error_code'], 'H1_DATA_VALIDATION_FAILED')
+        self.assertNotIn(fake_secret, stderr.getvalue() + stdout.getvalue())
 
     def test_output_cannot_go_to_pages(self):
         with self.assertRaisesRegex(ValueError,'public'):
