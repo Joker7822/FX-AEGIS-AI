@@ -16,6 +16,7 @@ import json
 import math
 import os
 import shutil
+import sys
 import tempfile
 import urllib.error
 import urllib.parse
@@ -230,6 +231,65 @@ def acquire(*, year: int, week: int, weeks: int, out: Path,
             'quotes_sha256':digest,'out':str(output),'approved_for_live_trading':False}
 
 
+def safe_failure_code(exc: Exception) -> str:
+    """Return only a fixed public diagnostic enum; never log remote/quote content.
+
+    HTTP errors are extracted from the original wrapped exception, but the
+    provider URL, HTTP reason text, response body and local paths are omitted.
+    """
+    if isinstance(exc, RuntimeError) and str(exc).startswith(
+            'FXCM H1 download unavailable for '):
+        cause = exc.__cause__
+        if isinstance(cause, urllib.error.HTTPError):
+            if cause.code == 404:
+                return 'SOURCE_HTTP_404'
+            if cause.code == 403:
+                return 'SOURCE_HTTP_403'
+            if cause.code == 429:
+                return 'SOURCE_HTTP_429'
+            if 500 <= cause.code <= 599:
+                return 'SOURCE_HTTP_5XX'
+            return 'SOURCE_HTTP_OTHER'
+        if isinstance(cause, TimeoutError):
+            return 'SOURCE_TIMEOUT'
+        return 'SOURCE_CONNECTION_ERROR'
+    if isinstance(exc, ValueError):
+        known = {
+            'Explicit --enable-download and --accept-fxcm-personal-use are both mandatory': 'OWNER_OPT_IN_REQUIRED',
+            'Refusing public/CI destinations': 'DESTINATION_REJECTED',
+            'Use gitignored private_quotes/ inside the project': 'DESTINATION_REJECTED',
+            'Target snapshot already exists; no overwrite or implicit replay': 'DESTINATION_EXISTS',
+            'Unexpected redirect; download refused': 'SOURCE_REDIRECT_REJECTED',
+            'Invalid or oversized official GZIP archive': 'SOURCE_GZIP_INVALID',
+            'Corrupt official GZIP archive': 'SOURCE_GZIP_CORRUPT',
+            'GZIP expands beyond the permitted bound': 'SOURCE_GZIP_OVERSIZED',
+            'Unreadable provider CSV encoding': 'SOURCE_CSV_ENCODING',
+            'Empty provider CSV': 'SOURCE_CSV_EMPTY',
+            'FXCM CSV must include DateTime and all 8 named Bid/Ask OHLC fields': 'SOURCE_CSV_HEADER',
+            'Incomplete FXCM CSV row': 'SOURCE_CSV_ROW',
+            'Invalid FXCM candle timestamp': 'SOURCE_CSV_TIMESTAMP',
+            'FXCM H1 timestamp is not aligned to a UTC hour': 'SOURCE_CSV_TIMESTAMP_ALIGNMENT',
+            'Provider file contains H1 data outside the specified ISO week': 'SOURCE_CSV_WEEK_MISMATCH',
+            'Duplicate or nonmonotonic FXCM H1 timestamps': 'SOURCE_CSV_ORDER',
+            'Invalid FXCM Bid/Ask price field': 'SOURCE_CSV_PRICE_FIELD',
+            'Nonpositive or nonfinite FXCM price': 'SOURCE_CSV_PRICE_RANGE',
+            'FXCM OHLC high/low is inconsistent': 'SOURCE_CSV_OHLC_INVALID',
+            'FXCM Bid/Ask order or spread is invalid': 'SOURCE_CSV_SPREAD_INVALID',
+            'FXCM week contains too many H1 bars': 'SOURCE_CSV_TOO_MANY_BARS',
+            'Official H1 week contains no bars': 'SOURCE_CSV_NO_BARS',
+            'Cross-week H1 chronology revised or duplicated': 'SOURCE_CROSS_WEEK_ORDER',
+            'Need at least 200 completed H1 bars; expand the authorized week range': 'SOURCE_INSUFFICIENT_BARS',
+            'Incomplete or future H1 candle refused': 'SOURCE_INCOMPLETE_BAR',
+            'Final H1 audit SHA mismatch': 'VALIDATION_DIGEST_MISMATCH',
+            'Year/week/count out of permitted bounds': 'ARGUMENTS_INVALID',
+            'Invalid ISO calendar week': 'ARGUMENTS_INVALID',
+        }
+        return known.get(str(exc), 'H1_DATA_VALIDATION_FAILED')
+    if isinstance(exc, OSError):
+        return 'LOCAL_IO_FAILED'
+    return 'H1_PROCESSING_FAILED'
+
+
 def main() -> int:
     parser=argparse.ArgumentParser(description='FXCM H1 personal-use-only private downloader; never orders')
     parser.add_argument('--year',type=int,required=True,help='ISO week-year, e.g. 2026')
@@ -245,8 +305,12 @@ def main() -> int:
                        personal_use_accepted=args.accept_fxcm_personal_use)
     except (OSError,ValueError,RuntimeError) as exc:
         # Avoid printing local data/credentials or remote responses.
+        code = safe_failure_code(exc)
         print(json.dumps({'status':'FAILED_CLOSED','error_type':type(exc).__name__,
-                          'approved_for_live_trading':False}))
+                          'error_code':code,'approved_for_live_trading':False}))
+        # The workflow sends stdout to a private temporary file. Only this
+        # fixed enum goes to stderr/Actions logs; never print the exception.
+        print(f'FXCM_SAFE_DIAGNOSTIC={code}', file=sys.stderr)
         return 2
     print(json.dumps(result,ensure_ascii=False,indent=2))
     return 0
