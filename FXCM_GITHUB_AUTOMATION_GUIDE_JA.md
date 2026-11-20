@@ -32,4 +32,16 @@ bidask_h1.csv と provenance.json をWebチャートに2ファイル同時に読
 
 preflight success と fetch-encrypt skipped の組み合わせは、実データ取得未実行を意味する。実取得を主張できるのはfetch-encrypt成功時のみ。
 
+## 取得失敗時の安全な診断（2026-11-20 JST）
+
+`fetch-encrypt` が失敗したときは、ジョブ内の `Acquire, validate, and encrypt only in runner temp` のログに `FXCM_SAFE_DIAGNOSTIC=...` を表示します。固定された分類コードのみを出し、HTTP応答本文・URLのクエリ・個別レート・ファイル内容・パスフレーズ・ローカル保存パスは出力しません。
+
+- `SOURCE_HTTP_404` / `SOURCE_HTTP_403` / `SOURCE_HTTP_429` / `SOURCE_HTTP_5XX`: FXCM公式週次ファイルのHTTP応答（原因確定には提供側の確認が必要）
+- `SOURCE_CONNECTION_ERROR` / `SOURCE_TIMEOUT`: 通信失敗
+- `SOURCE_CSV_...` / `SOURCE_GZIP_...`: データ形式・妥当性の検証失敗
+- `H1_DATA_VALIDATION_FAILED`: 未分類の検証拒否。価格の安全性を確認できないため取得中断
+- `LOCAL_IO_FAILED`: 保存処理の失敗
+
+分類コードは**失敗原因の調査用**であり、取得成功や出典真正性を保証しません。自動再試行、未検証データの受入れ、実売買は有効化されません。修正後に `fetch-and-encrypt` を明示的に再実行して判断してください。
+
 GitHub Secrets公式：https://docs.github.com/en/actions/how-tos/write-workflows/choose-what-workflows-do/use-secrets
