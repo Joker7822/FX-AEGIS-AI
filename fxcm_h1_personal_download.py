@@ -166,6 +166,8 @@ class H1WeekWindowError(ValueError):
         self.archive_position: int | None = None
         self.file_tail_offset_bucket: str | None = None
         self.file_after_bars_bucket: str | None = None
+        self.file_first_iso_week: str | None = None
+        self.file_last_iso_week: str | None = None
 
 
 def safe_after_bar_count_bucket(count: int) -> str:
@@ -215,6 +217,54 @@ def safe_week_tail_summary(source: str, timestamp_field: str,
             safe_after_bar_count_bucket(after_count))
 
 
+def safe_relative_iso_week(when: datetime, year: int, week: int) -> str:
+    """Fixed week identity relative to the requested ISO year/week.
+
+    Never return an observed datetime, year or week number.
+    """
+    monday = date.fromisocalendar(year, week, 1)
+    index = (when.date() - monday).days // 7
+    if index < -1:
+        return 'FAR_BEFORE'
+    if index == -1:
+        return 'PREV_1'
+    if index == 0:
+        return 'REQUESTED'
+    if index == 1:
+        return 'NEXT_1'
+    if index == 2:
+        return 'NEXT_2'
+    return 'FAR_AFTER'
+
+
+def safe_week_iso_extent(source: str, timestamp_field: str,
+                         year: int, week: int) -> tuple[str, str]:
+    """Diagnose whole-file ISO-week coverage using only ordered timestamps.
+
+    This supplementary scan cannot make a rejected file acceptable. Its
+    externally visible outputs come exclusively from a closed vocabulary.
+    """
+    reader = csv.DictReader(io.StringIO(source, newline=''))
+    first = None
+    previous = None
+    try:
+        for count, row in enumerate(reader, start=1):
+            if count > MAX_ROWS or not row or any(v is None for v in row.values()):
+                return 'UNAVAILABLE', 'UNAVAILABLE'
+            when = read_timestamp(row[timestamp_field])
+            if previous is not None and when <= previous:
+                return 'UNAVAILABLE', 'UNAVAILABLE'
+            if first is None:
+                first = when
+            previous = when
+    except (KeyError, TypeError, ValueError, OverflowError):
+        return 'UNAVAILABLE', 'UNAVAILABLE'
+    if first is None:
+        return 'UNAVAILABLE', 'UNAVAILABLE'
+    return (safe_relative_iso_week(first, year, week),
+            safe_relative_iso_week(previous, year, week))
+
+
 def parse_week_csv(content: bytes, year: int, week: int) -> list[dict]:
     """Map by *named* Bid/Ask fields only. Never fabricate Ask from mid/bid."""
     try:
@@ -246,6 +296,9 @@ def parse_week_csv(content: bytes, year: int, week: int) -> list[dict]:
             exc = H1WeekWindowError('after', when - calendar_end)
             (exc.file_tail_offset_bucket,
              exc.file_after_bars_bucket) = safe_week_tail_summary(
+                 source, normalized['datetime'], year, week)
+            (exc.file_first_iso_week,
+             exc.file_last_iso_week) = safe_week_iso_extent(
                  source, normalized['datetime'], year, week)
             raise exc
         if when < calendar_start:
@@ -454,6 +507,10 @@ def main() -> int:
                 print(f'FXCM_SAFE_FILE_TAIL_OFFSET={exc.file_tail_offset_bucket}', file=sys.stderr)
             if exc.file_after_bars_bucket is not None:
                 print(f'FXCM_SAFE_FILE_AFTER_BARS={exc.file_after_bars_bucket}', file=sys.stderr)
+            if exc.file_first_iso_week is not None:
+                print(f'FXCM_SAFE_FIRST_ISO_WEEK={exc.file_first_iso_week}', file=sys.stderr)
+            if exc.file_last_iso_week is not None:
+                print(f'FXCM_SAFE_LAST_ISO_WEEK={exc.file_last_iso_week}', file=sys.stderr)
         return 2
     print(json.dumps(result,ensure_ascii=False,indent=2))
     return 0
