@@ -156,7 +156,7 @@ def boundary_offset_bucket(delta: timedelta) -> str:
 
 
 class H1WeekWindowError(ValueError):
-    """Out-of-range bar; retain only a bounded diagnostic, not the source row."""
+    """Out-of-range bar; retain only bounded diagnostics, not source rows."""
 
     def __init__(self, side: str, delta: timedelta):
         if side not in ('before', 'after') or delta < timedelta(0):
@@ -164,6 +164,55 @@ class H1WeekWindowError(ValueError):
         super().__init__(f'Provider file contains H1 data outside the specified ISO week ({side})')
         self.offset_bucket = boundary_offset_bucket(delta)
         self.archive_position: int | None = None
+        self.file_tail_offset_bucket: str | None = None
+        self.file_after_bars_bucket: str | None = None
+
+
+def safe_after_bar_count_bucket(count: int) -> str:
+    """Allowlisted counts, not the number of private market observations."""
+    if count < 0:
+        raise ValueError('Negative bar count')
+    if count == 0:
+        return 'NONE'
+    if count <= 3:
+        return '1_3'
+    if count <= 24:
+        return '4_24'
+    if count <= 120:
+        return '25_120'
+    return '121_PLUS'
+
+
+def safe_week_tail_summary(source: str, timestamp_field: str,
+                           year: int, week: int) -> tuple[str, str]:
+    """Inspect every source timestamp after a rejection; never return a date.
+
+    This is diagnosis ONLY: it does not normalize, accept, skip, change or
+    rewrite a candle. On invalid CSV structure, chronology, or row count the
+    summary is unavailable. The normal importer still fails closed.
+    """
+    _, end = fxcm_trading_week_bounds(year, week)
+    calendar_end = end + timedelta(hours=3)
+    reader = csv.DictReader(io.StringIO(source, newline=''))
+    previous = None
+    last = None
+    after_count = 0
+    try:
+        for count, row in enumerate(reader, start=1):
+            if count > MAX_ROWS or not row or any(v is None for v in row.values()):
+                return 'UNAVAILABLE', 'UNAVAILABLE'
+            when = read_timestamp(row[timestamp_field])
+            if previous is not None and when <= previous:
+                return 'UNAVAILABLE', 'UNAVAILABLE'
+            if when >= calendar_end:
+                after_count += 1
+            previous = last = when
+    except (KeyError, TypeError, ValueError, OverflowError):
+        return 'UNAVAILABLE', 'UNAVAILABLE'
+    if last is None or after_count == 0:
+        return 'NONE', safe_after_bar_count_bucket(after_count)
+    return (boundary_offset_bucket(last - calendar_end),
+            safe_after_bar_count_bucket(after_count))
 
 
 def parse_week_csv(content: bytes, year: int, week: int) -> list[dict]:
@@ -194,7 +243,11 @@ def parse_week_csv(content: bytes, year: int, week: int) -> list[dict]:
         if when < week_start:
             raise H1WeekWindowError('before', week_start - when)
         if when >= calendar_end:
-            raise H1WeekWindowError('after', when - calendar_end)
+            exc = H1WeekWindowError('after', when - calendar_end)
+            (exc.file_tail_offset_bucket,
+             exc.file_after_bars_bucket) = safe_week_tail_summary(
+                 source, normalized['datetime'], year, week)
+            raise exc
         if when < calendar_start:
             has_prior_sunday = True
         if when >= week_end:
@@ -397,6 +450,10 @@ def main() -> int:
             print(f'FXCM_SAFE_WEEK_OFFSET={exc.offset_bucket}', file=sys.stderr)
             if exc.archive_position is not None and 1 <= exc.archive_position <= 8:
                 print(f'FXCM_SAFE_ARCHIVE_POSITION={exc.archive_position}', file=sys.stderr)
+            if exc.file_tail_offset_bucket is not None:
+                print(f'FXCM_SAFE_FILE_TAIL_OFFSET={exc.file_tail_offset_bucket}', file=sys.stderr)
+            if exc.file_after_bars_bucket is not None:
+                print(f'FXCM_SAFE_FILE_AFTER_BARS={exc.file_after_bars_bucket}', file=sys.stderr)
         return 2
     print(json.dumps(result,ensure_ascii=False,indent=2))
     return 0
