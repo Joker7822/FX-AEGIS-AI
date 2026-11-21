@@ -363,7 +363,7 @@ class FxcmPrivateTests(unittest.TestCase):
         from fxcm_h1_personal_download import safe_relative_iso_week
         # ISO 2020-W53 ends 2021-01-03; this is not 2021-W01.
         cases = [
-            ('2020-12-20T23:00:00Z', 'PREV_1'),
+            ('2020-12-27T23:00:00Z', 'PREV_1'),
             ('2020-12-28T00:00:00Z', 'REQUESTED'),
             ('2021-01-03T23:00:00Z', 'REQUESTED'),
             ('2021-01-04T00:00:00Z', 'NEXT_1'),
