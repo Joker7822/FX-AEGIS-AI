@@ -17,8 +17,8 @@ from unittest.mock import patch
 import fxcm_h1_personal_download as downloader
 
 from fxcm_h1_personal_download import (
-    BASE, COLUMNS, acquire, download_week, parse_week_csv, private_destination,
-    url_for_week, weeks_ending,
+    BASE, COLUMNS, acquire, belongs_to_fxcm_trading_week, download_week,
+    parse_week_csv, private_destination, read_timestamp, url_for_week, weeks_ending,
 )
 
 HEADER='DateTime,BidOpen,BidHigh,BidLow,BidClose,AskOpen,AskHigh,AskLow,AskClose,TickQty'
@@ -43,6 +43,25 @@ def week_data(y,w,*,modify=None):
     return ('\n'.join(lines)+'\n').encode()
 
 
+def week_data_with_sunday(y, w, hours=(21, 22, 23)):
+    """Synthetic Sunday opens belonging to the following trading week."""
+    original = week_data(y, w).decode().splitlines()
+    sunday = date.fromisocalendar(y, w, 1) - timedelta(days=1)
+    added = []
+    for hour in hours:
+        stamp = datetime.combine(sunday, datetime.min.time()) + timedelta(hours=hour)
+        bid = 107.5 + hour / 10000
+        close = bid + .002
+        high = close + .006
+        low = bid - .006
+        ask = lambda x: x + .012
+        fields = [stamp.strftime('%m/%d/%Y %H:%M:%S'),
+                  bid, high, low, close,
+                  ask(bid), ask(high), ask(low), ask(close), 100 + hour]
+        added.append(','.join(str(x) for x in fields))
+    return ('\n'.join([original[0], *added, *original[1:]]) + '\n').encode()
+
+
 class FakeResponse:
     def __init__(self,url,body):self.url,self.body=url,body
     def geturl(self):return self.url
@@ -56,6 +75,68 @@ class FxcmPrivateTests(unittest.TestCase):
         self.assertEqual(weeks_ending(2021,1,2),[(2020,53),(2021,1)])
         with self.assertRaises(ValueError):weeks_ending(2021,53,1)
         with self.assertRaises(ValueError):weeks_ending(2020,10,9)
+
+    def test_sunday_21_to_23_utc_belongs_to_next_fxcm_week(self):
+        year, week = 2026, 46
+        rows = parse_week_csv(week_data_with_sunday(year, week), year, week)
+        self.assertEqual(len(rows), 123)
+        self.assertEqual(rows[0]['time'], '2026-11-08T21:00:00Z')
+        self.assertEqual(rows[2]['time'], '2026-11-08T23:00:00Z')
+        self.assertEqual(rows[3]['time'], '2026-11-09T00:00:00Z')
+        for hour in (21, 22, 23):
+            self.assertTrue(belongs_to_fxcm_trading_week(
+                read_timestamp(f'2026-11-08T{hour}:00:00Z'), year, week))
+
+    def test_sunday_window_rejects_unrelated_dates_and_week(self):
+        year, week = 2026, 46
+        self.assertFalse(belongs_to_fxcm_trading_week(
+            read_timestamp('2026-11-08T20:00:00Z'), year, week))
+        self.assertFalse(belongs_to_fxcm_trading_week(
+            read_timestamp('2026-11-15T21:00:00Z'), year, week))
+        self.assertFalse(belongs_to_fxcm_trading_week(
+            read_timestamp('2026-11-16T00:00:00Z'), year, week))
+        with self.assertRaisesRegex(ValueError, 'outside') as before:
+            parse_week_csv(week_data_with_sunday(year, week, hours=(20,)), year, week)
+        self.assertEqual(downloader.safe_failure_code(before.exception),
+                         'SOURCE_CSV_WEEK_BEFORE')
+        with self.assertRaisesRegex(ValueError, 'outside') as after:
+            parse_week_csv(week_data_with_sunday(year, week + 1), year, week)
+        self.assertEqual(downloader.safe_failure_code(after.exception),
+                         'SOURCE_CSV_WEEK_AFTER')
+        with self.assertRaisesRegex(ValueError, 'outside'):
+            parse_week_csv(week_data_with_sunday(year, week), year, week - 1)
+
+    def test_sunday_trading_start_crosses_iso_year_boundary(self):
+        rows = parse_week_csv(week_data_with_sunday(2021, 1), 2021, 1)
+        self.assertEqual(rows[0]['time'], '2021-01-03T21:00:00Z')
+        self.assertEqual(rows[3]['time'], '2021-01-04T00:00:00Z')
+
+    def test_two_week_acquire_retains_sunday_bars_without_overlap(self):
+        calls = []
+        def opener(req, timeout):
+            calls.append(req.full_url)
+            week = int(req.full_url.rsplit('/', 1)[1].split('.')[0])
+            return FakeResponse(req.full_url, gzip.compress(
+                week_data_with_sunday(2020, week)))
+        def mock_audit(quotes, provenance):
+            expected = hashlib.sha256(quotes.read_bytes()).hexdigest()
+            self.assertEqual(json.loads(provenance.read_text())['sha256'], expected)
+            return None, None, {'quotes_sha256': expected}
+        fake = types.SimpleNamespace(load_quotes=mock_audit)
+        with tempfile.TemporaryDirectory() as folder, patch.dict(
+                sys.modules, {'execution_lab': fake}):
+            output = Path(folder) / 'private-quotes'
+            result = acquire(year=2020, week=11, weeks=2, out=output,
+                             enable_download=True, personal_use_accepted=True,
+                             opener=opener)
+            self.assertEqual(len(calls), 2)
+            self.assertEqual(result['h1_bars'], 246)
+            with (output / 'bidask_h1.csv').open() as stream:
+                records = list(csv.DictReader(stream))
+            dates = [r['time'] for r in records]
+            self.assertEqual(len(dates), len(set(dates)))
+            self.assertEqual(dates, sorted(dates))
+            self.assertIn('2020-03-08T21:00:00Z', dates)
 
     def test_fractional_timestamp_zero_and_nonzero(self):
         from fxcm_h1_personal_download import read_timestamp
