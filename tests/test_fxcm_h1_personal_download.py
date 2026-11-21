@@ -294,7 +294,7 @@ class FxcmPrivateTests(unittest.TestCase):
         )
         first_week = week_data(2020, 10).decode().splitlines()
         next_week = week_data(2020, 11).decode().splitlines()[1:15]
-        content = ('\\n'.join([*first_week, *next_week]) + '\\n').encode()
+        content = ('\n'.join([*first_week, *next_week]) + '\n').encode()
         self.assertEqual(
             safe_week_tail_summary(content.decode(), 'DateTime', 2020, 10),
             ('3_23H', '4_24'),
@@ -312,7 +312,7 @@ class FxcmPrivateTests(unittest.TestCase):
         rows = [*first_week, *next_week, next_week[-1]]
         # Later duplicate timestamps invalidate a public diagnostic extent.
         self.assertEqual(
-            safe_week_tail_summary('\\n'.join(rows) + '\\n', 'DateTime', 2020, 10),
+            safe_week_tail_summary('\n'.join(rows) + '\n', 'DateTime', 2020, 10),
             ('UNAVAILABLE', 'UNAVAILABLE'),
         )
         self.assertEqual(
@@ -324,7 +324,7 @@ class FxcmPrivateTests(unittest.TestCase):
     def test_full_csv_tail_diagnostic_logs_bins_only_and_refuses_output(self):
         first_week = week_data(2020, 10).decode().splitlines()
         next_week = week_data(2020, 11).decode().splitlines()[1:15]
-        fake_content = ('\\n'.join([*first_week, *next_week]) + '\\n').encode()
+        fake_content = ('\n'.join([*first_week, *next_week]) + '\n').encode()
         def fake_download(year, week, opener=None):
             return fake_content, {'source_url': 'PRIVATE_DO_NOT_LOG'}
         stdout, stderr = io.StringIO(), io.StringIO()
