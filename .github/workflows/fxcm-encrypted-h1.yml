@@ -82,16 +82,16 @@ jobs:
           python-version: '3.11'
       - name: Install H1 quote validation dependencies
         run: pip install -r requirements-repro.txt
-      - name: Select last four fully completed ISO weeks
+      - name: Select four FXCM H1 labels past their Monday publication date
         shell: bash
         run: |
           python - <<'PY' >> "$GITHUB_ENV"
-          from datetime import datetime, timedelta, timezone
-          now=datetime.now(timezone.utc).date()
-          monday=now-timedelta(days=now.weekday()+7)
-          w=monday.isocalendar()
-          print(f'FXCM_YEAR={w.year}')
-          print(f'FXCM_WEEK={w.week}')
+          from datetime import datetime, timezone
+          from fxcm_h1_personal_download import last_published_fxcm_label_week
+          year, week = last_published_fxcm_label_week(
+              datetime.now(timezone.utc).date())
+          print(f'FXCM_YEAR={year}')
+          print(f'FXCM_WEEK={week}')
           PY
       - name: Acquire, validate, and encrypt only in runner temp
         shell: bash
