@@ -17,7 +17,7 @@
   "overfit_audit_status": "HISTORIC_TRIAL_FAMILY_INCOMPLETE",
   "paper_champion_present": false,
   "rank_instability_fraction": 0.685714,
-  "report_sha256": "4b8d388210eb8125db3080dc738cdc0b7f8cadf82091998e2fe7eb87508e2fed",
+  "report_sha256": "5888249ad0dfc78a41a1fe468c79578df6bf22c6f1cb0b7b7d21957e93729310",
   "schema": "fx-aegis-self-evolve-1",
   "shadow_state": "NO_STATISTICALLY_SCREENED_CANDIDATE",
   "source_kind": "FRED_DAILY_REFERENCE_NON_EXECUTABLE",
