@@ -168,6 +168,9 @@ class H1WeekWindowError(ValueError):
         self.file_after_bars_bucket: str | None = None
         self.file_first_iso_week: str | None = None
         self.file_last_iso_week: str | None = None
+        self.side = side
+        self.adjacent_relation: str | None = None
+        self.adjacent_shared_h1_bucket: str | None = None
 
 
 def safe_after_bar_count_bucket(count: int) -> str:
@@ -265,6 +268,61 @@ def safe_week_iso_extent(source: str, timestamp_field: str,
             safe_relative_iso_week(previous, year, week))
 
 
+def safe_h1_timestamp_index(content: bytes) -> list[datetime] | None:
+    """Read bounded H1 UTC timestamps for diagnosis only.
+
+    Refuse malformed headers, timestamps, rows and timestamp order. Price
+    columns remain private and uninspected; no values are returned to logs.
+    """
+    try:
+        reader = csv.DictReader(
+            io.StringIO(content.decode('utf-8-sig'), newline=''))
+        names = reader.fieldnames
+        if not names:
+            return None
+        normalized = {name.strip().lower(): name for name in names}
+        if len(normalized) != len(names) or any(
+                field not in normalized for field in REQUIRED):
+            return None
+        timestamp_column = normalized['datetime']
+        result = []
+        previous = None
+        for raw in reader:
+            if (len(result) >= MAX_ROWS or not raw or
+                    None in raw or any(value is None for value in raw.values())):
+                return None
+            when = read_timestamp(raw[timestamp_column])
+            if previous is not None and when <= previous:
+                return None
+            result.append(when)
+            previous = when
+    except (UnicodeError, KeyError, TypeError, ValueError, OverflowError):
+        return None
+    return result or None
+
+
+def safe_adjacent_week_relation(
+        first_content: bytes, second_content: bytes) -> tuple[str, str]:
+    """Classify only timestamp overlap/continuity between adjacent archives.
+
+    Does not approve imported data or deduplicate private H1 bars. Both
+    archives must independently have strictly increasing UTC-hour timestamps.
+    """
+    first = safe_h1_timestamp_index(first_content)
+    second = safe_h1_timestamp_index(second_content)
+    if first is None or second is None:
+        return 'UNAVAILABLE', 'UNAVAILABLE'
+    shared_count = len(set(first).intersection(second))
+    if second[0] <= first[-1]:
+        relation = ('OVERLAP_SHARED' if shared_count
+                    else 'OVERLAP_NO_SHARED')
+    elif second[0] == first[-1] + timedelta(hours=1):
+        relation = 'CONTIGUOUS'
+    else:
+        relation = 'GAP'
+    return relation, safe_after_bar_count_bucket(shared_count)
+
+
 def parse_week_csv(content: bytes, year: int, week: int) -> list[dict]:
     """Map by *named* Bid/Ask fields only. Never fabricate Ask from mid/bid."""
     try:
@@ -350,6 +408,20 @@ def acquire(*, year: int, week: int, weeks: int, out: Path,
             items=parse_week_csv(content,y,w)
         except H1WeekWindowError as exc:
             exc.archive_position = archive_position
+            if exc.side == 'after' and archive_position < len(spans):
+                # The next archive belongs to the same already-authorized
+                # four-week request. Never accept or silently trim either.
+                try:
+                    next_year, next_week = spans[archive_position]
+                    following, _ = download_week(
+                        next_year, next_week, opener=opener)
+                    (exc.adjacent_relation,
+                     exc.adjacent_shared_h1_bucket) = safe_adjacent_week_relation(
+                         content, following)
+                except (OSError, ValueError, RuntimeError):
+                    # Preserve the original validation error and fail closed.
+                    exc.adjacent_relation = 'UNAVAILABLE'
+                    exc.adjacent_shared_h1_bucket = 'UNAVAILABLE'
             raise
         first = read_timestamp(items[0]['time'])
         last = read_timestamp(items[-1]['time'])
@@ -511,6 +583,10 @@ def main() -> int:
                 print(f'FXCM_SAFE_FIRST_ISO_WEEK={exc.file_first_iso_week}', file=sys.stderr)
             if exc.file_last_iso_week is not None:
                 print(f'FXCM_SAFE_LAST_ISO_WEEK={exc.file_last_iso_week}', file=sys.stderr)
+            if exc.adjacent_relation is not None:
+                print(f'FXCM_SAFE_ADJACENT_RELATION={exc.adjacent_relation}', file=sys.stderr)
+            if exc.adjacent_shared_h1_bucket is not None:
+                print(f'FXCM_SAFE_ADJACENT_SHARED_H1={exc.adjacent_shared_h1_bucket}', file=sys.stderr)
         return 2
     print(json.dumps(result,ensure_ascii=False,indent=2))
     return 0
