@@ -222,7 +222,6 @@ class FxcmPrivateTests(unittest.TestCase):
             self.assertFalse(out.exists())
 
     def test_boundary_offset_bucket_has_only_fixed_public_categories(self):
-        from datetime import timezone
         from fxcm_h1_personal_download import (
             H1WeekWindowError, boundary_offset_bucket,
         )
@@ -258,20 +257,22 @@ class FxcmPrivateTests(unittest.TestCase):
     def test_failed_week_index_and_offset_logged_without_sensitive_data(self):
         # The first week is valid. The second week's archive has a next-week
         # timestamp and must fail before writing any H1 file or provenance.
-        from fxcm_h1_personal_download import H1WeekWindowError
         def fake_download(year, week, opener=None):
             fake_week = 12 if week == 11 else 10
             return week_data(year, fake_week), {'source_url': 'PRIVATE_SOURCE_URL'}
         stdout, stderr = io.StringIO(), io.StringIO()
-        with tempfile.TemporaryDirectory() as folder, \\
-                patch.object(downloader, 'download_week', side_effect=fake_download), \\
+        with (
+                tempfile.TemporaryDirectory() as folder,
+                patch.object(downloader, 'download_week', side_effect=fake_download),
                 patch.object(sys, 'argv', [
                     'fxcm_h1_personal_download.py', '--year', '2020',
                     '--week', '11', '--weeks', '2', '--out',
                     str(Path(folder) / 'private'),
                     '--enable-download', '--accept-fxcm-personal-use'
-                ]), contextlib.redirect_stdout(stdout), \\
-                contextlib.redirect_stderr(stderr):
+                ]),
+                contextlib.redirect_stdout(stdout),
+                contextlib.redirect_stderr(stderr),
+        ):
             code = downloader.main()
             self.assertFalse((Path(folder) / 'private').exists())
         self.assertEqual(code, 2)
