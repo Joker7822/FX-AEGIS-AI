@@ -333,8 +333,8 @@ class FxcmPrivateTests(unittest.TestCase):
         )
 
     def test_full_csv_tail_diagnostic_logs_bins_only_and_refuses_output(self):
-        first_week = week_data(2020, 10).decode().splitlines()
-        next_week = week_data(2020, 11).decode().splitlines()[1:15]
+        first_week = week_data(2020, 11).decode().splitlines()
+        next_week = week_data(2020, 12).decode().splitlines()[1:15]
         fake_content = ('\n'.join([*first_week, *next_week]) + '\n').encode()
         def fake_download(year, week, opener=None):
             return fake_content, {'source_url': 'PRIVATE_DO_NOT_LOG'}
@@ -356,15 +356,15 @@ class FxcmPrivateTests(unittest.TestCase):
         self.assertEqual(result, 2)
         self.assertEqual(stderr.getvalue().splitlines(), [
             'FXCM_SAFE_DIAGNOSTIC=SOURCE_CSV_WEEK_AFTER',
-            'FXCM_SAFE_WEEK_OFFSET=0_2H',
+            'FXCM_SAFE_WEEK_OFFSET=1_6D',
             'FXCM_SAFE_ARCHIVE_POSITION=1',
-            'FXCM_SAFE_FILE_TAIL_OFFSET=3_23H',
+            'FXCM_SAFE_FILE_TAIL_OFFSET=1_6D',
             'FXCM_SAFE_FILE_AFTER_BARS=4_24',
-            'FXCM_SAFE_FIRST_ISO_WEEK=REQUESTED',
-            'FXCM_SAFE_LAST_ISO_WEEK=NEXT_1',
+            'FXCM_SAFE_FIRST_ISO_WEEK=NEXT_1',
+            'FXCM_SAFE_LAST_ISO_WEEK=NEXT_2',
             'FXCM_SAFE_ADJACENT_RELATION=OVERLAP_SHARED',
             'FXCM_SAFE_ADJACENT_SHARED_H1=121_PLUS',
-            'FXCM_SAFE_ARCHIVE_MAP_2=PREV_1/REQUESTED/OVERLAP_SHARED/121_PLUS/NONE',
+            'FXCM_SAFE_ARCHIVE_MAP_2=REQUESTED/NEXT_1/OVERLAP_SHARED/121_PLUS/NONE',
             'FXCM_SAFE_ARCHIVE_STATUS_2=VALID',
         ])
         for private_marker in ('PRIVATE_DO_NOT_LOG', '2020-03-09',
@@ -452,8 +452,8 @@ class FxcmPrivateTests(unittest.TestCase):
                          ('UNAVAILABLE', 'UNAVAILABLE'))
 
     def test_failed_first_archive_downloads_next_only_for_safe_diagnosis(self):
-        first = week_data(2020, 10).decode().splitlines()
-        next_rows = week_data(2020, 11).decode().splitlines()
+        first = week_data(2020, 11).decode().splitlines()
+        next_rows = week_data(2020, 12).decode().splitlines()
         bad_first = ('\n'.join([*first, *next_rows[1:31]]) + '\n').encode()
         second = ('\n'.join(next_rows) + '\n').encode()
         calls = []
@@ -490,8 +490,8 @@ class FxcmPrivateTests(unittest.TestCase):
 
     def test_next_week_network_error_preserves_original_failure(self):
         from fxcm_h1_personal_download import H1WeekWindowError
-        first = week_data(2020, 10).decode().splitlines()
-        next_rows = week_data(2020, 11).decode().splitlines()
+        first = week_data(2020, 11).decode().splitlines()
+        next_rows = week_data(2020, 12).decode().splitlines()
         bad_first = ('\n'.join([*first, *next_rows[1:31]]) + '\n').encode()
         def fake_download(year, week, opener=None):
             if week == 11:
@@ -555,8 +555,8 @@ class FxcmPrivateTests(unittest.TestCase):
         ])
 
     def test_manifest_logging_is_allowlisted_and_keeps_output_absent(self):
-        base = week_data(2020, 10).decode().splitlines()
-        next_rows = week_data(2020, 11).decode().splitlines()
+        base = week_data(2020, 11).decode().splitlines()
+        next_rows = week_data(2020, 12).decode().splitlines()
         bad_first = ('\n'.join([*base, *next_rows[1:6]]) + '\n').encode()
         calls = []
         def fake_download(y, w, opener=None):
@@ -583,7 +583,7 @@ class FxcmPrivateTests(unittest.TestCase):
         logs = stderr.getvalue().splitlines()
         self.assertEqual([line for line in logs if
                           line.startswith('FXCM_SAFE_ARCHIVE_MAP_')], [
-            'FXCM_SAFE_ARCHIVE_MAP_2=REQUESTED/REQUESTED/OVERLAP_SHARED/4_24/NONE',
+            'FXCM_SAFE_ARCHIVE_MAP_2=REQUESTED/REQUESTED/OVERLAP_SHARED/25_120/NONE',
             'FXCM_SAFE_ARCHIVE_MAP_3=REQUESTED/REQUESTED/GAP/NONE/1_6D',
             'FXCM_SAFE_ARCHIVE_MAP_4=REQUESTED/REQUESTED/GAP/NONE/1_6D',
         ])
@@ -659,8 +659,8 @@ class FxcmPrivateTests(unittest.TestCase):
         self.assertEqual([item[0] for item in manifest], [2, 3, 4])
 
     def test_manifest_status_refuses_corrupt_last_file_without_disclosing_data(self):
-        base = week_data(2020, 10).decode().splitlines()
-        next_rows = week_data(2020, 11).decode().splitlines()
+        base = week_data(2020, 11).decode().splitlines()
+        next_rows = week_data(2020, 12).decode().splitlines()
         bad_first = ('\n'.join([*base, *next_rows[1:6]]) + '\n').encode()
         def fake_download(y, w, opener=None):
             if w == 13:
