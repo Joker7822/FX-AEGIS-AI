@@ -10,7 +10,7 @@
   "rows": 5010,
   "csv_sha256": "9ff175fff4496b08803228651ba89c7d028c006eae214a501865072cda8fd2dd",
   "source_payload_sha256": "9f3224276655f420fb4086bc5d07b0eb85e418ed71a3a8def31a846029aac9c8",
-  "retrieved_at_utc": "2026-11-21T04:32:41.704054+00:00",
+  "retrieved_at_utc": "2026-11-21T04:47:08.565401+00:00",
   "warnings": [
     "Published daily NY-noon USD/JPY reference data, not broker execution prices.",
     "Does not contain bid/ask spreads, intraday highs/lows or exact fill information.",
