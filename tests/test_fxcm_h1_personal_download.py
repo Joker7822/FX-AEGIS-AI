@@ -81,6 +81,15 @@ def week_data_with_last_sunday(y, w, hours=(21, 22, 23)):
     return ('\n'.join([*original, *added]) + '\n').encode()
 
 
+def labeled_week_data(y, w, *, include_sunday=True):
+    """Synthetic FXCM file label W: Sunday of W + Mon-Fri of W+1."""
+    next_monday = date.fromisocalendar(y, w, 1) + timedelta(weeks=1)
+    label = next_monday.isocalendar()
+    if include_sunday:
+        return week_data_with_sunday(label.year, label.week)
+    return week_data(label.year, label.week)
+
+
 class FakeResponse:
     def __init__(self,url,body):self.url,self.body=url,body
     def geturl(self):return self.url
@@ -136,7 +145,7 @@ class FxcmPrivateTests(unittest.TestCase):
             calls.append(req.full_url)
             week = int(req.full_url.rsplit('/', 1)[1].split('.')[0])
             return FakeResponse(req.full_url, gzip.compress(
-                week_data_with_sunday(2020, week)))
+                labeled_week_data(2020, week)))
         def mock_audit(quotes, provenance):
             expected = hashlib.sha256(quotes.read_bytes()).hexdigest()
             self.assertEqual(json.loads(provenance.read_text())['sha256'], expected)
@@ -183,14 +192,14 @@ class FxcmPrivateTests(unittest.TestCase):
         def opener(req, timeout):
             week = int(req.full_url.rsplit('/', 1)[1].split('.')[0])
             return FakeResponse(req.full_url, gzip.compress(
-                week_data_with_last_sunday(2020, week)))
+                labeled_week_data(2020, week)))
         def mock_audit(quotes, provenance):
             meta = json.loads(provenance.read_text())
             digest = hashlib.sha256(quotes.read_bytes()).hexdigest()
             self.assertEqual(meta['sha256'], digest)
             self.assertEqual(
                 [x['week_partition_mode'] for x in meta['source_archives']],
-                ['ISO_CALENDAR_WEEK', 'ISO_CALENDAR_WEEK'])
+                ['FXCM_SUNDAY_LABEL_NEXT_WEEK', 'FXCM_SUNDAY_LABEL_NEXT_WEEK'])
             return None, None, {'quotes_sha256': digest}
         fake = types.SimpleNamespace(load_quotes=mock_audit)
         with tempfile.TemporaryDirectory() as folder, patch.dict(
@@ -203,22 +212,22 @@ class FxcmPrivateTests(unittest.TestCase):
             with (out / 'bidask_h1.csv').open() as stream:
                 dates = [x['time'] for x in csv.DictReader(stream)]
             self.assertEqual(dates, sorted(set(dates)))
-            self.assertEqual(dates[-1], '2020-03-15T23:00:00Z')
+            self.assertEqual(dates[-1], '2020-03-20T23:00:00Z')
 
-    def test_inconsistent_archive_conventions_are_rejected(self):
+    def test_provider_label_mode_rejects_inconsistent_calendar_week_file(self):
         def opener(req, timeout):
             week = int(req.full_url.rsplit('/', 1)[1].split('.')[0])
-            content = (week_data_with_sunday if week == 10
-                       else week_data_with_last_sunday)(2020, week)
+            content = (labeled_week_data(2020, week) if week == 10
+                       else week_data(2020, week))
             return FakeResponse(req.full_url, gzip.compress(content))
         with tempfile.TemporaryDirectory() as folder:
             out = Path(folder) / 'private'
-            with self.assertRaisesRegex(ValueError, 'disagree') as drift:
+            with self.assertRaisesRegex(ValueError, 'outside') as rejected:
                 acquire(year=2020, week=11, weeks=2, out=out,
                         enable_download=True, personal_use_accepted=True,
                         opener=opener)
-            self.assertEqual(downloader.safe_failure_code(drift.exception),
-                             'SOURCE_WEEK_CONVENTION_DRIFT')
+            self.assertEqual(downloader.safe_failure_code(rejected.exception),
+                             'SOURCE_CSV_WEEK_BEFORE')
             self.assertFalse(out.exists())
 
     def test_boundary_offset_bucket_has_only_fixed_public_categories(self):
@@ -258,7 +267,7 @@ class FxcmPrivateTests(unittest.TestCase):
         # The first week is valid. The second week's archive has a next-week
         # timestamp and must fail before writing any H1 file or provenance.
         def fake_download(year, week, opener=None):
-            fake_week = 12 if week == 11 else 10
+            fake_week = 13 if week == 11 else 11
             return week_data(year, fake_week), {'source_url': 'PRIVATE_SOURCE_URL'}
         stdout, stderr = io.StringIO(), io.StringIO()
         with (
@@ -279,12 +288,12 @@ class FxcmPrivateTests(unittest.TestCase):
         output = stderr.getvalue()
         self.assertEqual(output.splitlines(), [
             'FXCM_SAFE_DIAGNOSTIC=SOURCE_CSV_WEEK_AFTER',
-            'FXCM_SAFE_WEEK_OFFSET=0_2H',
+            'FXCM_SAFE_WEEK_OFFSET=1_6D',
             'FXCM_SAFE_ARCHIVE_POSITION=2',
             'FXCM_SAFE_FILE_TAIL_OFFSET=1_6D',
             'FXCM_SAFE_FILE_AFTER_BARS=25_120',
-            'FXCM_SAFE_FIRST_ISO_WEEK=NEXT_1',
-            'FXCM_SAFE_LAST_ISO_WEEK=NEXT_1',
+            'FXCM_SAFE_FIRST_ISO_WEEK=NEXT_2',
+            'FXCM_SAFE_LAST_ISO_WEEK=NEXT_2',
         ])
         self.assertEqual(json.loads(stdout.getvalue())['status'], 'FAILED_CLOSED')
         self.assertNotIn('PRIVATE_SOURCE_URL', output + stdout.getvalue())
@@ -742,7 +751,7 @@ class FxcmPrivateTests(unittest.TestCase):
         def opener(req,timeout):
             calls.append(req.full_url)
             w=int(req.full_url.split('/')[-1].split('.')[0])
-            return FakeResponse(req.full_url,gzip.compress(week_data(2020,w)))
+            return FakeResponse(req.full_url,gzip.compress(labeled_week_data(2020,w,include_sunday=False)))
         def mock_audit(q,p):
             meta=json.loads(p.read_text())
             assert meta['sha256']==hashlib.sha256(q.read_bytes()).hexdigest()
