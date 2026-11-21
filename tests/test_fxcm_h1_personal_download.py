@@ -62,6 +62,25 @@ def week_data_with_sunday(y, w, hours=(21, 22, 23)):
     return ('\n'.join([original[0], *added, *original[1:]]) + '\n').encode()
 
 
+def week_data_with_last_sunday(y, w, hours=(21, 22, 23)):
+    """Synthetic ISO-week H1 file with the *following* Sunday evening."""
+    original = week_data(y, w).decode().splitlines()
+    sunday = date.fromisocalendar(y, w, 1) + timedelta(days=6)
+    added = []
+    for hour in hours:
+        stamp = datetime.combine(sunday, datetime.min.time()) + timedelta(hours=hour)
+        bid = 109.0 + hour / 10000
+        close = bid + .002
+        high = close + .006
+        low = bid - .006
+        ask = lambda x: x + .012
+        fields = [stamp.strftime('%m/%d/%Y %H:%M:%S'),
+                  bid, high, low, close,
+                  ask(bid), ask(high), ask(low), ask(close), 100 + hour]
+        added.append(','.join(str(x) for x in fields))
+    return ('\n'.join([*original, *added]) + '\n').encode()
+
+
 class FakeResponse:
     def __init__(self,url,body):self.url,self.body=url,body
     def geturl(self):return self.url
@@ -137,6 +156,70 @@ class FxcmPrivateTests(unittest.TestCase):
             self.assertEqual(len(dates), len(set(dates)))
             self.assertEqual(dates, sorted(dates))
             self.assertIn('2020-03-08T21:00:00Z', dates)
+
+    def test_iso_calendar_week_accepts_only_last_sunday_21_to_23_utc(self):
+        rows = parse_week_csv(week_data_with_last_sunday(2026, 46), 2026, 46)
+        self.assertEqual(len(rows), 123)
+        self.assertEqual(rows[-3]['time'], '2026-11-15T21:00:00Z')
+        self.assertEqual(rows[-1]['time'], '2026-11-15T23:00:00Z')
+        self.assertAlmostEqual(rows[-1]['bid_open'], 109.0023)
+        self.assertAlmostEqual(rows[-1]['ask_open'], 109.0143)
+        with self.assertRaisesRegex(ValueError, 'outside') as excess:
+            parse_week_csv(week_data_with_last_sunday(
+                2026, 46, hours=(21, 22, 23, 24)), 2026, 46)
+        self.assertEqual(downloader.safe_failure_code(excess.exception),
+                         'SOURCE_CSV_WEEK_AFTER')
+
+    def test_two_opposing_sunday_borders_fail_closed(self):
+        leading = week_data_with_sunday(2026, 46).decode().splitlines()
+        trailing = week_data_with_last_sunday(2026, 46).decode().splitlines()[-3:]
+        with self.assertRaisesRegex(ValueError, 'mixes both') as mixed:
+            parse_week_csv(('\n'.join([*leading, *trailing]) + '\n').encode(),
+                           2026, 46)
+        self.assertEqual(downloader.safe_failure_code(mixed.exception),
+                         'SOURCE_CSV_WEEK_BOUNDARY_MIXED')
+
+    def test_two_iso_week_archives_preserve_order_and_provenance(self):
+        def opener(req, timeout):
+            week = int(req.full_url.rsplit('/', 1)[1].split('.')[0])
+            return FakeResponse(req.full_url, gzip.compress(
+                week_data_with_last_sunday(2020, week)))
+        def mock_audit(quotes, provenance):
+            meta = json.loads(provenance.read_text())
+            digest = hashlib.sha256(quotes.read_bytes()).hexdigest()
+            self.assertEqual(meta['sha256'], digest)
+            self.assertEqual(
+                [x['week_partition_mode'] for x in meta['source_archives']],
+                ['ISO_CALENDAR_WEEK', 'ISO_CALENDAR_WEEK'])
+            return None, None, {'quotes_sha256': digest}
+        fake = types.SimpleNamespace(load_quotes=mock_audit)
+        with tempfile.TemporaryDirectory() as folder, patch.dict(
+                sys.modules, {'execution_lab': fake}):
+            out = Path(folder) / 'private'
+            result = acquire(year=2020, week=11, weeks=2, out=out,
+                             enable_download=True, personal_use_accepted=True,
+                             opener=opener)
+            self.assertEqual(result['h1_bars'], 246)
+            with (out / 'bidask_h1.csv').open() as stream:
+                dates = [x['time'] for x in csv.DictReader(stream)]
+            self.assertEqual(dates, sorted(set(dates)))
+            self.assertEqual(dates[-1], '2020-03-15T23:00:00Z')
+
+    def test_inconsistent_archive_conventions_are_rejected(self):
+        def opener(req, timeout):
+            week = int(req.full_url.rsplit('/', 1)[1].split('.')[0])
+            content = (week_data_with_sunday if week == 10
+                       else week_data_with_last_sunday)(2020, week)
+            return FakeResponse(req.full_url, gzip.compress(content))
+        with tempfile.TemporaryDirectory() as folder:
+            out = Path(folder) / 'private'
+            with self.assertRaisesRegex(ValueError, 'disagree') as drift:
+                acquire(year=2020, week=11, weeks=2, out=out,
+                        enable_download=True, personal_use_accepted=True,
+                        opener=opener)
+            self.assertEqual(downloader.safe_failure_code(drift.exception),
+                             'SOURCE_WEEK_CONVENTION_DRIFT')
+            self.assertFalse(out.exists())
 
     def test_fractional_timestamp_zero_and_nonzero(self):
         from fxcm_h1_personal_download import read_timestamp
