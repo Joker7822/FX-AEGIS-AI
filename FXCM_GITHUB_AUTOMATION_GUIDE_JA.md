@@ -32,16 +32,24 @@ bidask_h1.csv と provenance.json をWebチャートに2ファイル同時に読
 
 preflight success と fetch-encrypt skipped の組み合わせは、実データ取得未実行を意味する。実取得を主張できるのはfetch-encrypt成功時のみ。
 
-## 取引週の開始境界（2026-11-20 JST）
+## FXCM週次CSVの時刻区切り（2026-11-21 JST）
 
-FXCM公式の週次H1ファイルはUTC時刻で、FXCMが公表する外国為替の市場再開は日曜17:00～17:15米東部時間です。UTCでは夏時間21時台・標準時間22時台に当たるため、月曜0時開始のISO週との間に差が生じ得ます。
+公式のFXCMサンプルスクリプトはURLの週番号にPythonのISO週を用いています。一方、FXCMの外国為替取引は日曜17:00～17:15 ETに再開し、UTCの日曜21:00または22:00台に相当します。週次CSV内の日曜夜の足が**前の取引週の終端**か**次の取引週の先頭**かは、公表文書だけでは特定できません。
 
-`SOURCE_CSV_WEEK_MISMATCH` に対しては、指定されたISO週の開始より前の**日曜21:00、22:00、23:00 UTC**の確定H1バーだけを、その翌ISO週に属する可能性がある取引週データとして受理します。次の日曜21:00以降、3時間を超える前倒し、および他週の日時は拒否します。元のUTC時刻と価格・Bid/Ask・ファイルハッシュは変更せず、全バーを検査し、週をまたぐ重複・逆順も拒否します。
+安全な互換処理として、各ファイルの原本UTCタイムスタンプのみを検査し、以下の**どちらか一つ**の整合した区切りに限定します。
 
-この時間窓はFXCM公式の市場時間に基づく**限定的な互換対応**です。今回のエラーが日曜夜のバーによるものか、提供ファイル自体の週番号不整合によるものかは、再実行しない限り確認できません。フォーマット検証・利用許諾・暗号化・注文禁止は従来どおりです。
+- `SUNDAY_SESSION_START`: 直前の日曜21:00～月曜00:00前に始まり、次の日曜21:00前に終了する取引セッション週
+- `ISO_CALENDAR_WEEK`: 月曜00:00～翌週月曜00:00前の日付を含むISO暦週。最後の日曜21:00～23:00の足も含み得る
+- `BOUNDARY_NOT_OBSERVED`: 週末境界の観測がなく、両方式のどちらかは判断できない
 
-参考：https://github.com/fxcm/MarketData/blob/master/CandleData/README.md
-市場時間：https://www.fxcm.com/markets/trading-details/trading-hours/
+**単一ファイルで直前の日曜と末尾の日曜の両方が観測された場合、または連続するファイルで相反する週境界方式が観測された場合は保存せず停止**します。重複・逆順・不正なOHLC・Bid/Ask・データ量・非確定バーなどの既存検証も維持します。時刻や価格の変更・間引き・重複除去による誤魔化しは一切行いません。
+
+安全診断には `SOURCE_CSV_WEEK_BOUNDARY_MIXED` または `SOURCE_WEEK_CONVENTION_DRIFT` を新たに追加します。実際の価格、年月日、タイムスタンプやHTTP内容は公開ログへ出しません。具体的なデータ状況と本変更による復旧成否は**マージ後の承認済み再実行**が必要です。
+
+公式出典：
+- https://github.com/fxcm/MarketData/blob/master/CandleData/README.md
+- https://github.com/fxcm/MarketData/blob/master/CandleData/CandleData(pandas).py
+- https://www.fxcm.com/markets/trading-details/trading-hours/
 
 ## 取得失敗時の安全な診断（2026-11-20 JST）
 
@@ -50,6 +58,7 @@ FXCM公式の週次H1ファイルはUTC時刻で、FXCMが公表する外国為�
 - `SOURCE_HTTP_404` / `SOURCE_HTTP_403` / `SOURCE_HTTP_429` / `SOURCE_HTTP_5XX`: FXCM公式週次ファイルのHTTP応答（原因確定には提供側の確認が必要）
 - `SOURCE_CONNECTION_ERROR` / `SOURCE_TIMEOUT`: 通信失敗
 - `SOURCE_CSV_WEEK_BEFORE` / `SOURCE_CSV_WEEK_AFTER`: 許可された取引週より前／後のUTC時刻。価格や行内容はログに出ない
+- `SOURCE_CSV_WEEK_BOUNDARY_MIXED` / `SOURCE_WEEK_CONVENTION_DRIFT`: 同一ファイルまたは複数週の週境界方式が矛盾し、安全のため停止
 - `SOURCE_CSV_...` / `SOURCE_GZIP_...`: データ形式・妥当性の検証失敗
 - `H1_DATA_VALIDATION_FAILED`: 未分類の検証拒否。価格の安全性を確認できないため取得中断
 - `LOCAL_IO_FAILED`: 保存処理の失敗

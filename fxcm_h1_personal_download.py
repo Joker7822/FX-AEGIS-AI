@@ -152,6 +152,12 @@ def parse_week_csv(content: bytes, year: int, week: int) -> list[dict]:
     if any(name not in normalized for name in REQUIRED) or len(normalized) != len(reader.fieldnames):
         raise ValueError('FXCM CSV must include DateTime and all 8 named Bid/Ask OHLC fields')
     week_start, week_end = fxcm_trading_week_bounds(year, week)
+    # Two strictly bounded candidates: Sunday-session week or ISO calendar week.
+    # Allow a file to follow either one, but never both (would risk overlaps).
+    calendar_start = week_start + timedelta(hours=3)
+    calendar_end = week_end + timedelta(hours=3)
+    has_prior_sunday = False
+    has_last_sunday = False
     records = []
     previous = None
     for raw in reader:
@@ -160,8 +166,14 @@ def parse_week_csv(content: bytes, year: int, week: int) -> list[dict]:
         when = read_timestamp(raw[normalized['datetime']])
         if when < week_start:
             raise ValueError('Provider file contains H1 data outside the specified ISO week (before)')
-        if when >= week_end:
+        if when >= calendar_end:
             raise ValueError('Provider file contains H1 data outside the specified ISO week (after)')
+        if when < calendar_start:
+            has_prior_sunday = True
+        if when >= week_end:
+            has_last_sunday = True
+        if has_prior_sunday and has_last_sunday:
+            raise ValueError('Provider H1 archive mixes both Sunday week boundaries')
         if previous is not None and when <= previous:
             raise ValueError('Duplicate or nonmonotonic FXCM H1 timestamps')
         previous = when
@@ -198,15 +210,28 @@ def acquire(*, year: int, week: int, weeks: int, out: Path,
     output = private_destination(out)
     if output.exists():
         raise ValueError('Target snapshot already exists; no overwrite or implicit replay')
-    rows=[];sources=[];prior=None
+    rows=[];sources=[];prior=None;observed_modes=set()
     for y,w in spans:
         content,meta=download_week(y,w,opener=opener)
         items=parse_week_csv(content,y,w)
-        if prior is not None and read_timestamp(items[0]['time']) <= prior:
+        first = read_timestamp(items[0]['time'])
+        last = read_timestamp(items[-1]['time'])
+        session_start, session_end = fxcm_trading_week_bounds(y,w)
+        if first < session_start + timedelta(hours=3):
+            mode = 'SUNDAY_SESSION_START'
+        elif last >= session_end:
+            mode = 'ISO_CALENDAR_WEEK'
+        else:
+            mode = 'BOUNDARY_NOT_OBSERVED'
+        if mode != 'BOUNDARY_NOT_OBSERVED':
+            observed_modes.add(mode)
+        if len(observed_modes) > 1:
+            raise ValueError('FXCM weekly archives disagree on week boundary convention')
+        if prior is not None and first <= prior:
             raise ValueError('Cross-week H1 chronology revised or duplicated')
         rows.extend(items)
-        prior=read_timestamp(rows[-1]['time'])
-        sources.append(meta)
+        prior=last
+        sources.append({**meta, 'week_partition_mode': mode})
     if len(rows)<200:
         raise ValueError('Need at least 200 completed H1 bars; expand the authorized week range')
     if (read_timestamp(rows[-1]['time'])+timedelta(hours=1))>datetime.now(timezone.utc):
@@ -292,6 +317,8 @@ def safe_failure_code(exc: Exception) -> str:
             'Provider file contains H1 data outside the specified ISO week': 'SOURCE_CSV_WEEK_MISMATCH',
             'Provider file contains H1 data outside the specified ISO week (before)': 'SOURCE_CSV_WEEK_BEFORE',
             'Provider file contains H1 data outside the specified ISO week (after)': 'SOURCE_CSV_WEEK_AFTER',
+            'Provider H1 archive mixes both Sunday week boundaries': 'SOURCE_CSV_WEEK_BOUNDARY_MIXED',
+            'FXCM weekly archives disagree on week boundary convention': 'SOURCE_WEEK_CONVENTION_DRIFT',
             'Duplicate or nonmonotonic FXCM H1 timestamps': 'SOURCE_CSV_ORDER',
             'Invalid FXCM Bid/Ask price field': 'SOURCE_CSV_PRICE_FIELD',
             'Nonpositive or nonfinite FXCM price': 'SOURCE_CSV_PRICE_RANGE',
