@@ -104,6 +104,51 @@ class FxcmPrivateTests(unittest.TestCase):
         with self.assertRaises(ValueError):weeks_ending(2021,53,1)
         with self.assertRaises(ValueError):weeks_ending(2020,10,9)
 
+    def test_fxcm_file_label_week_boundary_and_strict_quote_window(self):
+        from fxcm_h1_personal_download import fxcm_label_week_bounds
+        start, end = fxcm_label_week_bounds(2026, 45)
+        self.assertEqual(start.isoformat(), '2026-11-08T21:00:00+00:00')
+        self.assertEqual(end.isoformat(), '2026-11-14T00:00:00+00:00')
+        accepted = parse_week_csv(labeled_week_data(2026, 45),
+                                  2026, 45, fxcm_label=True)
+        self.assertEqual(len(accepted), 123)
+        self.assertEqual(accepted[0]['time'], '2026-11-08T21:00:00Z')
+        self.assertEqual(accepted[-1]['time'], '2026-11-13T23:00:00Z')
+        wrong = week_data(2026, 45)
+        with self.assertRaisesRegex(ValueError, 'outside') as reject:
+            parse_week_csv(wrong, 2026, 45, fxcm_label=True)
+        self.assertEqual(downloader.safe_failure_code(reject.exception),
+                         'SOURCE_CSV_WEEK_BEFORE')
+        rows = labeled_week_data(2026, 45).decode().splitlines()
+        extended = rows[-1].split(',')
+        extended[0] = '11/14/2026 00:00:00'
+        with self.assertRaisesRegex(ValueError, 'outside') as weekend:
+            parse_week_csv(('\n'.join([*rows, ','.join(extended)])+'\n').encode(),
+                           2026, 45, fxcm_label=True)
+        self.assertEqual(downloader.safe_failure_code(weekend.exception),
+                         'SOURCE_CSV_WEEK_AFTER')
+
+    def test_provider_label_calendar_year_rollover_and_sunday_alignment(self):
+        from fxcm_h1_personal_download import fxcm_label_week_bounds
+        start, end = fxcm_label_week_bounds(2020, 53)
+        self.assertEqual(start.isoformat(), '2021-01-03T21:00:00+00:00')
+        self.assertEqual(end.isoformat(), '2021-01-09T00:00:00+00:00')
+        records = parse_week_csv(labeled_week_data(2020, 53),
+                                 2020, 53, fxcm_label=True)
+        self.assertEqual(records[0]['time'], '2021-01-03T21:00:00Z')
+        self.assertEqual(records[-1]['time'], '2021-01-08T23:00:00Z')
+
+    def test_latest_published_label_skips_unpublished_week_and_rolls_year(self):
+        from fxcm_h1_personal_download import last_published_fxcm_label_week
+        self.assertEqual(
+            last_published_fxcm_label_week(date(2026, 11, 21)), (2026, 45))
+        self.assertEqual(
+            last_published_fxcm_label_week(date(2026, 11, 24)), (2026, 46))
+        self.assertEqual(
+            last_published_fxcm_label_week(date(2027, 1, 4)), (2026, 52))
+        self.assertEqual(
+            last_published_fxcm_label_week(date(2027, 1, 11)), (2026, 53))
+
     def test_sunday_21_to_23_utc_belongs_to_next_fxcm_week(self):
         year, week = 2026, 46
         rows = parse_week_csv(week_data_with_sunday(year, week), year, week)
