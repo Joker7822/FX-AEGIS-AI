@@ -139,6 +139,33 @@ def belongs_to_fxcm_trading_week(when: datetime, year: int, week: int) -> bool:
     return start <= when < end
 
 
+# Fixed public-only classifications for diagnosing archive-week mismatches.
+# Do not include raw timestamps, price data, URLs, or exception text in logs.
+def boundary_offset_bucket(delta: timedelta) -> str:
+    if delta < timedelta(0):
+        raise ValueError('Negative week offset is invalid')
+    if delta < timedelta(hours=3):
+        return '0_2H'
+    if delta < timedelta(days=1):
+        return '3_23H'
+    if delta < timedelta(days=7):
+        return '1_6D'
+    if delta < timedelta(days=28):
+        return '7_27D'
+    return '28D_PLUS'
+
+
+class H1WeekWindowError(ValueError):
+    """Out-of-range bar; retain only a bounded diagnostic, not the source row."""
+
+    def __init__(self, side: str, delta: timedelta):
+        if side not in ('before', 'after') or delta < timedelta(0):
+            raise ValueError('Invalid week-window diagnostic')
+        super().__init__(f'Provider file contains H1 data outside the specified ISO week ({side})')
+        self.offset_bucket = boundary_offset_bucket(delta)
+        self.archive_position: int | None = None
+
+
 def parse_week_csv(content: bytes, year: int, week: int) -> list[dict]:
     """Map by *named* Bid/Ask fields only. Never fabricate Ask from mid/bid."""
     try:
@@ -165,9 +192,9 @@ def parse_week_csv(content: bytes, year: int, week: int) -> list[dict]:
             raise ValueError('Incomplete FXCM CSV row')
         when = read_timestamp(raw[normalized['datetime']])
         if when < week_start:
-            raise ValueError('Provider file contains H1 data outside the specified ISO week (before)')
+            raise H1WeekWindowError('before', week_start - when)
         if when >= calendar_end:
-            raise ValueError('Provider file contains H1 data outside the specified ISO week (after)')
+            raise H1WeekWindowError('after', when - calendar_end)
         if when < calendar_start:
             has_prior_sunday = True
         if when >= week_end:
@@ -211,9 +238,13 @@ def acquire(*, year: int, week: int, weeks: int, out: Path,
     if output.exists():
         raise ValueError('Target snapshot already exists; no overwrite or implicit replay')
     rows=[];sources=[];prior=None;observed_modes=set()
-    for y,w in spans:
+    for archive_position, (y,w) in enumerate(spans, start=1):
         content,meta=download_week(y,w,opener=opener)
-        items=parse_week_csv(content,y,w)
+        try:
+            items=parse_week_csv(content,y,w)
+        except H1WeekWindowError as exc:
+            exc.archive_position = archive_position
+            raise
         first = read_timestamp(items[0]['time'])
         last = read_timestamp(items[-1]['time'])
         session_start, session_end = fxcm_trading_week_bounds(y,w)
@@ -360,6 +391,12 @@ def main() -> int:
         # The workflow sends stdout to a private temporary file. Only this
         # fixed enum goes to stderr/Actions logs; never print the exception.
         print(f'FXCM_SAFE_DIAGNOSTIC={code}', file=sys.stderr)
+        if isinstance(exc, H1WeekWindowError):
+            # Fixed offset bins and a bounded ordinal only. No source dates,
+            # bar contents, local filenames, endpoint responses or secrets.
+            print(f'FXCM_SAFE_WEEK_OFFSET={exc.offset_bucket}', file=sys.stderr)
+            if exc.archive_position is not None and 1 <= exc.archive_position <= 8:
+                print(f'FXCM_SAFE_ARCHIVE_POSITION={exc.archive_position}', file=sys.stderr)
         return 2
     print(json.dumps(result,ensure_ascii=False,indent=2))
     return 0
