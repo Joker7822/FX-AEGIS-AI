@@ -356,6 +356,7 @@ class FxcmPrivateTests(unittest.TestCase):
             'FXCM_SAFE_ADJACENT_RELATION=OVERLAP_SHARED',
             'FXCM_SAFE_ADJACENT_SHARED_H1=121_PLUS',
             'FXCM_SAFE_ARCHIVE_MAP_2=PREV_1/REQUESTED/OVERLAP_SHARED/121_PLUS/NONE',
+            'FXCM_SAFE_ARCHIVE_STATUS_2=VALID',
         ])
         for private_marker in ('PRIVATE_DO_NOT_LOG', '2020-03-09',
                                '108.000', 'bid_open'):
