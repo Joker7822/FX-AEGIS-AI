@@ -221,6 +221,71 @@ class FxcmPrivateTests(unittest.TestCase):
                              'SOURCE_WEEK_CONVENTION_DRIFT')
             self.assertFalse(out.exists())
 
+    def test_boundary_offset_bucket_has_only_fixed_public_categories(self):
+        from fxcm_h1_personal_download import (
+            H1WeekWindowError, boundary_offset_bucket,
+        )
+        cases = [
+            (timedelta(0), '0_2H'),
+            (timedelta(hours=2), '0_2H'),
+            (timedelta(hours=3), '3_23H'),
+            (timedelta(hours=23), '3_23H'),
+            (timedelta(days=1), '1_6D'),
+            (timedelta(days=6), '1_6D'),
+            (timedelta(days=7), '7_27D'),
+            (timedelta(days=27), '7_27D'),
+            (timedelta(days=28), '28D_PLUS'),
+        ]
+        for delta, expected in cases:
+            self.assertEqual(boundary_offset_bucket(delta), expected)
+        with self.assertRaises(ValueError):
+            boundary_offset_bucket(timedelta(hours=-1))
+        with self.assertRaises(ValueError):
+            H1WeekWindowError('INVALID', timedelta(0))
+
+    def test_week_window_error_preserves_fixed_diagnostic_classification(self):
+        from fxcm_h1_personal_download import H1WeekWindowError
+        before = H1WeekWindowError('before', timedelta(days=10))
+        after = H1WeekWindowError('after', timedelta(hours=12))
+        self.assertEqual(downloader.safe_failure_code(before),
+                         'SOURCE_CSV_WEEK_BEFORE')
+        self.assertEqual(downloader.safe_failure_code(after),
+                         'SOURCE_CSV_WEEK_AFTER')
+        self.assertEqual(before.offset_bucket, '7_27D')
+        self.assertEqual(after.offset_bucket, '3_23H')
+
+    def test_failed_week_index_and_offset_logged_without_sensitive_data(self):
+        # The first week is valid. The second week's archive has a next-week
+        # timestamp and must fail before writing any H1 file or provenance.
+        def fake_download(year, week, opener=None):
+            fake_week = 12 if week == 11 else 10
+            return week_data(year, fake_week), {'source_url': 'PRIVATE_SOURCE_URL'}
+        stdout, stderr = io.StringIO(), io.StringIO()
+        with (
+                tempfile.TemporaryDirectory() as folder,
+                patch.object(downloader, 'download_week', side_effect=fake_download),
+                patch.object(sys, 'argv', [
+                    'fxcm_h1_personal_download.py', '--year', '2020',
+                    '--week', '11', '--weeks', '2', '--out',
+                    str(Path(folder) / 'private'),
+                    '--enable-download', '--accept-fxcm-personal-use'
+                ]),
+                contextlib.redirect_stdout(stdout),
+                contextlib.redirect_stderr(stderr),
+        ):
+            code = downloader.main()
+            self.assertFalse((Path(folder) / 'private').exists())
+        self.assertEqual(code, 2)
+        output = stderr.getvalue()
+        self.assertEqual(output.splitlines(), [
+            'FXCM_SAFE_DIAGNOSTIC=SOURCE_CSV_WEEK_AFTER',
+            'FXCM_SAFE_WEEK_OFFSET=0_2H',
+            'FXCM_SAFE_ARCHIVE_POSITION=2',
+        ])
+        self.assertEqual(json.loads(stdout.getvalue())['status'], 'FAILED_CLOSED')
+        self.assertNotIn('PRIVATE_SOURCE_URL', output + stdout.getvalue())
+        self.assertNotIn('2020-03-16', output + stdout.getvalue())
+
     def test_fractional_timestamp_zero_and_nonzero(self):
         from fxcm_h1_personal_download import read_timestamp
         self.assertEqual(read_timestamp('10/19/2026 00:00:00.000').isoformat(),

@@ -63,6 +63,19 @@ preflight success と fetch-encrypt skipped の組み合わせは、実データ
 - `H1_DATA_VALIDATION_FAILED`: 未分類の検証拒否。価格の安全性を確認できないため取得中断
 - `LOCAL_IO_FAILED`: 保存処理の失敗
 
+### 週外H1バーの安全な追加診断（2026-11-21 JST）
+
+`SOURCE_CSV_WEEK_BEFORE` / `SOURCE_CSV_WEEK_AFTER` が発生した場合、公開Actionsログに次の**分類のみ**を追加します。生の日時、価格、CSV内容、HTTP本文、秘密鍵は出しません。
+
+- `FXCM_SAFE_WEEK_OFFSET=0_2H`: 許容週境界の外側へ0～2時間
+- `FXCM_SAFE_WEEK_OFFSET=3_23H`: 同3～23時間
+- `FXCM_SAFE_WEEK_OFFSET=1_6D`: 同1～6日
+- `FXCM_SAFE_WEEK_OFFSET=7_27D`: 同7～27日
+- `FXCM_SAFE_WEEK_OFFSET=28D_PLUS`: 同28日以上
+- `FXCM_SAFE_ARCHIVE_POSITION=1..8`: **今回の実行で取得対象にした週次ファイルの順番**。実際のバー時刻やファイル内容ではなく、エラーを返したアーカイブの順序番号です。
+
+上記は最初に拒否されたH1行についての週境界相対距離であり、**ファイル全体の開始・終了日時や正しい週番号は確定できません**。取得・検証条件は緩和せず、エラー時は暗号化Artifactを作りません。この情報によって大幅な週番号のずれか小幅な時刻区切りのずれかを切り分け、次の修正を安全に判断します。
+
 分類コードは**失敗原因の調査用**であり、取得成功や出典真正性を保証しません。自動再試行、未検証データの受入れ、実売買は有効化されません。修正後に `fetch-and-encrypt` を明示的に再実行して判断してください。
 
 GitHub Secrets公式：https://docs.github.com/en/actions/how-tos/write-workflows/choose-what-workflows-do/use-secrets
