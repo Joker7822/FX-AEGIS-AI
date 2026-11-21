@@ -134,6 +134,37 @@ def fxcm_trading_week_bounds(year: int, week: int) -> tuple[datetime, datetime]:
     return monday - timedelta(hours=3), monday + timedelta(days=6, hours=21)
 
 
+def fxcm_label_week_bounds(year: int, week: int) -> tuple[datetime, datetime]:
+    """Tight, exclusive-end UTC window for the provider's *file label*.
+
+    A file labeled ISO W covers the Sunday session at the end of W,
+    then the following Monday-Friday (W+1). This observed convention
+    differs from the ISO calendar week represented by the URL label.
+    Start 21:00 UTC permits both summer and winter Sunday sessions.
+    Saturday 00:00 UTC is a firm end: weekend or next-session bars
+    are never imported. No timestamp is shifted or discarded.
+    """
+    monday = date.fromisocalendar(year, week, 1)
+    utc_monday = datetime(monday.year, monday.month, monday.day,
+                          tzinfo=timezone.utc)
+    return (utc_monday + timedelta(days=6, hours=21),
+            utc_monday + timedelta(days=12))
+
+
+def last_published_fxcm_label_week(today_utc: date) -> tuple[int, int]:
+    """Conservative week label whose Monday publication date has elapsed.
+
+    Because the label W contains the following trading week W+1, it
+    is not expected to be published before Monday of W+2. Use W-2
+    relative to the current ISO week; do not probe future/unpublished
+    weeks or auto-fallback to an unknown source.
+    """
+    monday = today_utc - timedelta(days=today_utc.weekday())
+    candidate = monday - timedelta(weeks=2)
+    iso = candidate.isocalendar()
+    return iso.year, iso.week
+
+
 def belongs_to_fxcm_trading_week(when: datetime, year: int, week: int) -> bool:
     start, end = fxcm_trading_week_bounds(year, week)
     return start <= when < end
@@ -190,15 +221,19 @@ def safe_after_bar_count_bucket(count: int) -> str:
 
 
 def safe_week_tail_summary(source: str, timestamp_field: str,
-                           year: int, week: int) -> tuple[str, str]:
+                           year: int, week: int, *,
+                           fxcm_label: bool = False) -> tuple[str, str]:
     """Inspect every source timestamp after a rejection; never return a date.
 
     This is diagnosis ONLY: it does not normalize, accept, skip, change or
     rewrite a candle. On invalid CSV structure, chronology, or row count the
     summary is unavailable. The normal importer still fails closed.
     """
-    _, end = fxcm_trading_week_bounds(year, week)
-    calendar_end = end + timedelta(hours=3)
+    if fxcm_label:
+        _, calendar_end = fxcm_label_week_bounds(year, week)
+    else:
+        _, end = fxcm_trading_week_bounds(year, week)
+        calendar_end = end + timedelta(hours=3)
     reader = csv.DictReader(io.StringIO(source, newline=''))
     previous = None
     last = None
@@ -395,8 +430,14 @@ def safe_remaining_archive_manifest(
     return manifest
 
 
-def parse_week_csv(content: bytes, year: int, week: int) -> list[dict]:
-    """Map by *named* Bid/Ask fields only. Never fabricate Ask from mid/bid."""
+def parse_week_csv(content: bytes, year: int, week: int, *,
+                   fxcm_label: bool = False) -> list[dict]:
+    """Map named Bid/Ask fields; optionally enforce strict provider label W.
+
+    fxcm_label=True is used by the production downloader. The original
+    bounded calendar/session interpretation is retained for older
+    synthetic fixtures and direct historical consumers.
+    """
     try:
         source = content.decode('utf-8-sig')
     except UnicodeError as exc:
@@ -407,11 +448,15 @@ def parse_week_csv(content: bytes, year: int, week: int) -> list[dict]:
     normalized = {name.strip().lower(): name for name in reader.fieldnames}
     if any(name not in normalized for name in REQUIRED) or len(normalized) != len(reader.fieldnames):
         raise ValueError('FXCM CSV must include DateTime and all 8 named Bid/Ask OHLC fields')
-    week_start, week_end = fxcm_trading_week_bounds(year, week)
-    # Two strictly bounded candidates: Sunday-session week or ISO calendar week.
-    # Allow a file to follow either one, but never both (would risk overlaps).
-    calendar_start = week_start + timedelta(hours=3)
-    calendar_end = week_end + timedelta(hours=3)
+    if fxcm_label:
+        week_start, calendar_end = fxcm_label_week_bounds(year, week)
+        calendar_start = week_start
+        week_end = calendar_end
+    else:
+        week_start, week_end = fxcm_trading_week_bounds(year, week)
+        # Legacy strictly bounded Sunday-session/ISO candidates.
+        calendar_start = week_start + timedelta(hours=3)
+        calendar_end = week_end + timedelta(hours=3)
     has_prior_sunday = False
     has_last_sunday = False
     records = []
@@ -426,17 +471,19 @@ def parse_week_csv(content: bytes, year: int, week: int) -> list[dict]:
             exc = H1WeekWindowError('after', when - calendar_end)
             (exc.file_tail_offset_bucket,
              exc.file_after_bars_bucket) = safe_week_tail_summary(
-                 source, normalized['datetime'], year, week)
+                 source, normalized['datetime'], year, week,
+                 fxcm_label=fxcm_label)
             (exc.file_first_iso_week,
              exc.file_last_iso_week) = safe_week_iso_extent(
                  source, normalized['datetime'], year, week)
             raise exc
-        if when < calendar_start:
-            has_prior_sunday = True
-        if when >= week_end:
-            has_last_sunday = True
-        if has_prior_sunday and has_last_sunday:
-            raise ValueError('Provider H1 archive mixes both Sunday week boundaries')
+        if not fxcm_label:
+            if when < calendar_start:
+                has_prior_sunday = True
+            if when >= week_end:
+                has_last_sunday = True
+            if has_prior_sunday and has_last_sunday:
+                raise ValueError('Provider H1 archive mixes both Sunday week boundaries')
         if previous is not None and when <= previous:
             raise ValueError('Duplicate or nonmonotonic FXCM H1 timestamps')
         previous = when
@@ -473,11 +520,11 @@ def acquire(*, year: int, week: int, weeks: int, out: Path,
     output = private_destination(out)
     if output.exists():
         raise ValueError('Target snapshot already exists; no overwrite or implicit replay')
-    rows=[];sources=[];prior=None;observed_modes=set()
+    rows=[];sources=[];prior=None
     for archive_position, (y,w) in enumerate(spans, start=1):
         content,meta=download_week(y,w,opener=opener)
         try:
-            items=parse_week_csv(content,y,w)
+            items=parse_week_csv(content,y,w,fxcm_label=True)
         except H1WeekWindowError as exc:
             exc.archive_position = archive_position
             if exc.side == 'after' and archive_position < len(spans):
@@ -492,17 +539,9 @@ def acquire(*, year: int, week: int, weeks: int, out: Path,
             raise
         first = read_timestamp(items[0]['time'])
         last = read_timestamp(items[-1]['time'])
-        session_start, session_end = fxcm_trading_week_bounds(y,w)
-        if first < session_start + timedelta(hours=3):
-            mode = 'SUNDAY_SESSION_START'
-        elif last >= session_end:
-            mode = 'ISO_CALENDAR_WEEK'
-        else:
-            mode = 'BOUNDARY_NOT_OBSERVED'
-        if mode != 'BOUNDARY_NOT_OBSERVED':
-            observed_modes.add(mode)
-        if len(observed_modes) > 1:
-            raise ValueError('FXCM weekly archives disagree on week boundary convention')
+        # The file label's boundary convention is fixed. No guessing,
+        # auto-trimming, or mixing calendar week conventions in one snapshot.
+        mode = 'FXCM_SUNDAY_LABEL_NEXT_WEEK'
         if prior is not None and first <= prior:
             raise ValueError('Cross-week H1 chronology revised or duplicated')
         rows.extend(items)

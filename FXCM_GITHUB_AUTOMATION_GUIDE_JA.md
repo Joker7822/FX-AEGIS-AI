@@ -1,6 +1,6 @@
 # FX AEGIS AI — FXCM H1公開GitHub自動取得（暗号化保存）
 
-更新日：2026-11-19（日本時間）。GitHub Actionsを公開リポジトリで利用し、価格データを平文公開しない構成。
+更新日：2026-11-21（日本時間）。GitHub Actionsを公開リポジトリで利用し、価格データを平文公開しない構成。
 
 ## 実行条件（本人が権利を確認して設定）
 
@@ -17,7 +17,7 @@ Actions Secrets に FXCM_ARCHIVE_PASSPHRASE = 32文字以上の強いランダ�
 ## 使い方
 
 Actions → FX AEGIS AI · FXCM Encrypted H1 Archive (Personal) → Run workflow から fetch-and-encrypt を選択する。デフォルトpreflight-onlyでは通信も価格取得もしない。
-設定後は毎週火曜日17:37 JSTに最新の完了済み4週間のUSDJPY H1 Bid/Askを自動取得する。スケジュールの遅延や欠落はあり得る。
+設定後は毎週火曜日17:37 JSTに、FXCM週次CSVのファイル名に使われるISO週番号について**公式の月曜更新日を経過した最新のラベルから遡る4週**のUSDJPY H1 Bid/Askを取得する。スケジュールの遅延や欠落はあり得る。**11月21日(土)時点で2026-W46はHTTP 404だったため、改修後はW45を最新の取得対象とする。**
 
 取得ファイルはActionsの一時領域だけで検証し、GPG AES256で暗号化した fxcm-usdjpy-h1.tar.gpg のみをActions artifactへ30日保管する。
 このartifactは公開リポジトリのアクセス権やキー漏えいのリスクを残し、完全な非公開ストレージではない。データ自体はActions Secretに保存されない。
@@ -32,24 +32,32 @@ bidask_h1.csv と provenance.json をWebチャートに2ファイル同時に読
 
 preflight success と fetch-encrypt skipped の組み合わせは、実データ取得未実行を意味する。実取得を主張できるのはfetch-encrypt成功時のみ。
 
-## FXCM週次CSVの時刻区切り（2026-11-21 JST）
+## FXCM週次CSVのファイルラベルと収録時間窓（2026-11-21 JST）
 
-公式のFXCMサンプルスクリプトはURLの週番号にPythonのISO週を用いています。一方、FXCMの外国為替取引は日曜17:00～17:15 ETに再開し、UTCの日曜21:00または22:00台に相当します。週次CSV内の日曜夜の足が**前の取引週の終端**か**次の取引週の先頭**かは、公表文書だけでは特定できません。
+**現時点の取得コードでは次の厳格な時間窓を採用します。** FXCM公式READMEはH1週次ファイルを毎週月曜更新とし、公式のPythonサンプルはURLにISO週番号を使用、時刻はUTCと記載しています。ただし**URL週番号とファイル内の正確な収録日の対応は公式READMEに明記されていません**。
 
-安全な互換処理として、各ファイルの原本UTCタイムスタンプのみを検査し、以下の**どちらか一つ**の整合した区切りに限定します。
+公開GitHub Actions #19・#22・#25・#29 で得た固定コード診断では、2026年W43・W44・W45のファイルはいずれも「指定されたISO週の日付に始まり、翌ISO週の日付に終わる」パターンで、隣接ファイル間に同一H1時刻はなく、空白が1～6日あります。また、2026-W46は11月21日(土)にHTTP 404でした。この観測と公式の月曜更新を合わせた**検証可能なファイルラベル解釈**を採用します。
 
-- `SUNDAY_SESSION_START`: 直前の日曜21:00～月曜00:00前に始まり、次の日曜21:00前に終了する取引セッション週
-- `ISO_CALENDAR_WEEK`: 月曜00:00～翌週月曜00:00前の日付を含むISO暦週。最後の日曜21:00～23:00の足も含み得る
-- `BOUNDARY_NOT_OBSERVED`: 週末境界の観測がなく、両方式のどちらかは判断できない
+- ファイル名 `{year}/{week}.csv.gz` の週を **W** とすると、許容する先頭は **Wの最終日・日曜21:00 UTC以降**です（夏冬時間のどちらにも対応する早めの下限）。
+- 許容する末尾は**翌ISO週 W+1 の土曜日00:00 UTCより前**です。これはデータを長期間まで無条件に受け入れるためではなく、日曜夜～翌週金曜日の狭い時間窓に制限するためです。
+- Wの月曜00:00～土曜20:00のバー、または翌ISO週の土曜以降のバーは受け入れず停止します。時刻の補正・バー削除・重複の黙認は行いません。
+- 各週のファイル内でUTC整時、昇順、全8項目のBid/Ask OHLC、値域・スプレッド等を検証し、取得対象4ファイル間の重複・逆順も停止します。
+- provenance.json内の非公開メタデータでは `week_partition_mode=FXCM_SUNDAY_LABEL_NEXT_WEEK` と記録します。
 
-**単一ファイルで直前の日曜と末尾の日曜の両方が観測された場合、または連続するファイルで相反する週境界方式が観測された場合は保存せず停止**します。重複・逆順・不正なOHLC・Bid/Ask・データ量・非確定バーなどの既存検証も維持します。時刻や価格の変更・間引き・重複除去による誤魔化しは一切行いません。
+**公開済み週の保守的な選択**：現在のISO週番号を `W_now` としたとき、直近のファイルラベルは `W_now-2` です。ラベルWのFXCMセッションがW+1金曜日に完了し、W+2月曜日の更新日を迎えたものだけを対象にします。これによって、土曜日に最新完了暦週のまだ未公開のラベルを要求しません。ただし月曜の実際の更新時刻や配信停止までは保証できず、該当ファイルが404なら安全に失敗します。利用許諾・Secret・暗号化保存・注文禁止は変更しません。
 
-安全診断には `SOURCE_CSV_WEEK_BOUNDARY_MIXED` または `SOURCE_WEEK_CONVENTION_DRIFT` を新たに追加します。実際の価格、年月日、タイムスタンプやHTTP内容は公開ログへ出しません。具体的なデータ状況と本変更による復旧成否は**マージ後の承認済み再実行**が必要です。
+これは**既存の実CSVに基づく条件付き技術仮説**であり、FXCM公式に週ラベル規則の追加確認が取れたことを意味しません。変更後、実FXCMデータに対して新しい厳格時間窓の検証と暗号化Artifact生成が成功するかを再確認する必要があります。旧方式の `SUNDAY_SESSION_START` / `ISO_CALENDAR_WEEK` は今後の本番ファイル受入れには使用しません（旧人工データ互換テストでのみ維持）。
 
 公式出典：
 - https://github.com/fxcm/MarketData/blob/master/CandleData/README.md
 - https://github.com/fxcm/MarketData/blob/master/CandleData/CandleData(pandas).py
 - https://www.fxcm.com/markets/trading-details/trading-hours/
+
+実際の診断出典：
+- https://github.com/Joker7822/FX-AEGIS-AI/actions/runs/44866107667
+- https://github.com/Joker7822/FX-AEGIS-AI/actions/runs/44867047931
+- https://github.com/Joker7822/FX-AEGIS-AI/actions/runs/44867820279
+- https://github.com/Joker7822/FX-AEGIS-AI/actions/runs/44868803767
 
 ## 取得失敗時の安全な診断（2026-11-20 JST）
 
