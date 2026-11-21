@@ -124,6 +124,20 @@ FXCM公式文書は週番号付きH1ファイルとUTCタイムスタンプを�
 - **両ファイルの同一H1日時の件数区分**：`NONE` / `1_3` / `4_24` / `25_120` / `121_PLUS` / `UNAVAILABLE`
 - **時系列の空白時間の区分**：`NONE` / `0_2H` / `3_23H` / `1_6D` / `7_27D` / `28D_PLUS` / `UNAVAILABLE`。差の分類は「次のファイル先頭 − 前ファイル末尾 − 1時間」です。
 
+### 4番目のファイルが `UNAVAILABLE` になる理由の切り分け（2026-11-21 JST）
+
+指定済み週次ファイルの日時・範囲診断が `UNAVAILABLE` になっても、**原因を特定したとは限りません**。そこで、`FXCM_SAFE_ARCHIVE_STATUS_N`（Nは取得対象の順序）を追加し、次のような**固定の安全なエラー識別子だけ**を記録します。
+
+- `VALID`：日時列の読み取り・整時・昇順・重複なしを確認できた（価格やCSV全体を検証した意味ではない）
+- `SOURCE_HTTP_404` / `SOURCE_HTTP_403` / `SOURCE_HTTP_429` / `SOURCE_HTTP_5XX` / `SOURCE_HTTP_OTHER`：FXCM週次ファイルへのHTTP応答分類
+- `SOURCE_CONNECTION_ERROR` / `SOURCE_TIMEOUT`：ネットワーク応答不良
+- `SOURCE_GZIP_INVALID` / `SOURCE_GZIP_CORRUPT` / `SOURCE_GZIP_OVERSIZED` / `SOURCE_REDIRECT_REJECTED`：圧縮形式やリダイレクト検証で拒否
+- `SOURCE_CSV_ENCODING` / `SOURCE_CSV_HEADER` / `SOURCE_CSV_ROW` / `SOURCE_CSV_NO_BARS` / `SOURCE_CSV_TOO_MANY_BARS`：CSV構造または行数
+- `SOURCE_CSV_TIMESTAMP` / `SOURCE_CSV_TIMESTAMP_ALIGNMENT` / `SOURCE_CSV_ORDER`：日時の解釈・UTC整時・順序異常
+- 上記に当てはまらない場合は、既存の `safe_failure_code` による固定の失敗分類
+
+この値には**HTTP応答本文・正確な日付・価格・URL・秘密情報は含めません**。第4ファイルの実際の失敗理由は、修正後の本人承認済み `fetch-and-encrypt` 再実行が必要です。なお `VALID` であっても元のH1収録期間エラーは継続し、暗号化Artifactは生成しません。
+
 取得失敗・日時不正・重複・逆順・行数超過などで信頼性のある分類が作れない場合は `UNAVAILABLE` です。欠損があっても残りの許可済みファイルの調査を続けますが、**通常の検証エラーは変更せず、保存・公開・暗号化・発注には進みません**。確認できるのは日時の並びと範囲だけであり、価格の同一性や欠損原因を確定するものではありません。
 
 **公開するのは固定分類だけ**です。時刻・週番号・ファイルURL・個別レート・Bid/Ask・秘密情報・実データはログに出しません。日時の一致は価格値の一致を意味しません。価格の一致検証、データの重複解消、適正なファイル境界の確定は別の課題です。
