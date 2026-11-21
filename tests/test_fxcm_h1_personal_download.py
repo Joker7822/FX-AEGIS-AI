@@ -281,10 +281,79 @@ class FxcmPrivateTests(unittest.TestCase):
             'FXCM_SAFE_DIAGNOSTIC=SOURCE_CSV_WEEK_AFTER',
             'FXCM_SAFE_WEEK_OFFSET=0_2H',
             'FXCM_SAFE_ARCHIVE_POSITION=2',
+            'FXCM_SAFE_FILE_TAIL_OFFSET=1_6D',
+            'FXCM_SAFE_FILE_AFTER_BARS=25_120',
         ])
         self.assertEqual(json.loads(stdout.getvalue())['status'], 'FAILED_CLOSED')
         self.assertNotIn('PRIVATE_SOURCE_URL', output + stdout.getvalue())
         self.assertNotIn('2020-03-16', output + stdout.getvalue())
+
+    def test_full_csv_tail_extent_is_distinct_from_first_invalid_bar(self):
+        from fxcm_h1_personal_download import (
+            H1WeekWindowError, safe_week_tail_summary,
+        )
+        first_week = week_data(2020, 10).decode().splitlines()
+        next_week = week_data(2020, 11).decode().splitlines()[1:15]
+        content = ('\\n'.join([*first_week, *next_week]) + '\\n').encode()
+        self.assertEqual(
+            safe_week_tail_summary(content.decode(), 'DateTime', 2020, 10),
+            ('3_23H', '4_24'),
+        )
+        with self.assertRaises(H1WeekWindowError) as context:
+            parse_week_csv(content, 2020, 10)
+        self.assertEqual(context.exception.offset_bucket, '0_2H')
+        self.assertEqual(context.exception.file_tail_offset_bucket, '3_23H')
+        self.assertEqual(context.exception.file_after_bars_bucket, '4_24')
+
+    def test_full_csv_tail_scan_rejects_invalid_later_timestamps(self):
+        from fxcm_h1_personal_download import safe_week_tail_summary
+        first_week = week_data(2020, 10).decode().splitlines()
+        next_week = week_data(2020, 11).decode().splitlines()[1:4]
+        rows = [*first_week, *next_week, next_week[-1]]
+        # Later duplicate timestamps invalidate a public diagnostic extent.
+        self.assertEqual(
+            safe_week_tail_summary('\\n'.join(rows) + '\\n', 'DateTime', 2020, 10),
+            ('UNAVAILABLE', 'UNAVAILABLE'),
+        )
+        self.assertEqual(
+            safe_week_tail_summary(week_data(2020, 10).decode(),
+                                   'DateTime', 2020, 10),
+            ('NONE', 'NONE'),
+        )
+
+    def test_full_csv_tail_diagnostic_logs_bins_only_and_refuses_output(self):
+        first_week = week_data(2020, 10).decode().splitlines()
+        next_week = week_data(2020, 11).decode().splitlines()[1:15]
+        fake_content = ('\\n'.join([*first_week, *next_week]) + '\\n').encode()
+        def fake_download(year, week, opener=None):
+            return fake_content, {'source_url': 'PRIVATE_DO_NOT_LOG'}
+        stdout, stderr = io.StringIO(), io.StringIO()
+        with (
+                tempfile.TemporaryDirectory() as folder,
+                patch.object(downloader, 'download_week', side_effect=fake_download),
+                patch.object(sys, 'argv', [
+                    'fxcm_h1_personal_download.py', '--year', '2020',
+                    '--week', '11', '--weeks', '2', '--out',
+                    str(Path(folder) / 'private'),
+                    '--enable-download', '--accept-fxcm-personal-use'
+                ]),
+                contextlib.redirect_stdout(stdout),
+                contextlib.redirect_stderr(stderr),
+        ):
+            result = downloader.main()
+            self.assertFalse((Path(folder) / 'private').exists())
+        self.assertEqual(result, 2)
+        self.assertEqual(stderr.getvalue().splitlines(), [
+            'FXCM_SAFE_DIAGNOSTIC=SOURCE_CSV_WEEK_AFTER',
+            'FXCM_SAFE_WEEK_OFFSET=0_2H',
+            'FXCM_SAFE_ARCHIVE_POSITION=1',
+            'FXCM_SAFE_FILE_TAIL_OFFSET=3_23H',
+            'FXCM_SAFE_FILE_AFTER_BARS=4_24',
+        ])
+        for private_marker in ('PRIVATE_DO_NOT_LOG', '2020-03-09',
+                               '108.000', 'bid_open'):
+            self.assertNotIn(private_marker,
+                             stderr.getvalue() + stdout.getvalue())
 
     def test_fractional_timestamp_zero_and_nonzero(self):
         from fxcm_h1_personal_download import read_timestamp
