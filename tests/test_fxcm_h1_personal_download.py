@@ -353,6 +353,8 @@ class FxcmPrivateTests(unittest.TestCase):
             'FXCM_SAFE_FILE_AFTER_BARS=4_24',
             'FXCM_SAFE_FIRST_ISO_WEEK=REQUESTED',
             'FXCM_SAFE_LAST_ISO_WEEK=NEXT_1',
+            'FXCM_SAFE_ADJACENT_RELATION=OVERLAP_SHARED',
+            'FXCM_SAFE_ADJACENT_SHARED_H1=121_PLUS',
         ])
         for private_marker in ('PRIVATE_DO_NOT_LOG', '2020-03-09',
                                '108.000', 'bid_open'):
@@ -404,6 +406,99 @@ class FxcmPrivateTests(unittest.TestCase):
         self.assertEqual(safe_week_iso_extent(
             'DateTime\n', 'DateTime', 2020, 10),
             ('UNAVAILABLE', 'UNAVAILABLE'))
+
+    def test_adjacent_archive_timestamp_overlap_and_gap_categories(self):
+        from fxcm_h1_personal_download import safe_adjacent_week_relation
+        first = week_data(2020, 10).decode().splitlines()
+        second = week_data(2020, 11).decode().splitlines()
+        overlapping = ('\n'.join([*first, *second[1:31]]) + '\n').encode()
+        normal = ('\n'.join(first) + '\n').encode()
+        following = ('\n'.join(second) + '\n').encode()
+        self.assertEqual(
+            safe_adjacent_week_relation(overlapping, following),
+            ('OVERLAP_SHARED', '25_120'))
+        # The missing weekend creates a real temporal gap between valid
+        # consecutive provider files. Diagnostics do not fill this gap.
+        self.assertEqual(safe_adjacent_week_relation(normal, following),
+                         ('GAP', 'NONE'))
+        joined = week_data(2020, 10).decode().splitlines()
+        left = ('\n'.join([joined[0], *joined[1:10]]) + '\n').encode()
+        right = ('\n'.join([joined[0], *joined[10:]]) + '\n').encode()
+        self.assertEqual(safe_adjacent_week_relation(left, right),
+                         ('CONTIGUOUS', 'NONE'))
+        sparse_a = ('\n'.join([joined[0], joined[1], joined[3]]) + '\n').encode()
+        sparse_b = ('\n'.join([joined[0], joined[2], joined[4]]) + '\n').encode()
+        self.assertEqual(safe_adjacent_week_relation(sparse_a, sparse_b),
+                         ('OVERLAP_NO_SHARED', 'NONE'))
+
+    def test_adjacent_archive_diagnostic_rejects_bad_csv_or_duplicate_hours(self):
+        from fxcm_h1_personal_download import safe_adjacent_week_relation
+        one = week_data(2020, 10)
+        bad = one.decode() + one.decode().splitlines()[-1] + '\n'
+        self.assertEqual(safe_adjacent_week_relation(one, bad.encode()),
+                         ('UNAVAILABLE', 'UNAVAILABLE'))
+        self.assertEqual(safe_adjacent_week_relation(one, b'not,csv\n'),
+                         ('UNAVAILABLE', 'UNAVAILABLE'))
+
+    def test_failed_first_archive_downloads_next_only_for_safe_diagnosis(self):
+        first = week_data(2020, 10).decode().splitlines()
+        next_rows = week_data(2020, 11).decode().splitlines()
+        bad_first = ('\n'.join([*first, *next_rows[1:31]]) + '\n').encode()
+        second = ('\n'.join(next_rows) + '\n').encode()
+        calls = []
+        def fake_download(year, week, opener=None):
+            calls.append((year, week))
+            return (bad_first if week == 10 else second), {
+                'source_url': 'PRIVATE_FXCM_PROVIDER_URL'}
+        stdout, stderr = io.StringIO(), io.StringIO()
+        with (
+                tempfile.TemporaryDirectory() as folder,
+                patch.object(downloader, 'download_week', side_effect=fake_download),
+                patch.object(sys, 'argv', [
+                    'fxcm_h1_personal_download.py', '--year', '2020',
+                    '--week', '11', '--weeks', '2', '--out',
+                    str(Path(folder) / 'private'),
+                    '--enable-download', '--accept-fxcm-personal-use'
+                ]),
+                contextlib.redirect_stdout(stdout),
+                contextlib.redirect_stderr(stderr),
+        ):
+            self.assertEqual(downloader.main(), 2)
+            self.assertFalse((Path(folder) / 'private').exists())
+        self.assertEqual(calls, [(2020, 10), (2020, 11)])
+        self.assertIn('FXCM_SAFE_ADJACENT_RELATION=OVERLAP_SHARED',
+                      stderr.getvalue().splitlines())
+        self.assertIn('FXCM_SAFE_ADJACENT_SHARED_H1=25_120',
+                      stderr.getvalue().splitlines())
+        self.assertIn('FXCM_SAFE_DIAGNOSTIC=SOURCE_CSV_WEEK_AFTER',
+                      stderr.getvalue().splitlines())
+        self.assertEqual(json.loads(stdout.getvalue())['status'], 'FAILED_CLOSED')
+        for private in ('PRIVATE_FXCM_PROVIDER_URL', '2020-03-09',
+                        '108.000', 'BidOpen'):
+            self.assertNotIn(private, stderr.getvalue() + stdout.getvalue())
+
+    def test_next_week_network_error_preserves_original_failure(self):
+        from fxcm_h1_personal_download import H1WeekWindowError
+        first = week_data(2020, 10).decode().splitlines()
+        next_rows = week_data(2020, 11).decode().splitlines()
+        bad_first = ('\n'.join([*first, *next_rows[1:31]]) + '\n').encode()
+        def fake_download(year, week, opener=None):
+            if week == 11:
+                raise RuntimeError('SECRET_PROVIDER_ERROR_DO_NOT_LOG')
+            return bad_first, {}
+        with tempfile.TemporaryDirectory() as folder, patch.object(
+                downloader, 'download_week', side_effect=fake_download):
+            with self.assertRaises(H1WeekWindowError) as found:
+                acquire(year=2020, week=11, weeks=2,
+                        out=Path(folder) / 'private', enable_download=True,
+                        personal_use_accepted=True)
+            self.assertEqual(
+                downloader.safe_failure_code(found.exception),
+                'SOURCE_CSV_WEEK_AFTER')
+            self.assertEqual(found.exception.adjacent_relation, 'UNAVAILABLE')
+            self.assertEqual(found.exception.adjacent_shared_h1_bucket,
+                             'UNAVAILABLE')
+            self.assertFalse((Path(folder) / 'private').exists())
 
     def test_fractional_timestamp_zero_and_nonzero(self):
         from fxcm_h1_personal_download import read_timestamp
