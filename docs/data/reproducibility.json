@@ -2,9 +2,9 @@
   "approved_for_live_trading": false,
   "candidate_count": 48,
   "data_sha256": "9ff175fff4496b08803228651ba89c7d028c006eae214a501865072cda8fd2dd",
-  "record_sha256": "b6aa3a31be0a863d2375f5916ece4566499393b8a3491ada78cf2d05fb67d3ad",
+  "record_sha256": "e4aaed77616104e36bec4a3202c0c1de94d9b2ba730be624d37c9a26b58f590d",
   "research_gate_passed": false,
-  "scan_sha256": "883c3946fac83d071df2cfb46a4fbd55d5d5c3ced1dcf3e5280bd3788660ccb6",
+  "scan_sha256": "d1af0dec9d472b6bd423d4707dcf949b5af5596fc05b1bb4d8341d79e5d7d6e8",
   "schema": "fx-aegis-repro-1",
   "selected_config": {
     "allocation": 0.25,

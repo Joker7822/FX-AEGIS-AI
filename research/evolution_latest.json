@@ -1100,7 +1100,7 @@
   "schema": "fx-aegis-self-evolve-1",
   "search_window_end_exclusive": "2021-01-01",
   "seed_policy": "weekly",
-  "sha256": "b26bc7d923c95ad1710ceefbe7078962490a7dec19486dd74afe7679132f910d",
+  "sha256": "e08c4cbb540782c03b97ed8b048f9f0f942931eb5965cab97ede0acf22fdd21f",
   "shadow": {
     "approved_for_live_trading": false,
     "state": "NO_STATISTICALLY_SCREENED_CANDIDATE"
@@ -1108,7 +1108,7 @@
   "source": {
     "data_sha256": "9ff175fff4496b08803228651ba89c7d028c006eae214a501865072cda8fd2dd",
     "kind": "FRED_DAILY_REFERENCE_NON_EXECUTABLE",
-    "metadata_sha256": "24700d1665a37cc49503f8440e011606b6c544632ca53a01f2521886e3167a01",
+    "metadata_sha256": "2369608bc6f15b2e1f940c18f38257532e8afdda730c9828ca559dfc4e00ea6e",
     "source": "https://fred.stlouisfed.org/series/DEXJPUS"
   },
   "statistically_screened_count": 0,
