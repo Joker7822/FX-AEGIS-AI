@@ -7,6 +7,15 @@ on:
       - 'fxcm_h1_personal_download.py'
       - 'tests/test_fxcm_h1_personal_download.py'
       - 'FXCM_GITHUB_AUTOMATION_GUIDE_JA.md'
+  # Pull requests run offline preflight only; the fetch-encrypt job stays gated
+  # strictly to owner-authorized schedule or explicit manual dispatch.
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/fxcm-encrypted-h1.yml'
+      - 'fxcm_h1_personal_download.py'
+      - 'tests/test_fxcm_h1_personal_download.py'
+      - 'FXCM_GITHUB_AUTOMATION_GUIDE_JA.md'
   workflow_dispatch:
     inputs:
       mode:
