@@ -171,7 +171,7 @@ class H1WeekWindowError(ValueError):
         self.side = side
         self.adjacent_relation: str | None = None
         self.adjacent_shared_h1_bucket: str | None = None
-        self.remaining_archive_map: list[tuple[int, str, str, str, str, str]] = []
+        self.remaining_archive_map: list[tuple[int, str, str, str, str, str, str]] = []
 
 
 def safe_after_bar_count_bucket(count: int) -> str:
@@ -269,38 +269,57 @@ def safe_week_iso_extent(source: str, timestamp_field: str,
             safe_relative_iso_week(previous, year, week))
 
 
-def safe_h1_timestamp_index(content: bytes) -> list[datetime] | None:
-    """Read bounded H1 UTC timestamps for diagnosis only.
+def safe_h1_timestamp_index_with_status(
+        content: bytes) -> tuple[list[datetime] | None, str]:
+    """Return only private UTC timestamps plus a fixed, public-safe status.
 
-    Refuse malformed headers, timestamps, rows and timestamp order. Price
-    columns remain private and uninspected; no values are returned to logs.
+    The status is from a closed set of constant identifiers. Never expose
+    source row values, local paths, provider URLs, or exception messages.
     """
     try:
         reader = csv.DictReader(
             io.StringIO(content.decode('utf-8-sig'), newline=''))
         names = reader.fieldnames
         if not names:
-            return None
+            return None, 'SOURCE_CSV_EMPTY'
+        if any(not isinstance(name, str) for name in names):
+            return None, 'SOURCE_CSV_HEADER'
         normalized = {name.strip().lower(): name for name in names}
         if len(normalized) != len(names) or any(
                 field not in normalized for field in REQUIRED):
-            return None
+            return None, 'SOURCE_CSV_HEADER'
         timestamp_column = normalized['datetime']
         result = []
         previous = None
         for raw in reader:
-            if (len(result) >= MAX_ROWS or not raw or
-                    None in raw or any(value is None for value in raw.values())):
-                return None
-            when = read_timestamp(raw[timestamp_column])
+            if len(result) >= MAX_ROWS:
+                return None, 'SOURCE_CSV_TOO_MANY_BARS'
+            if not raw or None in raw or any(value is None for value in raw.values()):
+                return None, 'SOURCE_CSV_ROW'
+            try:
+                when = read_timestamp(raw[timestamp_column])
+            except ValueError as exc:
+                code = safe_failure_code(exc)
+                if code in ('SOURCE_CSV_TIMESTAMP',
+                            'SOURCE_CSV_TIMESTAMP_ALIGNMENT'):
+                    return None, code
+                return None, 'SOURCE_CSV_TIMESTAMP'
             if previous is not None and when <= previous:
-                return None
+                return None, 'SOURCE_CSV_ORDER'
             result.append(when)
             previous = when
-    except (UnicodeError, KeyError, TypeError, ValueError, OverflowError):
-        return None
-    return result or None
+    except UnicodeError:
+        return None, 'SOURCE_CSV_ENCODING'
+    except (KeyError, TypeError, ValueError, OverflowError, csv.Error):
+        return None, 'SOURCE_CSV_ROW'
+    if not result:
+        return None, 'SOURCE_CSV_NO_BARS'
+    return result, 'VALID'
 
+
+def safe_h1_timestamp_index(content: bytes) -> list[datetime] | None:
+    """Compatibility helper: diagnosis only, never accepts quote data."""
+    return safe_h1_timestamp_index_with_status(content)[0]
 
 def safe_adjacent_week_relation(
         first_content: bytes, second_content: bytes) -> tuple[str, str]:
@@ -327,12 +346,12 @@ def safe_adjacent_week_relation(
 def safe_remaining_archive_manifest(
         spans: list[tuple[int, int]], failed_position: int,
         rejected_content: bytes, *, opener=None
-        ) -> list[tuple[int, str, str, str, str, str]]:
+        ) -> list[tuple[int, str, str, str, str, str, str]]:
     """Classify the remaining already-authorized FXCM archives after failure.
 
     Returned tuples are strictly: bounded ordinal, first/last *relative*
     ISO week, adjacent relationship, shared timestamp count bucket and
-    gap-duration bucket. Price values, raw dates, URLs and exception content
+    gap-duration bucket and a fixed file-status code. Prices, dates and URLs
     are never exposed. All archives remain rejected and are never saved.
     """
     if not 1 <= failed_position <= len(spans) <= 8:
@@ -343,9 +362,13 @@ def safe_remaining_archive_manifest(
         y, w = spans[position - 1]
         try:
             next_content, _ = download_week(y, w, opener=opener)
-            current_index = safe_h1_timestamp_index(next_content)
-        except (OSError, ValueError, RuntimeError):
+            current_index, file_status = safe_h1_timestamp_index_with_status(
+                next_content)
+        except (OSError, ValueError, RuntimeError) as exc:
             current_index = None
+            # Existing allowlist maps HTTP failures and GZIP validation to
+            # fixed enums; the raw exception is never printed or preserved.
+            file_status = safe_failure_code(exc)
 
         if current_index is None:
             first_iso = last_iso = 'UNAVAILABLE'
@@ -367,7 +390,7 @@ def safe_remaining_archive_manifest(
                 relation = 'GAP'
                 gap = boundary_offset_bucket(
                     current_index[0] - previous_index[-1] - timedelta(hours=1))
-        manifest.append((position, first_iso, last_iso, relation, shared, gap))
+        manifest.append((position, first_iso, last_iso, relation, shared, gap, file_status))
         previous_index = current_index
     return manifest
 
@@ -463,7 +486,7 @@ def acquire(*, year: int, week: int, weeks: int, out: Path,
                 exc.remaining_archive_map = safe_remaining_archive_manifest(
                     spans, archive_position, content, opener=opener)
                 if exc.remaining_archive_map:
-                    _, _, _, relation, shared, _ = exc.remaining_archive_map[0]
+                    _, _, _, relation, shared, _, _ = exc.remaining_archive_map[0]
                     exc.adjacent_relation = relation
                     exc.adjacent_shared_h1_bucket = shared
             raise
@@ -631,12 +654,14 @@ def main() -> int:
                 print(f'FXCM_SAFE_ADJACENT_RELATION={exc.adjacent_relation}', file=sys.stderr)
             if exc.adjacent_shared_h1_bucket is not None:
                 print(f'FXCM_SAFE_ADJACENT_SHARED_H1={exc.adjacent_shared_h1_bucket}', file=sys.stderr)
-            for ordinal, first_iso, last_iso, relation, shared, gap in exc.remaining_archive_map:
-                # Ordinal is limited to 2..8; other entries are fixed enums.
+            for ordinal, first_iso, last_iso, relation, shared, gap, file_status in exc.remaining_archive_map:
+                # Ordinal is limited to 2..8; all other fields are fixed enums.
                 print(
                     f'FXCM_SAFE_ARCHIVE_MAP_{ordinal}='
                     f'{first_iso}/{last_iso}/{relation}/{shared}/{gap}',
                     file=sys.stderr)
+                print(f'FXCM_SAFE_ARCHIVE_STATUS_{ordinal}={file_status}',
+                      file=sys.stderr)
         return 2
     print(json.dumps(result,ensure_ascii=False,indent=2))
     return 0
