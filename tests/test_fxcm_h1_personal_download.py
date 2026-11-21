@@ -355,6 +355,7 @@ class FxcmPrivateTests(unittest.TestCase):
             'FXCM_SAFE_LAST_ISO_WEEK=NEXT_1',
             'FXCM_SAFE_ADJACENT_RELATION=OVERLAP_SHARED',
             'FXCM_SAFE_ADJACENT_SHARED_H1=121_PLUS',
+            'FXCM_SAFE_ARCHIVE_MAP_2=PREV_1/REQUESTED/OVERLAP_SHARED/121_PLUS/NONE',
         ])
         for private_marker in ('PRIVATE_DO_NOT_LOG', '2020-03-09',
                                '108.000', 'bid_open'):
@@ -499,6 +500,87 @@ class FxcmPrivateTests(unittest.TestCase):
             self.assertEqual(found.exception.adjacent_shared_h1_bucket,
                              'UNAVAILABLE')
             self.assertFalse((Path(folder) / 'private').exists())
+
+    def test_four_week_archive_manifest_handles_overlap_then_weekend_gaps(self):
+        from fxcm_h1_personal_download import (
+            H1WeekWindowError, safe_remaining_archive_manifest,
+        )
+        base = week_data(2020, 10).decode().splitlines()
+        next_rows = week_data(2020, 11).decode().splitlines()
+        rejected = ('\n'.join([*base, *next_rows[1:6]]) + '\n').encode()
+        requested = weeks_ending(2020, 13, 4)
+        calls = []
+        def fake_download(y, w, opener=None):
+            calls.append((y, w))
+            return week_data(y, w), {'source_url': 'SECRET_NOT_FOR_LOGS'}
+        with patch.object(downloader, 'download_week', side_effect=fake_download):
+            manifest = safe_remaining_archive_manifest(requested, 1, rejected)
+        self.assertEqual(calls, [(2020, 11), (2020, 12), (2020, 13)])
+        self.assertEqual(manifest, [
+            (2, 'REQUESTED', 'REQUESTED', 'OVERLAP_SHARED', '4_24', 'NONE'),
+            (3, 'REQUESTED', 'REQUESTED', 'GAP', 'NONE', '1_6D'),
+            (4, 'REQUESTED', 'REQUESTED', 'GAP', 'NONE', '1_6D'),
+        ])
+
+    def test_four_week_manifest_survives_one_failed_archive_download(self):
+        from fxcm_h1_personal_download import safe_remaining_archive_manifest
+        base = week_data(2020, 10).decode().splitlines()
+        next_rows = week_data(2020, 11).decode().splitlines()
+        rejected = ('\n'.join([*base, *next_rows[1:6]]) + '\n').encode()
+        def fake_download(y, w, opener=None):
+            if w == 12:
+                raise RuntimeError('SECRET_NETWORK_RESPONSE_NEVER_LOG')
+            return week_data(y, w), {}
+        with patch.object(downloader, 'download_week', side_effect=fake_download):
+            manifest = safe_remaining_archive_manifest(
+                weeks_ending(2020, 13, 4), 1, rejected)
+        self.assertEqual(manifest, [
+            (2, 'REQUESTED', 'REQUESTED', 'OVERLAP_SHARED', '4_24', 'NONE'),
+            (3, 'UNAVAILABLE', 'UNAVAILABLE',
+             'UNAVAILABLE', 'UNAVAILABLE', 'UNAVAILABLE'),
+            (4, 'REQUESTED', 'REQUESTED',
+             'UNAVAILABLE', 'UNAVAILABLE', 'UNAVAILABLE'),
+        ])
+
+    def test_manifest_logging_is_allowlisted_and_keeps_output_absent(self):
+        base = week_data(2020, 10).decode().splitlines()
+        next_rows = week_data(2020, 11).decode().splitlines()
+        bad_first = ('\n'.join([*base, *next_rows[1:6]]) + '\n').encode()
+        calls = []
+        def fake_download(y, w, opener=None):
+            calls.append((y, w))
+            return (bad_first if w == 10 else week_data(y, w)), {
+                'source_url': 'SECRET_SOURCE_URL_NEVER_LOG'}
+        stdout, stderr = io.StringIO(), io.StringIO()
+        with (
+                tempfile.TemporaryDirectory() as folder,
+                patch.object(downloader, 'download_week', side_effect=fake_download),
+                patch.object(sys, 'argv', [
+                    'fxcm_h1_personal_download.py', '--year', '2020',
+                    '--week', '13', '--weeks', '4', '--out',
+                    str(Path(folder) / 'private'),
+                    '--enable-download', '--accept-fxcm-personal-use'
+                ]),
+                contextlib.redirect_stdout(stdout),
+                contextlib.redirect_stderr(stderr),
+        ):
+            self.assertEqual(downloader.main(), 2)
+            self.assertFalse((Path(folder) / 'private').exists())
+        self.assertEqual(calls, [(2020, 10), (2020, 11),
+                                 (2020, 12), (2020, 13)])
+        logs = stderr.getvalue().splitlines()
+        self.assertEqual([line for line in logs if
+                          line.startswith('FXCM_SAFE_ARCHIVE_MAP_')], [
+            'FXCM_SAFE_ARCHIVE_MAP_2=REQUESTED/REQUESTED/OVERLAP_SHARED/4_24/NONE',
+            'FXCM_SAFE_ARCHIVE_MAP_3=REQUESTED/REQUESTED/GAP/NONE/1_6D',
+            'FXCM_SAFE_ARCHIVE_MAP_4=REQUESTED/REQUESTED/GAP/NONE/1_6D',
+        ])
+        self.assertEqual(logs[0],
+                         'FXCM_SAFE_DIAGNOSTIC=SOURCE_CSV_WEEK_AFTER')
+        self.assertEqual(json.loads(stdout.getvalue())['status'], 'FAILED_CLOSED')
+        for private in ('SECRET_SOURCE_URL_NEVER_LOG', '2020-03-09',
+                        '108.000', 'BidOpen', '2020-03-23'):
+            self.assertNotIn(private, stderr.getvalue() + stdout.getvalue())
 
     def test_fractional_timestamp_zero_and_nonzero(self):
         from fxcm_h1_personal_download import read_timestamp
