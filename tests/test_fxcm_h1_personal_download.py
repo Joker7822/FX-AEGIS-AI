@@ -283,6 +283,8 @@ class FxcmPrivateTests(unittest.TestCase):
             'FXCM_SAFE_ARCHIVE_POSITION=2',
             'FXCM_SAFE_FILE_TAIL_OFFSET=1_6D',
             'FXCM_SAFE_FILE_AFTER_BARS=25_120',
+            'FXCM_SAFE_FIRST_ISO_WEEK=NEXT_1',
+            'FXCM_SAFE_LAST_ISO_WEEK=NEXT_1',
         ])
         self.assertEqual(json.loads(stdout.getvalue())['status'], 'FAILED_CLOSED')
         self.assertNotIn('PRIVATE_SOURCE_URL', output + stdout.getvalue())
@@ -349,11 +351,59 @@ class FxcmPrivateTests(unittest.TestCase):
             'FXCM_SAFE_ARCHIVE_POSITION=1',
             'FXCM_SAFE_FILE_TAIL_OFFSET=3_23H',
             'FXCM_SAFE_FILE_AFTER_BARS=4_24',
+            'FXCM_SAFE_FIRST_ISO_WEEK=REQUESTED',
+            'FXCM_SAFE_LAST_ISO_WEEK=NEXT_1',
         ])
         for private_marker in ('PRIVATE_DO_NOT_LOG', '2020-03-09',
                                '108.000', 'bid_open'):
             self.assertNotIn(private_marker,
                              stderr.getvalue() + stdout.getvalue())
+
+    def test_relative_iso_week_categories_cross_calendar_year(self):
+        from fxcm_h1_personal_download import safe_relative_iso_week
+        # ISO 2020-W53 ends 2021-01-03; this is not 2021-W01.
+        cases = [
+            ('2020-12-27T23:00:00Z', 'PREV_1'),
+            ('2020-12-28T00:00:00Z', 'REQUESTED'),
+            ('2021-01-03T23:00:00Z', 'REQUESTED'),
+            ('2021-01-04T00:00:00Z', 'NEXT_1'),
+            ('2021-01-11T00:00:00Z', 'NEXT_2'),
+            ('2021-01-18T00:00:00Z', 'FAR_AFTER'),
+        ]
+        for value, expected in cases:
+            self.assertEqual(
+                safe_relative_iso_week(read_timestamp(value), 2020, 53),
+                expected)
+
+    def test_safe_week_extent_distinguishes_overlap_from_shift(self):
+        from fxcm_h1_personal_download import safe_week_iso_extent
+        first = week_data(2020, 10).decode().splitlines()
+        following = week_data(2020, 11).decode().splitlines()[1:16]
+        mixed = '\n'.join([*first, *following]) + '\n'
+        self.assertEqual(
+            safe_week_iso_extent(mixed, 'DateTime', 2020, 10),
+            ('REQUESTED', 'NEXT_1'))
+        self.assertEqual(
+            safe_week_iso_extent(week_data(2020, 11).decode(),
+                                 'DateTime', 2020, 10),
+            ('NEXT_1', 'NEXT_1'))
+        self.assertEqual(
+            safe_week_iso_extent(week_data_with_sunday(2020, 10).decode(),
+                                 'DateTime', 2020, 10),
+            ('PREV_1', 'REQUESTED'))
+
+    def test_safe_week_extent_fails_closed_for_corrupt_timestamp_order(self):
+        from fxcm_h1_personal_download import safe_week_iso_extent
+        first = week_data(2020, 10).decode().splitlines()
+        invalid = '\n'.join([*first, first[-1]]) + '\n'
+        self.assertEqual(safe_week_iso_extent(
+            invalid, 'DateTime', 2020, 10), ('UNAVAILABLE', 'UNAVAILABLE'))
+        self.assertEqual(safe_week_iso_extent(
+            'DateTime,BidOpen\nnot-a-timestamp,123\n', 'DateTime',
+            2020, 10), ('UNAVAILABLE', 'UNAVAILABLE'))
+        self.assertEqual(safe_week_iso_extent(
+            'DateTime\n', 'DateTime', 2020, 10),
+            ('UNAVAILABLE', 'UNAVAILABLE'))
 
     def test_fractional_timestamp_zero_and_nonzero(self):
         from fxcm_h1_personal_download import read_timestamp
