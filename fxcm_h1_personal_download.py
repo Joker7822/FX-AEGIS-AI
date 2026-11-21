@@ -171,6 +171,7 @@ class H1WeekWindowError(ValueError):
         self.side = side
         self.adjacent_relation: str | None = None
         self.adjacent_shared_h1_bucket: str | None = None
+        self.remaining_archive_map: list[tuple[int, str, str, str, str, str]] = []
 
 
 def safe_after_bar_count_bucket(count: int) -> str:
@@ -323,6 +324,54 @@ def safe_adjacent_week_relation(
     return relation, safe_after_bar_count_bucket(shared_count)
 
 
+def safe_remaining_archive_manifest(
+        spans: list[tuple[int, int]], failed_position: int,
+        rejected_content: bytes, *, opener=None
+        ) -> list[tuple[int, str, str, str, str, str]]:
+    """Classify the remaining already-authorized FXCM archives after failure.
+
+    Returned tuples are strictly: bounded ordinal, first/last *relative*
+    ISO week, adjacent relationship, shared timestamp count bucket and
+    gap-duration bucket. Price values, raw dates, URLs and exception content
+    are never exposed. All archives remain rejected and are never saved.
+    """
+    if not 1 <= failed_position <= len(spans) <= 8:
+        return []
+    previous_index = safe_h1_timestamp_index(rejected_content)
+    manifest = []
+    for position in range(failed_position + 1, len(spans) + 1):
+        y, w = spans[position - 1]
+        try:
+            next_content, _ = download_week(y, w, opener=opener)
+            current_index = safe_h1_timestamp_index(next_content)
+        except (OSError, ValueError, RuntimeError):
+            current_index = None
+
+        if current_index is None:
+            first_iso = last_iso = 'UNAVAILABLE'
+        else:
+            first_iso = safe_relative_iso_week(current_index[0], y, w)
+            last_iso = safe_relative_iso_week(current_index[-1], y, w)
+
+        if previous_index is None or current_index is None:
+            relation = shared = gap = 'UNAVAILABLE'
+        else:
+            overlap = len(set(previous_index).intersection(current_index))
+            shared = safe_after_bar_count_bucket(overlap)
+            if current_index[0] <= previous_index[-1]:
+                relation = 'OVERLAP_SHARED' if overlap else 'OVERLAP_NO_SHARED'
+                gap = 'NONE'
+            elif current_index[0] == previous_index[-1] + timedelta(hours=1):
+                relation, gap = 'CONTIGUOUS', 'NONE'
+            else:
+                relation = 'GAP'
+                gap = boundary_offset_bucket(
+                    current_index[0] - previous_index[-1] - timedelta(hours=1))
+        manifest.append((position, first_iso, last_iso, relation, shared, gap))
+        previous_index = current_index
+    return manifest
+
+
 def parse_week_csv(content: bytes, year: int, week: int) -> list[dict]:
     """Map by *named* Bid/Ask fields only. Never fabricate Ask from mid/bid."""
     try:
@@ -409,19 +458,14 @@ def acquire(*, year: int, week: int, weeks: int, out: Path,
         except H1WeekWindowError as exc:
             exc.archive_position = archive_position
             if exc.side == 'after' and archive_position < len(spans):
-                # The next archive belongs to the same already-authorized
-                # four-week request. Never accept or silently trim either.
-                try:
-                    next_year, next_week = spans[archive_position]
-                    following, _ = download_week(
-                        next_year, next_week, opener=opener)
-                    (exc.adjacent_relation,
-                     exc.adjacent_shared_h1_bucket) = safe_adjacent_week_relation(
-                         content, following)
-                except (OSError, ValueError, RuntimeError):
-                    # Preserve the original validation error and fail closed.
-                    exc.adjacent_relation = 'UNAVAILABLE'
-                    exc.adjacent_shared_h1_bucket = 'UNAVAILABLE'
+                # Diagnose only the remaining *already-authorized* weeks.
+                # Never bypass the original validation failure or save files.
+                exc.remaining_archive_map = safe_remaining_archive_manifest(
+                    spans, archive_position, content, opener=opener)
+                if exc.remaining_archive_map:
+                    _, _, _, relation, shared, _ = exc.remaining_archive_map[0]
+                    exc.adjacent_relation = relation
+                    exc.adjacent_shared_h1_bucket = shared
             raise
         first = read_timestamp(items[0]['time'])
         last = read_timestamp(items[-1]['time'])
@@ -587,6 +631,12 @@ def main() -> int:
                 print(f'FXCM_SAFE_ADJACENT_RELATION={exc.adjacent_relation}', file=sys.stderr)
             if exc.adjacent_shared_h1_bucket is not None:
                 print(f'FXCM_SAFE_ADJACENT_SHARED_H1={exc.adjacent_shared_h1_bucket}', file=sys.stderr)
+            for ordinal, first_iso, last_iso, relation, shared, gap in exc.remaining_archive_map:
+                # Ordinal is limited to 2..8; other entries are fixed enums.
+                print(
+                    f'FXCM_SAFE_ARCHIVE_MAP_{ordinal}='
+                    f'{first_iso}/{last_iso}/{relation}/{shared}/{gap}',
+                    file=sys.stderr)
         return 2
     print(json.dumps(result,ensure_ascii=False,indent=2))
     return 0
