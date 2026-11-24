@@ -1733,9 +1733,9 @@
   ],
   "data_range": [
     "2006-11-13",
-    "2026-11-13"
+    "2026-11-20"
   ],
-  "data_rows": 5010,
+  "data_rows": 5015,
   "engine_sha256": {
     "github_pipeline.py": "f43730adb7c4bf0d8b24de99412f1f2a831784ffa0a21cd960a631164c5e9fc5",
     "repro_lab.py": "e86b40e9721f1a4793d9bc0b0562a58d2b24b6ea714b3478268cf3af4d1dde59"
@@ -1750,24 +1750,24 @@
       "spread_pips": 1.4
     },
     "holdout": {
-      "end": "2026-11-13",
+      "end": "2026-11-20",
       "max_dd_pct": 3.543606,
-      "observations": 1467,
-      "position_changes": 12,
-      "return_pct": 9.322954,
+      "observations": 1472,
+      "position_changes": 13,
+      "return_pct": 9.120668,
       "start": "2021-01-04"
     },
     "holdout_double_cost": {
-      "end": "2026-11-13",
+      "end": "2026-11-20",
       "max_dd_pct": 3.553537,
-      "observations": 1467,
-      "position_changes": 12,
-      "return_pct": 9.290208,
+      "observations": 1472,
+      "position_changes": 13,
+      "return_pct": 9.085594,
       "start": "2021-01-04"
     }
   },
   "random_seed": 42,
-  "report_sha256": "c3453f12c940b47c4786c0ab4d2fc8716f74d0d44ff105cdd795e68f86823bd7",
+  "report_sha256": "52cc4d8225bffcb8390cbcc829c3c018b332f388e7e259b64252e09200cfe833",
   "research_gate_passed": false,
   "schema": "fx-aegis-repro-1",
   "selection_rule": "max validation_return_pct - 0.5 * validation_max_dd; training and validation only",
@@ -1777,9 +1777,9 @@
     "python": "3.11.18"
   },
   "source": {
-    "data_sha256": "9ff175fff4496b08803228651ba89c7d028c006eae214a501865072cda8fd2dd",
+    "data_sha256": "b61b08ab14a904b169bf032b1e329ce21ca1086e15b609cbb3a107d85d3c91c2",
     "kind": "FRED_DAILY_REFERENCE_NON_EXECUTABLE",
-    "metadata_sha256": "6db9922bc7fe5951009920c363f71d053425937e846673da4255c5d55b76808b",
+    "metadata_sha256": "9ddfa53cb417821f2aba5660bc64b679c3177a7b706e48653b5fb8fc62ff1633",
     "source": "https://fred.stlouisfed.org/series/DEXJPUS"
   },
   "splits": [
